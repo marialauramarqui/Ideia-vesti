@@ -6,3 +6,7 @@
 pbix_extract/
 node_modules/
 *.log
+
+# Secrets
+.env
+*.xlsx

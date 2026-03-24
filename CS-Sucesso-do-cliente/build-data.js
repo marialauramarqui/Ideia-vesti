@@ -1,12 +1,37 @@
 /**
  * Script para agregar dados dos CSVs do Power BI e gerar dados.js para o dashboard.
+ * Inclui dados do HubSpot (Oráculo) e controle_geral_luana.
  * Executa com: node build-data.js
  */
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
+const https = require('https');
 
 const DIR = __dirname;
+
+// Load token from .env file
+function loadEnv() {
+    const envPath = path.join(DIR, '.env');
+    if (!fs.existsSync(envPath)) return {};
+    const env = {};
+    fs.readFileSync(envPath, 'utf-8').split('\n').forEach(line => {
+        const m = line.match(/^([^=]+)=(.*)$/);
+        if (m) env[m[1].trim()] = m[2].trim();
+    });
+    return env;
+}
+const ENV = loadEnv();
+const HUBSPOT_TOKEN = ENV.HUBSPOT_TOKEN || process.env.HUBSPOT_TOKEN || '';
+const ORACULO_PIPELINE_ID = '794686264';
+const ORACULO_STAGES = {
+    '1165541427':'Fila','1165361278':'Grupo de Implementação','1165350737':'Reunião 1',
+    '1165350738':'Configurações Iniciais','1273974154':'Link de relatório',
+    '1199622545':'Problema conta Meta ou YCloud','1180878228':'Acompanhamento e melhorias prompt',
+    '1165350742':'Eventos Vesti','1216864772':'Agente Aquecimento de leads',
+    '1204236378':'Integração','1183765142':'Agente Inativos','1269319857':'Campanhas',
+    '1165361281':'Concluído','1238455699':'Parado','1249275660':'Churn'
+};
 
 // ===================== CSV PARSER (streaming, handles quotes) =====================
 function parseCSVLine(line) {
@@ -47,6 +72,64 @@ async function readCSV(filename, onRow, limit) {
         if (limit && count >= limit) break;
     }
     console.log('  ' + filename + ': ' + count + ' rows');
+}
+
+// ===================== HUBSPOT API =====================
+function hubspotRequest(endpoint, method, body) {
+    return new Promise((resolve, reject) => {
+        const options = {
+            hostname: 'api.hubapi.com',
+            path: endpoint,
+            method: method || 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + HUBSPOT_TOKEN,
+                'Content-Type': 'application/json',
+            },
+        };
+        const req = https.request(options, (res) => {
+            const chunks = [];
+            res.on('data', c => chunks.push(c));
+            res.on('end', () => {
+                try { resolve(JSON.parse(Buffer.concat(chunks).toString())); }
+                catch(e) { reject(e); }
+            });
+        });
+        req.on('error', reject);
+        if (body) req.write(JSON.stringify(body));
+        req.end();
+    });
+}
+
+async function fetchOraculoTickets() {
+    console.log('  Fetching HubSpot Oráculo tickets...');
+    try {
+        const data = await hubspotRequest('/crm/v3/objects/tickets/search', 'POST', {
+            filterGroups: [{ filters: [{ propertyName: 'hs_pipeline', operator: 'EQ', value: ORACULO_PIPELINE_ID }] }],
+            properties: ['subject', 'hs_pipeline_stage', 'createdate', 'hs_lastmodifieddate'],
+            limit: 100,
+        });
+        const tickets = (data.results || []).map(t => {
+            const stageId = t.properties.hs_pipeline_stage;
+            // Extract company name from subject (formats: "ÓRACULO - Company - ...", "Company - Oráculo", etc.)
+            let companyName = (t.properties.subject || '').replace(/^[ÓO]R[ÁA]CULO\s*-\s*/i, '').replace(/\s*-\s*[ÓO]r[áa]culo.*/i, '').replace(/\s*-\s*Agente.*/i, '').replace(/\s*\|.*/, '').replace(/\s*\(.*\)/, '').trim();
+            if (companyName.startsWith('Oráculo ')) companyName = companyName.replace('Oráculo ', '').trim();
+            if (companyName.startsWith('Óraculo ')) companyName = companyName.replace('Óraculo ', '').trim();
+            return {
+                id: t.id,
+                subject: t.properties.subject,
+                companyName,
+                stageId,
+                stageName: ORACULO_STAGES[stageId] || stageId,
+                created: t.properties.createdate,
+                modified: t.properties.hs_lastmodifieddate,
+            };
+        });
+        console.log('  HubSpot Oráculo: ' + tickets.length + ' tickets');
+        return tickets;
+    } catch(e) {
+        console.log('  WARN: HubSpot fetch failed: ' + e.message);
+        return [];
+    }
 }
 
 // ===================== MAIN =====================
@@ -206,6 +289,44 @@ async function main() {
         if (cnpj) marcasMap[cnpj] = { marca: row['MARCA'], plano: row['PLANO'], totalCobrado: parseFloat(row['TOTAL_COBRADO']) || 0 };
     });
 
+    // 7. Controle Geral Luana - etapa hub, mensalidade, oráculo, pedidos mensais
+    const controleMap = {}; // by companyId
+    const controleByNome = {}; // by marca name (lowercase)
+    await readCSV('controle_geral_luana_csv.csv', (row) => {
+        const companyId = row['Company*ID'] || row['CompanyID'] || '';
+        const marca = row['MARCAS'] || '';
+        const entry = {
+            marca,
+            companyId,
+            etapaHub: row['ETAPA HUB'] || '',
+            mensalidade: row['MENSALIDADE'] || '',
+            gmvControle: row['GMV'] || '',
+            filial: row['FILIAL'] || '',
+            oraculo: row['ORÁCULO'] || row['ORACULO'] || '',
+            pix: row['PIX'] || '',
+            cc: row['CC'] || '',
+            frete: row['FRETE'] || '',
+            jan: parseInt(row['JAN']) || 0,
+            fev: parseInt(row['FEV']) || 0,
+            mar: parseInt(row['MAR']) || 0,
+            naoPagos: parseInt(row['NÃO PAGOS'] || row['NAO PAGOS']) || 0,
+        };
+        if (companyId) controleMap[companyId] = entry;
+        if (marca) controleByNome[marca.toLowerCase().trim()] = entry;
+    });
+    console.log('  Controle Luana loaded: ' + Object.keys(controleMap).length + ' companies');
+
+    // 8. HubSpot Oráculo tickets
+    const oraculoTickets = await fetchOraculoTickets();
+    // Build map: lowercase company name -> most recent ticket
+    const oraculoByNome = {};
+    for (const t of oraculoTickets) {
+        const key = t.companyName.toLowerCase().trim();
+        if (!oraculoByNome[key] || t.modified > oraculoByNome[key].modified) {
+            oraculoByNome[key] = t;
+        }
+    }
+
     // Collect all months that appear across all data sources
     const allMonthsSet = new Set([
         ...Object.keys(pedidosMensais),
@@ -245,9 +366,64 @@ async function main() {
                 }
             }
 
+            // Match with controle_geral_luana data
+            const nome = e.nomeFantasia || e.nomeDominio;
+            const ctrl = controleMap[e.id] || controleByNome[(nome || '').toLowerCase().trim()];
+
+            // Match with Oráculo HubSpot ticket
+            const oracTkt = oraculoByNome[(nome || '').toLowerCase().trim()];
+
+            // Mensalidade: from controle first, fallback to marcas e planos
+            let mensalidade = '';
+            if (ctrl && ctrl.mensalidade) {
+                mensalidade = ctrl.mensalidade;
+            } else if (marca && marca.totalCobrado) {
+                mensalidade = 'R$ ' + marca.totalCobrado.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            }
+
+            // Etapa HubSpot (from controle_geral_luana)
+            const etapaHub = ctrl ? ctrl.etapaHub : '';
+
+            // Oráculo: stage from HubSpot API (live), fallback to controle
+            let oraculoEtapa = '';
+            if (oracTkt) {
+                oraculoEtapa = oracTkt.stageName;
+            } else if (ctrl && ctrl.oraculo) {
+                oraculoEtapa = ctrl.oraculo;
+            }
+
+            // Previsão de churn - score simples baseado em sinais
+            let churnScore = 0;
+            let churnMotivos = [];
+            // 1. Queda de pedidos (últimos 3 meses vs 3 anteriores)
+            const sortedMeses = Object.keys(mData).sort();
+            if (sortedMeses.length >= 4) {
+                const recent3 = sortedMeses.slice(-3);
+                const prev3 = sortedMeses.slice(-6, -3);
+                const sumRecent = recent3.reduce((s, m) => s + (mData[m] ? mData[m][0] : 0), 0);
+                const sumPrev = prev3.reduce((s, m) => s + (mData[m] ? mData[m][0] : 0), 0);
+                if (sumPrev > 0 && sumRecent < sumPrev * 0.5) { churnScore += 30; churnMotivos.push('Queda >50% pedidos'); }
+                else if (sumPrev > 0 && sumRecent < sumPrev * 0.7) { churnScore += 15; churnMotivos.push('Queda >30% pedidos'); }
+            }
+            // 2. Zero pedidos no último mês
+            if (sortedMeses.length > 0) {
+                const lastMonth = mData[sortedMeses[sortedMeses.length - 1]];
+                if (lastMonth && lastMonth[0] === 0) { churnScore += 25; churnMotivos.push('Zero pedidos mês atual'); }
+            }
+            // 3. Muitos cancelados vs pagos
+            if (e.pedidos > 10 && e.pedidosCancelados > e.pedidosPagos * 0.3) { churnScore += 15; churnMotivos.push('Alto cancelamento'); }
+            // 4. Sem integração
+            if (e.temIntegracao !== 'Sim') { churnScore += 10; churnMotivos.push('Sem integração'); }
+            // 5. Oráculo em Churn ou Parado
+            if (oraculoEtapa === 'Churn') { churnScore += 30; churnMotivos.push('Oráculo: Churn'); }
+            else if (oraculoEtapa === 'Parado') { churnScore += 20; churnMotivos.push('Oráculo: Parado'); }
+            // Cap at 100
+            churnScore = Math.min(churnScore, 100);
+            const churnRisco = churnScore >= 60 ? 'Alto' : churnScore >= 30 ? 'Médio' : 'Baixo';
+
             return {
                 i: idx,
-                nome: e.nomeFantasia || e.nomeDominio,
+                nome,
                 canal: e.canal,
                 cartao: e.cartaoImpl ? 'Sim' : 'Não',
                 pix: e.pixImpl ? 'Sim' : 'Não',
@@ -277,6 +453,13 @@ async function main() {
                 valorPlano: e.valorPlano,
                 plano: marca ? marca.plano : '',
                 marcaAtiva: e.transCartao >= 250 ? 'Sim' : 'Não',
+                // New fields
+                mensalidade,
+                etapaHub,
+                oraculoEtapa,
+                churnScore,
+                churnRisco,
+                churnMotivos: churnMotivos.length > 0 ? churnMotivos.join('; ') : '',
                 m: Object.keys(mData).length > 0 ? mData : undefined,
             };
         });
@@ -292,12 +475,25 @@ async function main() {
         cliques: cliquesMensais[m] || 0,
     }));
 
+    // Oráculo summary for dashboard
+    const oraculoSummary = {};
+    for (const t of oraculoTickets) {
+        oraculoSummary[t.stageName] = (oraculoSummary[t.stageName] || 0) + 1;
+    }
+
+    // Churn stats
+    const churnAlto = empresasList.filter(e => e.churnRisco === 'Alto').length;
+    const churnMedio = empresasList.filter(e => e.churnRisco === 'Médio').length;
+
     // Output
     const output = {
         empresas: empresasList,
         mensal: monthlyData,
-        meses: allMonths, // all available months for date range pickers
+        meses: allMonths,
         totalEmpresas: empresasList.length,
+        oraculoSummary,
+        oraculoTickets: oraculoTickets.map(t => ({ nome: t.companyName, etapa: t.stageName, criado: t.created, atualizado: t.modified })),
+        churnStats: { alto: churnAlto, medio: churnMedio, total: empresasList.length },
         geradoEm: new Date().toISOString(),
     };
 
