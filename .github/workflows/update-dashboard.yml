@@ -30,13 +30,13 @@ jobs:
 
       - name: Atualizar refresh token se renovado
         if: hashFiles('CS-Sucesso-do-cliente/.new_refresh_token') != ''
+        continue-on-error: true
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
         run: |
           NEW_TOKEN=$(cat CS-Sucesso-do-cliente/.new_refresh_token)
-          gh secret set FABRIC_REFRESH_TOKEN --body "$NEW_TOKEN"
-          rm CS-Sucesso-do-cliente/.new_refresh_token
-          echo "Refresh token atualizado"
+          gh secret set FABRIC_REFRESH_TOKEN --body "$NEW_TOKEN" || echo "WARN: Não foi possível atualizar o secret automaticamente"
+          rm -f CS-Sucesso-do-cliente/.new_refresh_token
 
       - name: Verificar se houve alteração
         id: check
