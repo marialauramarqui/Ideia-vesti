@@ -533,6 +533,15 @@ async function main() {
                 churnScore,
                 churnRisco,
                 churnMotivos: churnMotivos.length > 0 ? churnMotivos.join('; ') : '',
+                // Controle Geral Luana fields
+                naoPagos: ctrl ? ctrl.naoPagos : 0,
+                filial: ctrl ? ctrl.filial : '',
+                pixOraculo: ctrl ? ctrl.pix : '',
+                ccOraculo: ctrl ? ctrl.cc : '',
+                freteOraculo: ctrl ? ctrl.frete : '',
+                pedJan: ctrl ? ctrl.jan : 0,
+                pedFev: ctrl ? ctrl.fev : 0,
+                pedMar: ctrl ? ctrl.mar : 0,
                 m: Object.keys(mData).length > 0 ? mData : undefined,
             };
         });
