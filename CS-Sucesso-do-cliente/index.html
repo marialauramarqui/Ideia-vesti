@@ -162,7 +162,7 @@
 <div class="filters-bar" id="filtersBar">
     <div class="filter-group">
         <span class="filter-label">Empresa</span>
-        <input list="dlEmpresas" id="fEmpresa" class="filter-input" placeholder="Buscar empresa..." autocomplete="off">
+        <input list="dlEmpresas" id="fEmpresa" class="filter-input" placeholder="Nome ou Company ID..." autocomplete="off">
         <datalist id="dlEmpresas"></datalist>
     </div>
     <div class="filter-group">
@@ -416,7 +416,10 @@ function updateEmpresaDatalist(){
     dl.innerHTML='';
     const fA=document.getElementById('fAnjo').value;
     const empresas=fA?DADOS.empresas.filter(e=>e.anjo===fA):DADOS.empresas;
-    empresas.forEach(e=>{const o=document.createElement('option');o.value=e.nome;dl.appendChild(o);});
+    empresas.forEach(e=>{
+        const o1=document.createElement('option');o1.value=e.nome;dl.appendChild(o1);
+        if(e.id){const o2=document.createElement('option');o2.value=e.id;o2.label=e.nome;dl.appendChild(o2);}
+    });
 }
 
 function clearFilters(){
@@ -466,7 +469,7 @@ function applyFilters(){
     const hasPeriod=fPedDe||fPedAte;
 
     filtered=DADOS.empresas.filter(e=>{
-        if(fE&&!e.nome.toLowerCase().includes(fE))return false;
+        if(fE&&!e.nome.toLowerCase().includes(fE)&&!(e.id&&e.id.toLowerCase().includes(fE)))return false;
         if(fA&&e.anjo!==fA)return false;
         if(fCa&&e.canal!==fCa)return false;
         if(fCr==='Sim'&&e.cartao!=='Sim')return false;
@@ -521,7 +524,7 @@ function applyFilters(){
 function updateEmpresaPanel(){
     const panel=document.getElementById('empresaInfoPanel');
     const fE=document.getElementById('fEmpresa').value.trim().toLowerCase();
-    const match=fE?DADOS.empresas.find(e=>e.nome.toLowerCase()===fE):null;
+    const match=fE?DADOS.empresas.find(e=>e.nome.toLowerCase()===fE||(e.id&&e.id.toLowerCase()===fE)):null;
     if(match){
         panel.classList.add('visible');
         document.getElementById('eiCnpj').textContent=match.cnpj||'-';
