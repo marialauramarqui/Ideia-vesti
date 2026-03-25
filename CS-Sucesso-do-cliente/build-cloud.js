@@ -23,6 +23,10 @@ const WORKSPACE_ID = 'aced753a-0f0e-4bcf-9264-72f6496cf2cf';
 const DATASET_ID = 'e6c74524-e355-4447-9eb4-baae76b84dc4';
 const DAX_ENDPOINT = `/v1.0/myorg/groups/${WORKSPACE_ID}/datasets/${DATASET_ID}/executeQueries`;
 
+// VestiPago workspace + dataset (para lista de empresas com VestiPago)
+const VP_WORKSPACE_ID = 'f80301c2-8735-40d2-8662-1f8a627d3f61';
+const VP_DATASET_ID = '606be0ee-2c8c-4f43-8ad6-0be04f95d616';
+
 const ORACULO_PIPELINE_ID = '794686264';
 const ORACULO_STAGES = {
     '1165541427':'Fila','1165361278':'Grupo de Implementação','1165350737':'Reunião 1',
@@ -97,6 +101,40 @@ async function getAccessToken() {
 }
 
 // ===================== POWER BI DAX QUERY =====================
+async function executeDaxQueryOn(accessToken, wsId, dsId, daxQuery, label) {
+    console.log(`  Querying: ${label}...`);
+    const bodyStr = JSON.stringify({
+        queries: [{ query: daxQuery }],
+        serializerSettings: { includeNulls: true },
+    });
+
+    const res = await httpsRequest({
+        hostname: 'api.powerbi.com',
+        path: `/v1.0/myorg/groups/${wsId}/datasets/${dsId}/executeQueries`,
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + accessToken,
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(bodyStr),
+        },
+    }, bodyStr);
+
+    if (res.statusCode !== 200) { console.error(`  ERROR ${label}: HTTP ${res.statusCode}`); return []; }
+    const data = JSON.parse(res.body);
+    if (data.error) { console.error(`  ERROR ${label}: ${JSON.stringify(data.error).substring(0, 300)}`); return []; }
+    const rows = (data.results && data.results[0] && data.results[0].tables && data.results[0].tables[0] && data.results[0].tables[0].rows) || [];
+    const cleaned = rows.map(row => {
+        const obj = {};
+        for (const [key, val] of Object.entries(row)) {
+            const match = key.match(/\[(.+)\]$/);
+            obj[match ? match[1] : key] = val;
+        }
+        return obj;
+    });
+    console.log(`  ${label}: ${cleaned.length} rows`);
+    return cleaned;
+}
+
 async function executeDaxQuery(accessToken, daxQuery, label) {
     console.log(`  Querying: ${label}...`);
     const bodyStr = JSON.stringify({
@@ -343,8 +381,8 @@ async function main() {
     // Pedidos per company per month (churn + period filters + payment)
     const daxPedidosCompanyMonthly = `EVALUATE SUMMARIZECOLUMNS('Merged Pedidos'[ID Empresa], 'Merged Pedidos'[Data Criacao].[Year], 'Merged Pedidos'[Data Criacao].[MonthNo], "Qtd", COUNTROWS('Merged Pedidos'), "Pagos", CALCULATE(COUNTROWS('Merged Pedidos'), 'Merged Pedidos'[Pago]=TRUE()), "Cancelados", CALCULATE(COUNTROWS('Merged Pedidos'), 'Merged Pedidos'[Cancelado]=TRUE()), "Pendentes", CALCULATE(COUNTROWS('Merged Pedidos'), 'Merged Pedidos'[Pendente]=TRUE()), "Val", SUM('Merged Pedidos'[Total]), "ValPagos", CALCULATE(SUM('Merged Pedidos'[Total]), 'Merged Pedidos'[Pago]=TRUE()), "TC", CALCULATE(COUNTROWS('Merged Pedidos'), NOT(ISBLANK('Merged Pedidos'[docs.payment.method])) && ${filtroCartao}), "TP", CALCULATE(COUNTROWS('Merged Pedidos'), NOT(ISBLANK('Merged Pedidos'[docs.payment.method])) && ${filtroPix}), "VC", CALCULATE(SUM('Merged Pedidos'[Total]), NOT(ISBLANK('Merged Pedidos'[docs.payment.method])) && ${filtroCartao}), "VP", CALCULATE(SUM('Merged Pedidos'[Total]), NOT(ISBLANK('Merged Pedidos'[docs.payment.method])) && ${filtroPix}))`;
 
-    // Run all queries in parallel
-    const [cadastrosRows, configRows, marcasRows, productRows, rankingsRows, pedidosCompanyRows, pedidosMonthlyRows, pedidosCompanyMonthlyRows] = await Promise.all([
+    // Run all queries in parallel (including VestiPago companies from separate dataset)
+    const [cadastrosRows, configRows, marcasRows, productRows, rankingsRows, pedidosCompanyRows, pedidosMonthlyRows, pedidosCompanyMonthlyRows, vestiPagoRows] = await Promise.all([
         executeDaxQuery(accessToken, daxCadastros, 'Cadastros Empresas'),
         executeDaxQuery(accessToken, daxConfig, 'Config Empresas'),
         executeDaxQuery(accessToken, daxMarcas, 'Marcas e Planos'),
@@ -353,7 +391,13 @@ async function main() {
         executeDaxQuery(accessToken, daxPedidosPerCompany, 'Pedidos per Company'),
         executeDaxQuery(accessToken, daxPedidosMonthly, 'Pedidos Monthly'),
         executeDaxQuery(accessToken, daxPedidosCompanyMonthly, 'Pedidos Company Monthly'),
+        executeDaxQueryOn(accessToken, VP_WORKSPACE_ID, VP_DATASET_ID, `EVALUATE SELECTCOLUMNS(Companies, "companyId", Companies[data.companyId])`, 'VestiPago Companies'),
     ]);
+
+    // Build VestiPago set
+    const vestiPagoSet = new Set();
+    vestiPagoRows.forEach(r => { if (r.companyId) vestiPagoSet.add(r.companyId); });
+    console.log('  VestiPago companies: ' + vestiPagoSet.size);
 
     // ---------- 3. Fetch HubSpot Oráculo tickets ----------
     console.log('\nFetching HubSpot...');
@@ -672,7 +716,7 @@ async function main() {
             churnScore = Math.min(churnScore, 100);
             const churnRisco = churnScore >= 60 ? 'Alto' : churnScore >= 30 ? 'Médio' : 'Baixo';
 
-            const temVestiPago = e.transCartao > 0 || e.transPix > 0;
+            const temVestiPago = vestiPagoSet.has(e.id);
 
             return {
                 i: idx,
