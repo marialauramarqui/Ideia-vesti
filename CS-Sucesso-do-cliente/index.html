@@ -204,7 +204,7 @@
     <div class="filter-divider"></div>
     <div class="filter-group">
         <span class="filter-label">Período Pedidos</span>
-        <div class="filter-date-row"><input type="date" id="fPedDe" class="filter-date"><span>a</span><input type="date" id="fPedAte" class="filter-date"></div>
+        <div class="filter-date-row"><input type="month" id="fPedDe" class="filter-date"><span>a</span><input type="month" id="fPedAte" class="filter-date"></div>
     </div>
     <input type="hidden" id="fLinkDe"><input type="hidden" id="fLinkAte">
     <input type="hidden" id="fCliqDe"><input type="hidden" id="fCliqAte">
@@ -431,10 +431,8 @@ function clearFilters(){
 /* ========== DATE HELPERS ========== */
 function monthInRange(ym,de,ate){
     if(!de&&!ate)return true;
-    const deMes=de?de.substring(0,7):'';
-    const ateMes=ate?ate.substring(0,7):'';
-    if(deMes&&ym<deMes)return false;
-    if(ateMes&&ym>ateMes)return false;
+    if(de&&ym<de)return false;
+    if(ate&&ym>ate)return false;
     return true;
 }
 
