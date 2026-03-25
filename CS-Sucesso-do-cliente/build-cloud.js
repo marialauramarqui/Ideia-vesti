@@ -428,6 +428,8 @@ async function main() {
     }
 
     // 5c. Pedidos per company (from DAX aggregated query)
+    // Cap: ticket médio máximo razoável = R$ 500.000 por pedido (acima disso é dado corrompido)
+    const MAX_TICKET = 500000;
     for (const row of pedidosCompanyRows) {
         const empresaId = row['ID Empresa'];
         const emp = empresasMap[empresaId];
@@ -440,6 +442,14 @@ async function main() {
         emp.valTotal = parseFloat(row['ValTotal']) || 0;
         emp.valPedidosPagos = parseFloat(row['ValPagos']) || 0;
         emp.valPedidosCancelados = parseFloat(row['ValCancelados']) || 0;
+
+        // Filtrar outliers: se ticket médio > MAX_TICKET, zerar valores (dado corrompido)
+        if (emp.pedidos > 0 && emp.valTotal / emp.pedidos > MAX_TICKET) {
+            console.log('  WARN: Outlier detectado - ' + (emp.nomeFantasia || emp.nomeDominio) + ' (ticket médio R$ ' + Math.round(emp.valTotal / emp.pedidos) + ')');
+            emp.valTotal = 0;
+            emp.valPedidosPagos = 0;
+            emp.valPedidosCancelados = 0;
+        }
         emp.transCartao = parseInt(row['TransCartao']) || 0;
         emp.transPix = parseInt(row['TransPix']) || 0;
         emp.transTotal = emp.pedidos;
@@ -486,17 +496,22 @@ async function main() {
         if (!empId || !year || !month) continue;
         const mesKey = String(year) + '-' + String(month).padStart(2, '0');
         if (!pedidosCompanyMonth[empId]) pedidosCompanyMonth[empId] = {};
+        const qtd = parseInt(row['Qtd']) || 0;
+        const val = parseFloat(row['Val']) || 0;
+        // Filtrar outliers mensais
+        const valFinal = (qtd > 0 && val / qtd > MAX_TICKET) ? 0 : val;
+        const valPagos = (qtd > 0 && val / qtd > MAX_TICKET) ? 0 : (parseFloat(row['ValPagos']) || 0);
         pedidosCompanyMonth[empId][mesKey] = {
-            qtd: parseInt(row['Qtd']) || 0,
+            qtd,
             pagos: parseInt(row['Pagos']) || 0,
             cancelados: parseInt(row['Cancelados']) || 0,
             pendentes: parseInt(row['Pendentes']) || 0,
-            val: parseFloat(row['Val']) || 0,
-            valPagos: parseFloat(row['ValPagos']) || 0,
+            val: valFinal,
+            valPagos,
             tc: parseInt(row['TC']) || 0,
             tp: parseInt(row['TP']) || 0,
-            vc: parseFloat(row['VC']) || 0,
-            vp: parseFloat(row['VP']) || 0,
+            vc: (qtd > 0 && val / qtd > MAX_TICKET) ? 0 : (parseFloat(row['VC']) || 0),
+            vp: (qtd > 0 && val / qtd > MAX_TICKET) ? 0 : (parseFloat(row['VP']) || 0),
         };
     }
     console.log('  Company monthly data: ' + Object.keys(pedidosCompanyMonth).length + ' companies');
@@ -657,6 +672,8 @@ async function main() {
             churnScore = Math.min(churnScore, 100);
             const churnRisco = churnScore >= 60 ? 'Alto' : churnScore >= 30 ? 'Médio' : 'Baixo';
 
+            const temVestiPago = e.transCartao > 0 || e.transPix > 0;
+
             return {
                 i: idx,
                 nome,
@@ -664,6 +681,7 @@ async function main() {
                 cartao: e.cartaoImpl ? 'Sim' : 'Não',
                 pix: e.pixImpl ? 'Sim' : 'Não',
                 cnpj: e.cnpj,
+                temVestiPago,
                 transCartao: e.transCartao,
                 transPix: e.transPix,
                 transTotal: e.transTotal,

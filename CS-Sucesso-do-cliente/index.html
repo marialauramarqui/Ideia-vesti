@@ -618,7 +618,9 @@ function renderTab0(){
     // Chart: Valor Transacionado por Método (doughnut)
     const vC=es.reduce((s,e)=>s+e._valCartao,0);
     const vP=es.reduce((s,e)=>s+e._valPix,0);
-    getOrCreate('chartMetodo',{type:'doughnut',data:{labels:['Cartão','PIX'],datasets:[{data:[vC,vP],backgroundColor:['#7C3AED','#06B6D4'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:darkLegend,tooltip:{...darkTooltip,callbacks:{label:ctx=>ctx.label+': '+fmtC(ctx.raw)}}}}});
+    const semVP=es.filter(e=>!e.temVestiPago).length;
+    const comVP=es.length-semVP;
+    getOrCreate('chartMetodo',{type:'doughnut',data:{labels:['Cartão','PIX','Sem VestiPago'],datasets:[{data:[vC,vP,vC===0&&vP===0?1:0],backgroundColor:['#7C3AED','#06B6D4','#5a5e72'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:darkLegend,tooltip:{...darkTooltip,callbacks:{label:ctx=>ctx.label==='Sem VestiPago'?semVP+' empresas sem VestiPago':ctx.label+': '+fmtC(ctx.raw)}}}}});
 
     // Chart: Evolucao GMV Mensal (responde aos filtros)
     const meses=DADOS.meses||[];
@@ -679,11 +681,13 @@ function renderTab1(){
     const valPag=es.reduce((s,e)=>s+e._valPedidosPagos,0);
     const ticketPago=pagos>0?valPag/pagos:0;
 
+    const semVP1=es.filter(e=>!e.temVestiPago).length;
     document.getElementById('kpiGrid1').innerHTML=kpiHTML([
-        {icon:'&#128179;',label:'Valor Cartão',value:fmtC(vC)},
-        {icon:'&#128178;',label:'Valor PIX',value:fmtC(vP)},
-        {icon:'&#128176;',label:'Valor Total VestiPago',value:fmtC(vT)},
+        {icon:'&#128179;',label:'Valor Cartão',value:vC>0?fmtC(vC):'Não tem VestiPago'},
+        {icon:'&#128178;',label:'Valor PIX',value:vP>0?fmtC(vP):'Não tem VestiPago'},
+        {icon:'&#128176;',label:'Valor Total VestiPago',value:vT>0?fmtC(vT):'Não tem VestiPago'},
         {icon:'&#127915;',label:'Ticket Médio Pago',value:fmtC(ticketPago)},
+        {icon:'&#10071;',label:'Sem VestiPago',value:fmtN(semVP1)+' empresas',color:'var(--accent-red)'},
     ]);
 
     // Top 10 por valor (horizontal bar)
