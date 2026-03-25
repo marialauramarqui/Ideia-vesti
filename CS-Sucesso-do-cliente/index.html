@@ -241,6 +241,12 @@
     <div class="tab-content active" id="tab0">
         <div class="kpi-grid" id="kpiGrid0"></div>
         <div class="charts-grid">
+            <div class="chart-card full-width">
+                <div class="chart-header"><div><div class="chart-title">Pedidos - Últimos 6 Meses</div></div><span class="chart-badge badge-green">Evolução</span></div>
+                <div class="chart-wrapper tall"><canvas id="chartPed6m"></canvas></div>
+            </div>
+        </div>
+        <div class="charts-grid">
             <div class="chart-card">
                 <div class="chart-header"><div><div class="chart-title">Valor Transacionado por Método</div></div><span class="chart-badge badge-blue">Distribuição</span></div>
                 <div class="chart-wrapper"><canvas id="chartMetodo"></canvas></div>
@@ -622,6 +628,32 @@ function renderTab0(){
         {icon:'&#128181;',label:'Empresas c/ Mensalidade',value:fmtN(comMensal)},
         {icon:'&#9888;',label:'Risco Alto Churn',value:fmtN(riscoAlto),color:'var(--danger)'},
     ]);
+
+    // Chart: Pedidos - Últimos 6 Meses (responde aos filtros)
+    const allMeses=DADOS.meses||[];
+    const last6=allMeses.slice(-6);
+    const isF=es.length<DADOS.empresas.length;
+    const ped6=last6.map(m=>{
+        if(isF){return es.reduce((s,e)=>{const md=e.m&&e.m[m];return s+(md?md[0]:0);},0);}
+        const mm=DADOS.mensal.find(x=>x.mes===m);return mm?mm.total||0:0;
+    });
+    const pag6=last6.map(m=>{
+        if(isF){return es.reduce((s,e)=>{const md=e.m&&e.m[m];return s+(md?md[1]:0);},0);}
+        const mm=DADOS.mensal.find(x=>x.mes===m);return mm?mm.pagos||0:0;
+    });
+    const canc6=last6.map(m=>{
+        if(isF){return es.reduce((s,e)=>{const md=e.m&&e.m[m];return s+(md?md[2]:0);},0);}
+        const mm=DADOS.mensal.find(x=>x.mes===m);return mm?mm.cancelados||0:0;
+    });
+    const pend6=last6.map(m=>{
+        if(isF){return es.reduce((s,e)=>{const md=e.m&&e.m[m];return s+(md?md[3]:0);},0);}
+        const mm=DADOS.mensal.find(x=>x.mes===m);return mm?mm.pendentes||0:0;
+    });
+    getOrCreate('chartPed6m',{type:'bar',data:{labels:last6.map(m=>m.substring(5)+'/'+m.substring(2,4)),datasets:[
+        {label:'Pagos',data:pag6,backgroundColor:'rgba(16,185,129,0.8)',borderRadius:4},
+        {label:'Pendentes',data:pend6,backgroundColor:'rgba(245,158,11,0.8)',borderRadius:4},
+        {label:'Cancelados',data:canc6,backgroundColor:'rgba(239,68,68,0.7)',borderRadius:4},
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:darkLegend,tooltip:{...darkTooltip,callbacks:{footer:items=>{const t=items.reduce((s,i)=>s+i.raw,0);return'Total: '+fmtN(t);}}}},scales:{x:{stacked:true,ticks:darkTick,grid:darkGrid},y:{stacked:true,ticks:darkTick,grid:darkGrid}}}});
 
     // Chart: Valor Transacionado por Método (doughnut)
     const vC=es.reduce((s,e)=>s+e._valCartao,0);
