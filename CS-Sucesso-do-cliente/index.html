@@ -390,7 +390,15 @@ document.addEventListener('DOMContentLoaded',()=>{
     applyFilters();
     document.querySelectorAll('.filter-select,.filter-date,.filter-input').forEach(el=>el.addEventListener('change',()=>{tablePage=1;applyFilters();}));
     document.getElementById('fAnjo').addEventListener('change',()=>{updateEmpresaDatalist();});
-    document.getElementById('fEmpresa').addEventListener('input',()=>{tablePage=1;applyFilters();});
+    document.getElementById('fEmpresa').addEventListener('input',function(){
+        const v=this.value.trim();
+        // Se colou um Company ID, resolve para o nome
+        if(v.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)){
+            const emp=DADOS.empresas.find(e=>e.id&&e.id.toLowerCase()===v.toLowerCase());
+            if(emp){this.value=emp.nome;}
+        }
+        tablePage=1;applyFilters();
+    });
     document.getElementById('tableSearch').addEventListener('input',()=>{tablePage=1;renderTable();});
 });
 
@@ -416,10 +424,7 @@ function updateEmpresaDatalist(){
     dl.innerHTML='';
     const fA=document.getElementById('fAnjo').value;
     const empresas=fA?DADOS.empresas.filter(e=>e.anjo===fA):DADOS.empresas;
-    empresas.forEach(e=>{
-        const o1=document.createElement('option');o1.value=e.nome;dl.appendChild(o1);
-        if(e.id){const o2=document.createElement('option');o2.value=e.id;o2.label=e.nome;dl.appendChild(o2);}
-    });
+    empresas.forEach(e=>{const o=document.createElement('option');o.value=e.nome;dl.appendChild(o);});
 }
 
 function clearFilters(){
