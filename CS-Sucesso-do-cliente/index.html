@@ -431,9 +431,10 @@ function clearFilters(){
 /* ========== DATE HELPERS ========== */
 function monthInRange(ym,de,ate){
     if(!de&&!ate)return true;
-    const d=ym+'-01';
-    if(de&&d<de)return false;
-    if(ate&&d>ate)return false;
+    const deMes=de?de.substring(0,7):'';
+    const ateMes=ate?ate.substring(0,7):'';
+    if(deMes&&ym<deMes)return false;
+    if(ateMes&&ym>ateMes)return false;
     return true;
 }
 
