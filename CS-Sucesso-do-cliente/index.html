@@ -602,6 +602,8 @@ function renderTab0(){
     const cliq=es.reduce((s,e)=>s+e._cliques,0);
     const ticket=pagos>0?valPag/pagos:0;
     const canc=es.reduce((s,e)=>s+e._pedidosCancelados,0);
+    const naoPagos=es.reduce((s,e)=>s+e._pedidosPendentes,0);
+    const valNaoPagos=es.reduce((s,e)=>s+e._valPedidosPendentes,0);
     const comMensal=es.filter(e=>e.mensalidade&&e.mensalidade.trim()!=='').length;
     const riscoAlto=es.filter(e=>e.churnRisco==='Alto').length;
 
@@ -610,6 +612,8 @@ function renderTab0(){
         {icon:'&#128230;',label:'Total Pedidos',value:fmtN(ped)},
         {icon:'&#9989;',label:'Pedidos Pagos',value:fmtN(pagos)},
         {icon:'&#128178;',label:'Valor Pedidos Pagos',value:fmtC(valPag)},
+        {icon:'&#9888;&#65039;',label:'Pedidos Não Pagos',value:fmtN(naoPagos),color:'var(--warning)'},
+        {icon:'&#128184;',label:'Valor Não Pago',value:fmtC(valNaoPagos),color:'var(--warning)'},
         {icon:'&#128279;',label:'Links Enviados',value:fmtN(links)},
         {icon:'&#128065;',label:'Cliques nos Links',value:fmtN(cliq)},
         {icon:'&#127915;',label:'Ticket Médio',value:fmtC(ticket)},
