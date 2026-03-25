@@ -2,8 +2,8 @@ name: Atualizar Dashboard CS diariamente
 
 on:
   schedule:
-    # 4:00am horário de Brasília (UTC-3) = 07:00 UTC
-    - cron: '0 7 * * *'
+    # 4:30am horário de Brasília (UTC-3) = 07:30 UTC
+    - cron: '30 7 * * *'
   workflow_dispatch: # permite rodar manualmente
 
 jobs:
