@@ -142,7 +142,7 @@ async function main() {
             "SELECT c.id as customer_id, u.name, u.lastname FROM dbo.ODBC_Costumers c INNER JOIN dbo.ODBC_Users u ON c.user_id = u.id",
             'Customer names (join)'),
         runSQL(sqlToken,
-            "SELECT _id, companyId, customer_name, summary_total, payment_consolidatedPaymentStatus, status_consolidatedOrderStatus, status_canceled_isCanceled, settings_source, created_at FROM dbo.MongoDB_Pedidos_Geral",
+            "SELECT _id, companyId, customer_name, summary_total, payment_consolidatedPaymentStatus, status_consolidatedOrderStatus, status_canceled_isCanceled, settings_source, settings_createdAt FROM dbo.MongoDB_Pedidos_Geral",
             'MongoDB_Pedidos_Geral'),
     ]);
 
@@ -202,7 +202,8 @@ async function main() {
         else if (payStatus === 'REJECTED' || payStatus === 'REFUSED') status = 'C';
         else if (payStatus === 'APPROVED' || payStatus === 'AUTHORIZED') status = 'P';
         else status = 'O';
-        const dt = r.created_at ? new Date(r.created_at).toISOString().substring(0, 10) : '';
+        const dtRaw = r.settings_createdAt || '';
+        const dt = dtRaw ? dtRaw.toString().substring(0, 10) : '';
         const met = (r.settings_source || '').toString().substring(0, 15);
         const pid = (r._id || '').toString();
         const custName = (r.customer_name || '').toString();
