@@ -421,7 +421,7 @@ function populateFilters(){
     const addOpts=(sel,vals)=>{[...vals].sort().forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;sel.appendChild(o);});};
     addOpts(document.getElementById('fAnjo'),anjos);
     addOpts(document.getElementById('fCanal'),canais);
-    addOpts(document.getElementById('fModulo'),modulos);
+    //addOpts(document.getElementById('fModulo'),modulos);
     addOpts(document.getElementById('fEtapaHub'),hubs);
     updateEmpresaDatalist();
 }
@@ -466,7 +466,7 @@ function applyFilters(){
     const fCr=document.getElementById('fCartao').value;
     const fPx=document.getElementById('fPix').value;
     const fIn=document.getElementById('fInteg').value;
-    const fMo=document.getElementById('fModulo').value;
+    const fMo='';
     const fAt=document.getElementById('fAtivas').value;
     const fEH=document.getElementById('fEtapaHub').value;
     const fCh=document.getElementById('fChurn').value;
@@ -1013,7 +1013,10 @@ function loadApp(){
     };
     document.head.appendChild(s);
 }
-if(sessionStorage.getItem('auth_cs')==='ok'){loadApp();}
+if(sessionStorage.getItem('auth_cs')==='ok'){
+    if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadApp);}
+    else{loadApp();}
+}
 </script>
 </body>
 </html>
