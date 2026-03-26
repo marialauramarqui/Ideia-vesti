@@ -142,7 +142,7 @@ async function main() {
             "SELECT c.id as customer_id, u.name, u.lastname FROM dbo.ODBC_Costumers c INNER JOIN dbo.ODBC_Users u ON c.user_id = u.id",
             'Customer names (join)'),
         runSQL(sqlToken,
-            "SELECT _id, companyId, customer_name, total, status, statusPayment, payment_method, settings_source, created_at FROM dbo.MongoDB_Pedidos_Geral",
+            "SELECT _id, companyId, customer_name, summary_total, payment_consolidatedPaymentStatus, status_consolidatedOrderStatus, status_canceled_isCanceled, settings_source, created_at FROM dbo.MongoDB_Pedidos_Geral",
             'MongoDB_Pedidos_Geral'),
     ]);
 
@@ -192,21 +192,21 @@ async function main() {
         const empId = r.companyId && empresas[r.companyId] ? r.companyId : null;
         if (!empId) continue;
         if (!pedidosPorEmp[empId]) pedidosPorEmp[empId] = [];
-        const st = (r.status || '').toString().toLowerCase();
-        const sp = (r.statusPayment || '').toString().toUpperCase();
+        const payStatus = (r.payment_consolidatedPaymentStatus || '').toString().toUpperCase();
+        const orderStatus = (r.status_consolidatedOrderStatus || '').toString().toUpperCase();
+        const isCanceled = r.status_canceled_isCanceled === true || r.status_canceled_isCanceled === 'True';
         let status;
-        if (sp.includes('PAGO') || sp === 'AUTORIZADO') status = 'P';
-        else if (sp.includes('CANCEL') || sp === 'REJEITADO') status = 'C';
-        else if (sp.includes('ANALISE') || sp.includes('ANÁLISE') || sp.includes('PEND')) status = 'E';
-        else if (st === 'paid' || st === 'approved') status = 'P';
-        else if (st === 'canceled' || st === 'cancelled' || st === 'rejected') status = 'C';
-        else if (st === 'pending' || st === 'waiting') status = 'E';
+        if (payStatus === 'PAID') status = 'P';
+        else if (isCanceled || orderStatus === 'CANCELED') status = 'C';
+        else if (payStatus === 'PENDING' || payStatus === 'WAITING' || orderStatus === 'PENDING') status = 'E';
+        else if (payStatus === 'REJECTED' || payStatus === 'REFUSED') status = 'C';
+        else if (payStatus === 'APPROVED' || payStatus === 'AUTHORIZED') status = 'P';
         else status = 'O';
         const dt = r.created_at ? new Date(r.created_at).toISOString().substring(0, 10) : '';
-        const met = (r.payment_method || r.settings_source || '').toString().substring(0, 15);
+        const met = (r.settings_source || '').toString().substring(0, 15);
         const pid = (r._id || '').toString();
         const custName = (r.customer_name || '').toString();
-        pedidosPorEmp[empId].push([dt, Math.round((parseFloat(r.total) || 0) * 100) / 100, status, met, pid, custName]);
+        pedidosPorEmp[empId].push([dt, Math.round((parseFloat(r.summary_total) || 0) * 100) / 100, status, met, pid, custName]);
         if (pid) seenIds.add(pid);
         countMongo++;
     }
