@@ -132,7 +132,7 @@ async function main() {
 
     // --- 2. SQL queries (Lakehouse historical) ---
     console.log('\nFetching from VestiLake SQL...');
-    const [quotesRows, anteriorRows, customersRows] = await Promise.all([
+    const [quotesRows, anteriorRows, customersRows, mongoPedidosNames] = await Promise.all([
         runSQL(sqlToken,
             "SELECT id, company_id, domain_id, customer_id, total_price, created_at, status_payment, status, app FROM dbo.ODBC_Quotes",
             'ODBC_Quotes'),
@@ -142,6 +142,9 @@ async function main() {
         runSQL(sqlToken,
             "SELECT c.id as customer_id, u.name, u.lastname FROM dbo.ODBC_Costumers c INNER JOIN dbo.ODBC_Users u ON c.user_id = u.id",
             'Customer names (join)'),
+        runSQL(sqlToken,
+            "SELECT _id, customer_name FROM dbo.MongoDB_Pedidos_Geral WHERE customer_name IS NOT NULL",
+            'MongoDB customer names'),
     ]);
 
     // --- 3. Build empresas ---
@@ -154,7 +157,14 @@ async function main() {
             if (fullName) customerNames[r.customer_id] = fullName;
         }
     }
-    console.log('  Customer names loaded: ' + Object.keys(customerNames).length);
+    console.log('  Customer names (ODBC): ' + Object.keys(customerNames).length);
+
+    // MongoDB pedidos → customer_name (para Merged Pedidos 2025+)
+    const mongoNames = {};
+    for (const r of mongoPedidosNames) {
+        if (r._id && r.customer_name) mongoNames[r._id] = r.customer_name;
+    }
+    console.log('  Customer names (MongoDB): ' + Object.keys(mongoNames).length);
 
     const empresas = {};
     const empresasByDom = {}; // domain_id -> empresa id
@@ -191,8 +201,8 @@ async function main() {
         const dt = (r['Dt'] || '').toString().substring(0, 10);
         const met = (r['Mt'] || '').toString().substring(0, 15);
         const pid = (r['Pid'] || '').toString().substring(0, 24);
-        const dom = (r['Dom'] || '').toString();
-        pedidosPorEmp[empId].push([dt, Math.round((parseFloat(r['V']) || 0) * 100) / 100, status, met, pid, dom]);
+        const custName = pid ? (mongoNames[pid] || '') : '';
+        pedidosPorEmp[empId].push([dt, Math.round((parseFloat(r['V']) || 0) * 100) / 100, status, met, pid, custName]);
         countMerged++;
     }
     console.log('  Merged Pedidos processed: ' + countMerged);
