@@ -186,8 +186,7 @@ async function main() {
 
     // 4a. MongoDB_Pedidos_Geral (pedidos recentes com customer_name - preenche gap 2023-2026)
     // Format: [dt, val, status, metodo, pedidoId, nomeCliente]
-    const seenKeys = new Set(); // track composite key to avoid duplicates
-    const orderLookup = {}; // companyId+date+val -> {orderNum, custName} (for ODBC_Quotes)
+    const orderLookup = {}; // companyId+date+val -> [{orderNum, custName}] (for ODBC_Quotes)
     let countMongo = 0;
     for (const r of mongoPedidosNames) {
         const empId = r.companyId && empresas[r.companyId] ? r.companyId : null;
@@ -211,10 +210,12 @@ async function main() {
         const pid = (r._id || '').toString();
         const val = Math.round((parseFloat(r.summary_total) || 0) * 100) / 100;
         pedidosPorEmp[empId].push([dt, val, status, met, orderNum, custName]);
-        // Build composite key for dedup and lookup
-        const key = empId + '|' + dt + '|' + val;
-        seenKeys.add(key);
-        if (orderNum || custName) orderLookup[key] = { orderNum, custName };
+        // Build lookup for ODBC_Quotes matching
+        if (orderNum || custName) {
+            const key = empId + '|' + dt + '|' + val;
+            if (!orderLookup[key]) orderLookup[key] = [];
+            orderLookup[key].push({ orderNum, custName });
+        }
         countMongo++;
     }
     console.log('  MongoDB_Pedidos_Geral processed: ' + countMongo);
@@ -246,13 +247,16 @@ async function main() {
         const dt = r.created_at ? new Date(r.created_at).toISOString().substring(0, 10) : '';
         const val = Math.round((parseFloat(r.total_price) || 0) * 100) / 100;
         const key = empId + '|' + dt + '|' + val;
-        if (seenKeys.has(key)) { countSkipped++; continue; }
-        seenKeys.add(key);
+        const lookupList = orderLookup[key];
+        // Skip if already covered by MongoDB (exact match found)
+        if (lookupList && lookupList.length > 0) {
+            const match = lookupList.shift(); // consume one match
+            countSkipped++;
+            continue;
+        }
         const met = (r.app || '').toString().substring(0, 15);
-        const lookup = orderLookup[key];
-        const orderNum = lookup ? lookup.orderNum : '';
-        const custName = lookup ? lookup.custName : (r.customer_id ? (customerNames[r.customer_id] || '') : '');
-        pedidosPorEmp[empId].push([dt, val, status, met, orderNum, custName]);
+        const custName = r.customer_id ? (customerNames[r.customer_id] || '') : '';
+        pedidosPorEmp[empId].push([dt, val, status, met, '', custName]);
         if (!(r.company_id && empresas[r.company_id])) countQuotesDom++;
         countQuotes++;
     }
@@ -267,12 +271,14 @@ async function main() {
         const dt = r.created_at ? new Date(r.created_at).toISOString().substring(0, 10) : '';
         const val = Math.round((parseFloat(r.total_price) || 0) * 100) / 100;
         const key = empId + '|' + dt + '|' + val;
-        if (seenKeys.has(key)) { countSkipped2++; continue; }
-        seenKeys.add(key);
-        const lookup = orderLookup[key];
-        const orderNum = lookup ? lookup.orderNum : '';
-        const custName = lookup ? lookup.custName : (r.customer_id ? (customerNames[r.customer_id] || '') : '');
-        pedidosPorEmp[empId].push([dt, val, 'O', '', orderNum, custName]);
+        const lookupList2 = orderLookup[key];
+        if (lookupList2 && lookupList2.length > 0) {
+            lookupList2.shift();
+            countSkipped2++;
+            continue;
+        }
+        const custName = r.customer_id ? (customerNames[r.customer_id] || '') : '';
+        pedidosPorEmp[empId].push([dt, val, 'O', '', '', custName]);
         if (!(r.company_id && empresas[r.company_id])) countAnteriorDom++;
         countAnterior++;
     }
