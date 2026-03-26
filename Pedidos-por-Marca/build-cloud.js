@@ -187,6 +187,7 @@ async function main() {
     // 4a. MongoDB_Pedidos_Geral (pedidos recentes com customer_name - preenche gap 2023-2026)
     // Format: [dt, val, status, metodo, pedidoId, nomeCliente]
     const seenIds = new Set(); // track _id to avoid duplicates with ODBC_Quotes
+    const orderNumberMap = {}; // _id -> orderNumber (to use in ODBC_Quotes fallback)
     let countMongo = 0;
     for (const r of mongoPedidosNames) {
         const empId = r.companyId && empresas[r.companyId] ? r.companyId : null;
@@ -209,7 +210,7 @@ async function main() {
         const custName = (r.customer_name || '').toString();
         const pid = (r._id || '').toString();
         pedidosPorEmp[empId].push([dt, Math.round((parseFloat(r.summary_total) || 0) * 100) / 100, status, met, orderNum, custName]);
-        if (pid) seenIds.add(pid);
+        if (pid) { seenIds.add(pid); if (orderNum) orderNumberMap[pid] = orderNum; }
         if (orderNum) seenIds.add(orderNum);
         countMongo++;
     }
@@ -242,9 +243,10 @@ async function main() {
         else status = 'O';
         const dt = r.created_at ? new Date(r.created_at).toISOString().substring(0, 10) : '';
         const met = (r.app || '').toString().substring(0, 15);
-        const pid = (r.id || '').toString().substring(0, 36);
+        const rawId = (r.id || '').toString();
+        const orderNum = orderNumberMap[rawId] || '';
         const custName = r.customer_id ? (customerNames[r.customer_id] || '') : '';
-        pedidosPorEmp[empId].push([dt, Math.round((parseFloat(r.total_price) || 0) * 100) / 100, status, met, pid, custName]);
+        pedidosPorEmp[empId].push([dt, Math.round((parseFloat(r.total_price) || 0) * 100) / 100, status, met, orderNum, custName]);
         if (!(r.company_id && empresas[r.company_id])) countQuotesDom++;
         countQuotes++;
     }
@@ -258,9 +260,10 @@ async function main() {
         if (!empId) continue;
         if (!pedidosPorEmp[empId]) pedidosPorEmp[empId] = [];
         const dt = r.created_at ? new Date(r.created_at).toISOString().substring(0, 10) : '';
-        const pid = (r.id || '').toString().substring(0, 36);
+        const rawId = (r.id || '').toString();
+        const orderNum = orderNumberMap[rawId] || '';
         const custName = r.customer_id ? (customerNames[r.customer_id] || '') : '';
-        pedidosPorEmp[empId].push([dt, Math.round((parseFloat(r.total_price) || 0) * 100) / 100, 'O', '', pid, custName]);
+        pedidosPorEmp[empId].push([dt, Math.round((parseFloat(r.total_price) || 0) * 100) / 100, 'O', '', orderNum, custName]);
         if (!(r.company_id && empresas[r.company_id])) countAnteriorDom++;
         countAnterior++;
     }
