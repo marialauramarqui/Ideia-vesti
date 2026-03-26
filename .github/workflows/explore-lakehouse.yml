@@ -11,6 +11,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Install tedious
+        run: npm install tedious
       - name: Explorar ODBC_Quotes
         env:
           FABRIC_REFRESH_TOKEN: ${{ secrets.FABRIC_REFRESH_TOKEN }}
