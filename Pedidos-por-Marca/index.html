@@ -190,6 +190,7 @@ function renderPedidos(){
         {l:'Pendentes',v:fmtN(pend.length),c:'#F59E0B'},
         {l:'Valor Total',v:fmtC(valT),c:'#7C3AED'},
         {l:'Valor Pagos',v:fmtC(valP),c:'#10B981'},
+        {l:'Sem Status',v:fmtN(currentPedidos.filter(p=>p[2]==='O').length),c:'#8b8fa3'},
         {l:'Pedido Mais Antigo',v:currentPedidos.length>0?formatDate(currentPedidos[currentPedidos.length-1][0]):'-',c:'#8b8fa3'},
     ].map(k=>'<div class="kpi"><div class="kpi-label">'+k.l+'</div><div class="kpi-val" style="color:'+k.c+'">'+k.v+'</div></div>').join('');
 
