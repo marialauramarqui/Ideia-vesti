@@ -1,17 +1,23 @@
 /**
- * Cloud build for Pedidos por Marca - fetches from Fabric DAX API.
+ * Cloud build for Pedidos por Marca - fetches from Fabric DAX API + Lakehouse SQL.
+ * Combines: Merged Pedidos (2025+) + ODBC_Quotes + OBDC_Quotes_Anterior2023 (historical)
  * Required env vars: FABRIC_REFRESH_TOKEN, FABRIC_TENANT_ID
  */
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const querystring = require('querystring');
+const { Connection, Request } = require('tedious');
 
 const DIR = __dirname;
 const WORKSPACE_ID = 'aced753a-0f0e-4bcf-9264-72f6496cf2cf';
 const DATASET_ID = 'e6c74524-e355-4447-9eb4-baae76b84dc4';
 const FABRIC_REFRESH_TOKEN = process.env.FABRIC_REFRESH_TOKEN || '';
 const FABRIC_TENANT_ID = process.env.FABRIC_TENANT_ID || '';
+
+// VestiLake SQL endpoint
+const SQL_SERVER = '7sowj2vsfd6efgf3phzgjfmvaq-nrdsskmspnteherwztit766zc4.datawarehouse.fabric.microsoft.com';
+const DB_NAME = 'VestiHouse';
 
 function httpsRequest(options, body) {
     return new Promise((resolve, reject) => {
@@ -26,25 +32,27 @@ function httpsRequest(options, body) {
     });
 }
 
-async function getAccessToken() {
-    const postBody = querystring.stringify({
-        client_id: '1950a258-227b-4e31-a9cf-717495945fc2',
-        grant_type: 'refresh_token',
-        refresh_token: FABRIC_REFRESH_TOKEN,
-        scope: 'https://analysis.windows.net/powerbi/api/.default offline_access',
-    });
-    const res = await httpsRequest({
-        hostname: 'login.microsoftonline.com',
-        path: '/' + FABRIC_TENANT_ID + '/oauth2/v2.0/token',
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(postBody) },
-    }, postBody);
-    const data = JSON.parse(res.body);
-    if (!data.access_token) throw new Error('Token failed: ' + (data.error_description || ''));
-    if (data.refresh_token) {
-        fs.writeFileSync(path.join(DIR, '..', 'CS-Sucesso-do-cliente', '.new_refresh_token'), data.refresh_token, 'utf-8');
-    }
-    return data.access_token;
+function getToken(scope) {
+    return async function() {
+        const postBody = querystring.stringify({
+            client_id: '1950a258-227b-4e31-a9cf-717495945fc2',
+            grant_type: 'refresh_token',
+            refresh_token: FABRIC_REFRESH_TOKEN,
+            scope: scope + ' offline_access',
+        });
+        const res = await httpsRequest({
+            hostname: 'login.microsoftonline.com',
+            path: '/' + FABRIC_TENANT_ID + '/oauth2/v2.0/token',
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(postBody) },
+        }, postBody);
+        const data = JSON.parse(res.body);
+        if (!data.access_token) throw new Error('Token failed: ' + (data.error_description || ''));
+        if (data.refresh_token) {
+            fs.writeFileSync(path.join(DIR, '..', 'CS-Sucesso-do-cliente', '.new_refresh_token'), data.refresh_token, 'utf-8');
+        }
+        return data.access_token;
+    };
 }
 
 async function daxQuery(token, query, label) {
@@ -72,29 +80,73 @@ async function daxQuery(token, query, label) {
     return cleaned;
 }
 
+function runSQL(token, query, label) {
+    return new Promise((resolve, reject) => {
+        console.log('  ' + label + '...');
+        const config = {
+            server: SQL_SERVER,
+            authentication: { type: 'azure-active-directory-access-token', options: { token } },
+            options: { database: DB_NAME, encrypt: true, port: 1433, requestTimeout: 300000 },
+        };
+        const conn = new Connection(config);
+        const rows = [];
+        conn.on('connect', err => {
+            if (err) { reject(err); return; }
+            const request = new Request(query, (err) => {
+                if (err) reject(err);
+                conn.close();
+            });
+            request.on('row', columns => {
+                const row = {};
+                columns.forEach(col => { row[col.metadata.colName] = col.value; });
+                rows.push(row);
+            });
+            request.on('requestCompleted', () => {
+                console.log('  ' + label + ': ' + rows.length + ' rows');
+                resolve(rows);
+            });
+            conn.execSql(request);
+        });
+        conn.connect();
+    });
+}
+
 async function main() {
-    console.log('=== Pedidos por Marca - Cloud Build ===\n');
+    console.log('=== Pedidos por Marca - Cloud Build (com histórico) ===\n');
 
     if (!FABRIC_REFRESH_TOKEN || !FABRIC_TENANT_ID) throw new Error('FABRIC_REFRESH_TOKEN and FABRIC_TENANT_ID required');
 
-    const token = await getAccessToken();
-    console.log('Authenticated.\n');
+    // Get tokens for both APIs
+    const pbiToken = await getToken('https://analysis.windows.net/powerbi/api/.default')();
+    console.log('PBI token OK.');
+    const sqlToken = await getToken('https://database.windows.net/.default')();
+    console.log('SQL token OK.\n');
 
-    // Queries em paralelo
+    // --- 1. DAX queries (Cadastros, Marcas, Merged Pedidos) ---
+    console.log('Fetching from Power BI DAX...');
     const [cadastros, marcas, pedidos] = await Promise.all([
-        daxQuery(token, "EVALUATE 'Cadastros Empresas'", 'Cadastros'),
-        daxQuery(token, "EVALUATE 'Marcas e Planos'", 'Marcas e Planos'),
-        daxQuery(token, `EVALUATE SELECTCOLUMNS('Merged Pedidos', "EmpId", 'Merged Pedidos'[ID Empresa], "Dt", 'Merged Pedidos'[Data Criacao], "V", 'Merged Pedidos'[Total], "Pg", 'Merged Pedidos'[Pago], "Cn", 'Merged Pedidos'[Cancelado], "Pn", 'Merged Pedidos'[Pendente], "Mt", 'Merged Pedidos'[docs.payment.method])`, 'Pedidos individuais'),
+        daxQuery(pbiToken, "EVALUATE 'Cadastros Empresas'", 'Cadastros'),
+        daxQuery(pbiToken, "EVALUATE 'Marcas e Planos'", 'Marcas e Planos'),
+        daxQuery(pbiToken, `EVALUATE SELECTCOLUMNS('Merged Pedidos', "EmpId", 'Merged Pedidos'[ID Empresa], "Dt", 'Merged Pedidos'[Data Criacao], "V", 'Merged Pedidos'[Total], "Pg", 'Merged Pedidos'[Pago], "Cn", 'Merged Pedidos'[Cancelado], "Pn", 'Merged Pedidos'[Pendente], "Mt", 'Merged Pedidos'[docs.payment.method])`, 'Merged Pedidos'),
     ]);
 
-    // Empresas
+    // --- 2. SQL queries (Lakehouse historical) ---
+    console.log('\nFetching from VestiLake SQL...');
+    const quotesRows = await runSQL(sqlToken,
+        "SELECT company_id, total_price, created_at, status_payment, app FROM dbo.ODBC_Quotes",
+        'ODBC_Quotes');
+    const anteriorRows = await runSQL(sqlToken,
+        "SELECT company_id, total_price, created_at FROM dbo.OBDC_Quotes_Anterior2023",
+        'OBDC_Quotes_Anterior2023');
+
+    // --- 3. Build empresas ---
+    console.log('\nProcessing...');
     const empresas = {};
     for (const r of cadastros) {
         const id = r['Id Empresa']; if (!id) continue;
         empresas[id] = { id, nome: r['Nome Fantasia'] || r['Nome do Dominio'] || '', cnpj: r['CNPJ'] || '', anjo: r['Anjo'] || '', canal: r['Canal de Vendas'] || '' };
     }
 
-    // Marcas by CNPJ
     const marcasByCnpj = {};
     for (const r of marcas) {
         const cnpj = r['CPFCNPJ'] || '';
@@ -107,8 +159,11 @@ async function main() {
         e.plano = m ? m.plano : '';
     }
 
-    // Pedidos agrupados por empresa
+    // --- 4. Build pedidos por empresa ---
     const pedidosPorEmp = {};
+
+    // 4a. Merged Pedidos (current - 2025+)
+    let countMerged = 0;
     for (const r of pedidos) {
         const empId = r['EmpId']; if (!empId || !empresas[empId]) continue;
         if (!pedidosPorEmp[empId]) pedidosPorEmp[empId] = [];
@@ -116,7 +171,34 @@ async function main() {
         const dt = (r['Dt'] || '').toString().substring(0, 10);
         const met = (r['Mt'] || '').toString().substring(0, 15);
         pedidosPorEmp[empId].push([dt, Math.round((parseFloat(r['V']) || 0) * 100) / 100, status, met]);
+        countMerged++;
     }
+    console.log('  Merged Pedidos processed: ' + countMerged);
+
+    // 4b. ODBC_Quotes (historical - up to 2024)
+    let countQuotes = 0;
+    for (const r of quotesRows) {
+        const empId = r.company_id; if (!empId || !empresas[empId]) continue;
+        if (!pedidosPorEmp[empId]) pedidosPorEmp[empId] = [];
+        const sp = (r.status_payment || '').toString();
+        const status = sp.includes('PAGO') ? 'P' : sp.includes('CANCEL') ? 'C' : sp.includes('PEND') ? 'E' : 'O';
+        const dt = r.created_at ? new Date(r.created_at).toISOString().substring(0, 10) : '';
+        const met = (r.app || '').toString().substring(0, 15);
+        pedidosPorEmp[empId].push([dt, Math.round((parseFloat(r.total_price) || 0) * 100) / 100, status, met]);
+        countQuotes++;
+    }
+    console.log('  ODBC_Quotes processed: ' + countQuotes);
+
+    // 4c. OBDC_Quotes_Anterior2023 (oldest)
+    let countAnterior = 0;
+    for (const r of anteriorRows) {
+        const empId = r.company_id; if (!empId || !empresas[empId]) continue;
+        if (!pedidosPorEmp[empId]) pedidosPorEmp[empId] = [];
+        const dt = r.created_at ? new Date(r.created_at).toISOString().substring(0, 10) : '';
+        pedidosPorEmp[empId].push([dt, Math.round((parseFloat(r.total_price) || 0) * 100) / 100, 'O', '']);
+        countAnterior++;
+    }
+    console.log('  OBDC_Quotes_Anterior2023 processed: ' + countAnterior);
 
     // Sort by date desc
     for (const id of Object.keys(pedidosPorEmp)) {
@@ -129,13 +211,12 @@ async function main() {
         .map(e => ({ id: e.id, nome: e.nome, cnpj: e.cnpj, marca: e.marca, plano: e.plano, anjo: e.anjo, canal: e.canal, qtd: pedidosPorEmp[e.id].length }))
         .sort((a, b) => b.qtd - a.qtd);
 
-    // Save dados.js (empresa list only)
+    // Save dados.js
     fs.writeFileSync(path.join(DIR, 'dados.js'), 'const DADOS=' + JSON.stringify({ empresas: empList, gerado: new Date().toISOString() }) + ';', 'utf-8');
 
     // Save chunks
     const dataDir = path.join(DIR, 'data');
     if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
-    // Clean old chunks
     for (const f of fs.readdirSync(dataDir)) { if (f.startsWith('chunk_')) fs.unlinkSync(path.join(dataDir, f)); }
 
     const BATCH = 50;
@@ -155,7 +236,11 @@ async function main() {
     empIds.forEach((id, i) => { chunkMap[id] = Math.floor(i / BATCH); });
     fs.writeFileSync(path.join(DIR, 'chunks.js'), 'const CHUNKS=' + JSON.stringify(chunkMap) + ';', 'utf-8');
 
-    console.log('\nEmpresas: ' + empList.length);
+    console.log('\n=== RESULTADO ===');
+    console.log('Empresas: ' + empList.length);
+    console.log('Pedidos Merged: ' + countMerged);
+    console.log('Pedidos ODBC_Quotes: ' + countQuotes);
+    console.log('Pedidos Anterior2023: ' + countAnterior);
     console.log('Total pedidos: ' + totalPed);
     console.log('Chunks: ' + Math.ceil(empIds.length / BATCH));
     console.log('Done.');
