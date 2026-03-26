@@ -780,6 +780,7 @@ async function main() {
             return {
                 i: idx,
                 id: e.id,
+                idDominio: e.idDominio,
                 nome,
                 canal: e.canal,
                 cartao: e.cartaoImpl ? 'Sim' : 'Não',
