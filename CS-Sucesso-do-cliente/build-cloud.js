@@ -370,6 +370,14 @@ async function main() {
     const daxProduct = "EVALUATE SUMMARIZECOLUMNS('Product'[Cadastros Users ( Vendedores ).CompanyId], \"LinksEnviados\", COUNTROWS('Product'))";
     const daxRankings = "EVALUATE SUMMARIZECOLUMNS('Rankings'[Cadastros Users ( Vendedores ).CompanyId], \"Cliques\", SUM('Rankings'[rankings.shared_links]))";
 
+    // Links e Cliques mensais (global)
+    const daxLinksMonthly = "EVALUATE SUMMARIZECOLUMNS('Product'[product_sent_lists.created_at].[Year], 'Product'[product_sent_lists.created_at].[MonthNo], \"Links\", COUNTROWS('Product'))";
+    const daxCliquesMonthly = "EVALUATE SUMMARIZECOLUMNS('Rankings'[rankings.created_at].[Year], 'Rankings'[rankings.created_at].[MonthNo], \"Cliques\", SUM('Rankings'[rankings.shared_links]))";
+
+    // Links e Cliques mensais por empresa
+    const daxLinksCompanyMonthly = "EVALUATE SUMMARIZECOLUMNS('Product'[Cadastros Users ( Vendedores ).CompanyId], 'Product'[product_sent_lists.created_at].[Year], 'Product'[product_sent_lists.created_at].[MonthNo], \"Links\", COUNTROWS('Product'))";
+    const daxCliquesCompanyMonthly = "EVALUATE SUMMARIZECOLUMNS('Rankings'[Cadastros Users ( Vendedores ).CompanyId], 'Rankings'[rankings.created_at].[Year], 'Rankings'[rankings.created_at].[MonthNo], \"Cliques\", SUM('Rankings'[rankings.shared_links]))";
+
     // Filtros de pagamento: captura todas as variações de cartão e pix
     const filtroCartao = `(CONTAINSSTRING('Merged Pedidos'[docs.payment.method], "credit") || CONTAINSSTRING('Merged Pedidos'[docs.payment.method], "cartão") || CONTAINSSTRING('Merged Pedidos'[docs.payment.method], "cartao") || CONTAINSSTRING('Merged Pedidos'[docs.payment.method], "crédito") || CONTAINSSTRING('Merged Pedidos'[docs.payment.method], "credito") || CONTAINSSTRING('Merged Pedidos'[docs.payment.method], "débito") || CONTAINSSTRING('Merged Pedidos'[docs.payment.method], "debito"))`;
     const filtroPix = `(CONTAINSSTRING('Merged Pedidos'[docs.payment.method], "pix") || CONTAINSSTRING('Merged Pedidos'[docs.payment.method], "PIX"))`;
@@ -382,7 +390,7 @@ async function main() {
     const daxPedidosCompanyMonthly = `EVALUATE SUMMARIZECOLUMNS('Merged Pedidos'[ID Empresa], 'Merged Pedidos'[Data Criacao].[Year], 'Merged Pedidos'[Data Criacao].[MonthNo], "Qtd", COUNTROWS('Merged Pedidos'), "Pagos", CALCULATE(COUNTROWS('Merged Pedidos'), 'Merged Pedidos'[Pago]=TRUE()), "Cancelados", CALCULATE(COUNTROWS('Merged Pedidos'), 'Merged Pedidos'[Cancelado]=TRUE()), "Pendentes", CALCULATE(COUNTROWS('Merged Pedidos'), 'Merged Pedidos'[Pendente]=TRUE()), "Val", SUM('Merged Pedidos'[Total]), "ValPagos", CALCULATE(SUM('Merged Pedidos'[Total]), 'Merged Pedidos'[Pago]=TRUE()), "TC", CALCULATE(COUNTROWS('Merged Pedidos'), NOT(ISBLANK('Merged Pedidos'[docs.payment.method])) && ${filtroCartao}), "TP", CALCULATE(COUNTROWS('Merged Pedidos'), NOT(ISBLANK('Merged Pedidos'[docs.payment.method])) && ${filtroPix}), "VC", CALCULATE(SUM('Merged Pedidos'[Total]), NOT(ISBLANK('Merged Pedidos'[docs.payment.method])) && ${filtroCartao}), "VP", CALCULATE(SUM('Merged Pedidos'[Total]), NOT(ISBLANK('Merged Pedidos'[docs.payment.method])) && ${filtroPix}))`;
 
     // Run all queries in parallel (including VestiPago companies from separate dataset)
-    const [cadastrosRows, configRows, marcasRows, productRows, rankingsRows, pedidosCompanyRows, pedidosMonthlyRows, pedidosCompanyMonthlyRows, vestiPagoRows] = await Promise.all([
+    const [cadastrosRows, configRows, marcasRows, productRows, rankingsRows, pedidosCompanyRows, pedidosMonthlyRows, pedidosCompanyMonthlyRows, vestiPagoRows, linksMonthlyRows, cliquesMonthlyRows, linksCompanyMonthlyRows, cliquesCompanyMonthlyRows] = await Promise.all([
         executeDaxQuery(accessToken, daxCadastros, 'Cadastros Empresas'),
         executeDaxQuery(accessToken, daxConfig, 'Config Empresas'),
         executeDaxQuery(accessToken, daxMarcas, 'Marcas e Planos'),
@@ -392,6 +400,10 @@ async function main() {
         executeDaxQuery(accessToken, daxPedidosMonthly, 'Pedidos Monthly'),
         executeDaxQuery(accessToken, daxPedidosCompanyMonthly, 'Pedidos Company Monthly'),
         executeDaxQueryOn(accessToken, VP_WORKSPACE_ID, VP_DATASET_ID, `EVALUATE SELECTCOLUMNS(Companies, "companyId", Companies[data.companyId])`, 'VestiPago Companies'),
+        executeDaxQuery(accessToken, daxLinksMonthly, 'Links Monthly'),
+        executeDaxQuery(accessToken, daxCliquesMonthly, 'Cliques Monthly'),
+        executeDaxQuery(accessToken, daxLinksCompanyMonthly, 'Links Company Monthly'),
+        executeDaxQuery(accessToken, daxCliquesCompanyMonthly, 'Cliques Company Monthly'),
     ]);
 
     // Build VestiPago set
@@ -560,6 +572,28 @@ async function main() {
     }
     console.log('  Company monthly data: ' + Object.keys(pedidosCompanyMonth).length + ' companies');
 
+    // Links per company per month
+    const linksCompanyMonth = {};
+    for (const row of linksCompanyMonthlyRows) {
+        const cid = row['Cadastros Users ( Vendedores ).CompanyId'];
+        const year = row['Year']; const month = row['MonthNo'];
+        if (!cid || !year || !month) continue;
+        const mk = String(year) + '-' + String(month).padStart(2, '0');
+        if (!linksCompanyMonth[cid]) linksCompanyMonth[cid] = {};
+        linksCompanyMonth[cid][mk] = parseInt(row['Links']) || 0;
+    }
+
+    // Cliques per company per month
+    const cliquesCompanyMonth = {};
+    for (const row of cliquesCompanyMonthlyRows) {
+        const cid = row['Cadastros Users ( Vendedores ).CompanyId'];
+        const year = row['Year']; const month = row['MonthNo'];
+        if (!cid || !year || !month) continue;
+        const mk = String(year) + '-' + String(month).padStart(2, '0');
+        if (!cliquesCompanyMonth[cid]) cliquesCompanyMonth[cid] = {};
+        cliquesCompanyMonth[cid][mk] = parseInt(row['Cliques']) || 0;
+    }
+
     // ---------- 6. HubSpot fuzzy matching ----------
     console.log('\nMatching Oráculo tickets...');
     const allEmpresas = Object.values(empresasMap).filter(e => e.nomeFantasia || e.nomeDominio);
@@ -606,11 +640,27 @@ async function main() {
     const recentMonths = sortedMonths.slice(-18);
     const allMonths = sortedMonths;
 
+    // Build links/cliques monthly maps
+    const linksMensais = {};
+    for (const row of linksMonthlyRows) {
+        const year = row['Year']; const month = row['MonthNo'];
+        if (!year || !month) continue;
+        const mk = String(year) + '-' + String(month).padStart(2, '0');
+        linksMensais[mk] = parseInt(row['Links']) || 0;
+    }
+    const cliquesMensais = {};
+    for (const row of cliquesMonthlyRows) {
+        const year = row['Year']; const month = row['MonthNo'];
+        if (!year || !month) continue;
+        const mk = String(year) + '-' + String(month).padStart(2, '0');
+        cliquesMensais[mk] = parseInt(row['Cliques']) || 0;
+    }
+
     const monthlyData = recentMonths.map(m => ({
         mes: m,
         ...pedidosMensais[m],
-        links: 0,   // Not available from aggregated DAX query
-        cliques: 0,
+        links: linksMensais[m] || 0,
+        cliques: cliquesMensais[m] || 0,
     }));
 
     // ---------- 8. Build final empresas list ----------
@@ -645,22 +695,31 @@ async function main() {
 
             // Per-company monthly data
             const empMonthly = pedidosCompanyMonth[e.id] || {};
-            const empMonthKeys = Object.keys(empMonthly).sort();
+            const empLinks = linksCompanyMonth[e.id] || {};
+            const empCliques = cliquesCompanyMonth[e.id] || {};
+
+            // Collect all months with any data
+            const allEmpMonths = new Set([...Object.keys(empMonthly), ...Object.keys(empLinks), ...Object.keys(empCliques)]);
+            const empMonthKeys = [...allEmpMonths].sort();
 
             // Build m (sparse monthly data per company)
             const m = {};
             for (const mk of empMonthKeys) {
                 const md = empMonthly[mk];
-                m[mk] = [
-                    md.qtd, md.pagos, md.cancelados, md.pendentes,
-                    Math.round(md.val * 100) / 100,
-                    Math.round(md.valPagos * 100) / 100,
-                    Math.round((md.val - md.valPagos) * 100) / 100,
-                    md.tc, md.tp,
-                    Math.round(md.vc * 100) / 100,
-                    Math.round(md.vp * 100) / 100,
-                    0, 0, // links, cliques (not available per month)
-                ];
+                const lk = empLinks[mk] || 0;
+                const ck = empCliques[mk] || 0;
+                if (md || lk || ck) {
+                    m[mk] = [
+                        md ? md.qtd : 0, md ? md.pagos : 0, md ? md.cancelados : 0, md ? md.pendentes : 0,
+                        md ? Math.round(md.val * 100) / 100 : 0,
+                        md ? Math.round(md.valPagos * 100) / 100 : 0,
+                        md ? Math.round((md.val - md.valPagos) * 100) / 100 : 0,
+                        md ? md.tc : 0, md ? md.tp : 0,
+                        md ? Math.round(md.vc * 100) / 100 : 0,
+                        md ? Math.round(md.vp * 100) / 100 : 0,
+                        lk, ck,
+                    ];
+                }
             }
 
             // Churn prediction using real monthly data
