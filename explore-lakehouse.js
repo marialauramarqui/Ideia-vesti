@@ -6,13 +6,16 @@ async function main(){
     const pb=qs.stringify({client_id:'1950a258-227b-4e31-a9cf-717495945fc2',grant_type:'refresh_token',refresh_token:RT,scope:'https://database.windows.net/.default offline_access'});
     const tr=await req({hostname:'login.microsoftonline.com',path:'/'+TID+'/oauth2/v2.0/token',method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded','Content-Length':Buffer.byteLength(pb)}},pb);
     const token=JSON.parse(tr.body).access_token;
-    // Check date range of ODBC_Quotes
-    const dr=await runSQL(token,"SELECT MIN(created_at) as mn, MAX(created_at) as mx FROM dbo.ODBC_Quotes",'date range');
-    console.log('ODBC_Quotes: from',dr[0].mn,'to',dr[0].mx);
-    // Check 2025+ orders
-    const cnt=await runSQL(token,"SELECT COUNT(*) as cnt FROM dbo.ODBC_Quotes WHERE created_at >= '2025-01-01'",'2025+ count');
-    console.log('2025+ orders in ODBC_Quotes:',cnt[0].cnt);
-    const cnt2=await runSQL(token,"SELECT COUNT(*) as cnt FROM dbo.ODBC_Quotes WHERE created_at >= '2026-01-01'",'2026+ count');
-    console.log('2026+ orders in ODBC_Quotes:',cnt2[0].cnt);
+
+    // Check MongoDB_Pedidos_Geral
+    console.log('=== MongoDB_Pedidos_Geral ===');
+    const cols=await runSQL(token,"SELECT TOP 1 * FROM dbo.MongoDB_Pedidos_Geral",'cols');
+    if(cols[0]) Object.entries(cols[0]).forEach(([k,v])=>console.log('  '+k+' ('+typeof v+') = '+JSON.stringify(v).substring(0,80)));
+
+    const cnt=await runSQL(token,"SELECT COUNT(*) as cnt FROM dbo.MongoDB_Pedidos_Geral",'count');
+    console.log('Total rows:',cnt[0]?cnt[0].cnt:'?');
+
+    const dr=await runSQL(token,"SELECT MIN(created_at) as mn, MAX(created_at) as mx FROM dbo.MongoDB_Pedidos_Geral",'date range');
+    if(dr[0]) console.log('From:',dr[0].mn,'To:',dr[0].mx);
 }
 main().catch(e=>console.error('FATAL:',e));
