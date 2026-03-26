@@ -21,12 +21,18 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Rebuild completo via Fabric + HubSpot
+      - name: Rebuild CS Sucesso do Cliente via Fabric + HubSpot
         env:
           HUBSPOT_TOKEN: ${{ secrets.HUBSPOT_TOKEN }}
           FABRIC_REFRESH_TOKEN: ${{ secrets.FABRIC_REFRESH_TOKEN }}
           FABRIC_TENANT_ID: ${{ secrets.FABRIC_TENANT_ID }}
         run: node CS-Sucesso-do-cliente/build-cloud.js
+
+      - name: Rebuild Pedidos por Marca via Fabric
+        env:
+          FABRIC_REFRESH_TOKEN: ${{ secrets.FABRIC_REFRESH_TOKEN }}
+          FABRIC_TENANT_ID: ${{ secrets.FABRIC_TENANT_ID }}
+        run: node Pedidos-por-Marca/build-cloud.js
 
       - name: Atualizar refresh token se renovado
         if: hashFiles('CS-Sucesso-do-cliente/.new_refresh_token') != ''
@@ -41,13 +47,14 @@ jobs:
       - name: Verificar se houve alteração
         id: check
         run: |
-          git diff --quiet CS-Sucesso-do-cliente/dados.js && echo "changed=false" >> $GITHUB_OUTPUT || echo "changed=true" >> $GITHUB_OUTPUT
+          git add -A
+          git diff --cached --quiet && echo "changed=false" >> $GITHUB_OUTPUT || echo "changed=true" >> $GITHUB_OUTPUT
 
       - name: Commit e push
         if: steps.check.outputs.changed == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add CS-Sucesso-do-cliente/dados.js
+          git add CS-Sucesso-do-cliente/dados.js Pedidos-por-Marca/dados.js Pedidos-por-Marca/chunks.js Pedidos-por-Marca/data/
           git commit -m "Atualização automática completa $(date +'%d/%m/%Y %H:%M')"
           git push
