@@ -210,7 +210,7 @@ function renderPage(){
 
     document.getElementById('tableWrap').innerHTML=show.length===0?'<div class="empty">Nenhum pedido encontrado</div>':
         '<table><thead><tr><th>#</th><th>Data</th><th>Cliente</th><th>N. Pedido</th><th class="num">Valor</th><th>Status</th><th>Método Pgto</th></tr></thead><tbody>'+
-        show.map((p,i)=>'<tr><td style="color:#8b8fa3">'+(start+i+1)+'</td><td>'+formatDate(p[0])+'</td><td>'+(p[5]||'-')+'</td><td style="font-size:11px;color:#8b8fa3">'+(p[4]?p[4].substring(0,12)+'...':'-')+'</td><td class="num">'+fmtC(p[1])+'</td><td class="st-'+p[2]+'">'+stLabel[p[2]]+'</td><td>'+(p[3]||'-')+'</td></tr>').join('')+
+        show.map((p,i)=>'<tr><td style="color:#8b8fa3">'+(start+i+1)+'</td><td>'+formatDate(p[0])+'</td><td>'+(p[5]||'-')+'</td><td style="font-size:12px">'+(p[4]||'-')+'</td><td class="num">'+fmtC(p[1])+'</td><td class="st-'+p[2]+'">'+stLabel[p[2]]+'</td><td>'+(p[3]||'-')+'</td></tr>').join('')+
         '</tbody></table>';
 
     document.getElementById('pageNav').style.display=totalPages>1?'flex':'none';

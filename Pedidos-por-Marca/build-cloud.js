@@ -142,7 +142,7 @@ async function main() {
             "SELECT c.id as customer_id, u.name, u.lastname FROM dbo.ODBC_Costumers c INNER JOIN dbo.ODBC_Users u ON c.user_id = u.id",
             'Customer names (join)'),
         runSQL(sqlToken,
-            "SELECT _id, companyId, customer_name, summary_total, payment_consolidatedPaymentStatus, status_consolidatedOrderStatus, status_canceled_isCanceled, settings_source, settings_createdAt FROM dbo.MongoDB_Pedidos_Geral",
+            "SELECT _id, companyId, customer_name, summary_total, payment_consolidatedPaymentStatus, status_consolidatedOrderStatus, status_canceled_isCanceled, settings_source, settings_createdAt, orderNumber FROM dbo.MongoDB_Pedidos_Geral",
             'MongoDB_Pedidos_Geral'),
     ]);
 
@@ -205,10 +205,12 @@ async function main() {
         const dtRaw = r.settings_createdAt || '';
         const dt = dtRaw ? dtRaw.toString().substring(0, 10) : '';
         const met = (r.settings_source || '').toString().substring(0, 15);
-        const pid = (r._id || '').toString();
+        const orderNum = (r.orderNumber || '').toString();
         const custName = (r.customer_name || '').toString();
-        pedidosPorEmp[empId].push([dt, Math.round((parseFloat(r.summary_total) || 0) * 100) / 100, status, met, pid, custName]);
+        const pid = (r._id || '').toString();
+        pedidosPorEmp[empId].push([dt, Math.round((parseFloat(r.summary_total) || 0) * 100) / 100, status, met, orderNum, custName]);
         if (pid) seenIds.add(pid);
+        if (orderNum) seenIds.add(orderNum);
         countMongo++;
     }
     console.log('  MongoDB_Pedidos_Geral processed: ' + countMongo);
