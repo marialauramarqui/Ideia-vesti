@@ -239,6 +239,25 @@ async function main() {
         }
     });
 
+    // 3b. Filtrar outliers de GMV (ticket médio > R$ 500.000 = dado corrompido)
+    const MAX_TICKET = 500000;
+    for (const emp of Object.values(empresasMap)) {
+        if (emp.pedidos > 0 && emp.valTotal / emp.pedidos > MAX_TICKET) {
+            console.log('  WARN: Outlier detectado - ' + (emp.nomeFantasia || emp.nomeDominio) + ' (ticket médio R$ ' + Math.round(emp.valTotal / emp.pedidos) + ')');
+            emp.valTotal = 0; emp.valPedidosPagos = 0; emp.valPedidosCancelados = 0; emp.valPedidosPendentes = 0;
+            emp.valCartao = 0; emp.valPix = 0;
+        }
+        // Outliers mensais
+        const empM = pedidosMensaisEmp[emp.id];
+        if (empM) {
+            for (const [mes, pm] of Object.entries(empM)) {
+                if (pm.pedidos > 0 && pm.valT / pm.pedidos > MAX_TICKET) {
+                    pm.valT = 0; pm.valPag = 0; pm.valCanc = 0; pm.valPend = 0; pm.vC = 0; pm.vP = 0;
+                }
+            }
+        }
+    }
+
     // 4. Product - count links sent per company AND per company+month
     const linksByCompany = {};
     const linksMensais = {};
@@ -495,6 +514,9 @@ async function main() {
             churnScore = Math.min(churnScore, 100);
             const churnRisco = churnScore >= 60 ? 'Alto' : churnScore >= 30 ? 'Médio' : 'Baixo';
 
+            // VestiPago: empresa tem transações de cartão ou pix
+            const temVestiPago = (e.valCartao + e.valPix) > 0;
+
             return {
                 i: idx,
                 nome,
@@ -502,6 +524,7 @@ async function main() {
                 cartao: e.cartaoImpl ? 'Sim' : 'Não',
                 pix: e.pixImpl ? 'Sim' : 'Não',
                 cnpj: e.cnpj,
+                temVestiPago,
                 transCartao: e.transCartao,
                 transPix: e.transPix,
                 transTotal: e.transTotal,
