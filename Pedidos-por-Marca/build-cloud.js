@@ -140,8 +140,8 @@ async function main() {
             "SELECT id, company_id, domain_id, customer_id, total_price, created_at FROM dbo.OBDC_Quotes_Anterior2023",
             'OBDC_Quotes_Anterior2023'),
         runSQL(sqlToken,
-            "SELECT TOP 1 * FROM dbo.ODBC_Customers",
-            'ODBC_Customers cols'),
+            "SELECT TOP 1 * FROM dbo.ODBC_Costumers",
+            'ODBC_Costumers cols'),
     ]);
 
     // --- 3. Build empresas ---
@@ -158,8 +158,8 @@ async function main() {
         // Now fetch all customers with correct column names
         if (nameCol && idCol) {
             const allCustomers = await runSQL(sqlToken,
-                'SELECT [' + idCol + '], [' + nameCol + '] FROM dbo.ODBC_Customers',
-                'ODBC_Customers full');
+                'SELECT [' + idCol + '], [' + nameCol + '] FROM dbo.ODBC_Costumers',
+                'ODBC_Costumers full');
             for (const r of allCustomers) {
                 if (r[idCol] && r[nameCol]) customerNames[r[idCol]] = r[nameCol];
             }
