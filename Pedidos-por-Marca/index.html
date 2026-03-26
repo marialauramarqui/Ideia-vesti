@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos por Marca | Vesti</title>
+    <script src="dados.js"></script>
+    <script src="chunks.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f1117;color:#e1e4eb;min-height:100vh;}
+        .header{background:linear-gradient(135deg,#1a1d2e,#252840);padding:20px 30px;border-bottom:1px solid #2a2d3e;display:flex;align-items:center;justify-content:space-between;}
+        .header h1{font-size:20px;background:linear-gradient(135deg,#7C3AED,#06B6D4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .header span{color:#8b8fa3;font-size:12px;}
+        .layout{display:flex;height:calc(100vh - 65px);}
+        .sidebar{width:360px;background:#161825;border-right:1px solid #2a2d3e;display:flex;flex-direction:column;flex-shrink:0;}
+        .sidebar-search{padding:12px;border-bottom:1px solid #2a2d3e;}
+        .sidebar-search input{width:100%;background:#1e2035;border:1px solid #2a2d3e;color:#e1e4eb;padding:10px 12px;border-radius:8px;font-size:13px;}
+        .sidebar-search input:focus{outline:none;border-color:#7C3AED;}
+        .sidebar-list{overflow-y:auto;flex:1;}
+        .emp-item{padding:10px 14px;border-bottom:1px solid #1e2035;cursor:pointer;transition:background 0.15s;}
+        .emp-item:hover{background:#1e2035;}
+        .emp-item.active{background:#252840;border-left:3px solid #7C3AED;}
+        .emp-nome{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .emp-info{font-size:11px;color:#8b8fa3;margin-top:2px;display:flex;gap:8px;}
+        .emp-info .marca{color:#06B6D4;} .emp-info .qtd{color:#7C3AED;font-weight:600;}
+        .main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+        .main-header{padding:16px 24px;border-bottom:1px solid #2a2d3e;background:#161825;}
+        .main-header h2{font-size:16px;color:#e1e4eb;}
+        .main-header .sub{font-size:12px;color:#8b8fa3;margin-top:4px;}
+        .kpi-row{display:flex;gap:10px;padding:12px 24px;flex-wrap:wrap;border-bottom:1px solid #2a2d3e;}
+        .kpi{background:#1a1d2e;border:1px solid #2a2d3e;border-radius:8px;padding:10px 14px;min-width:120px;flex:1;}
+        .kpi-label{font-size:10px;color:#8b8fa3;text-transform:uppercase;letter-spacing:0.5px;}
+        .kpi-val{font-size:18px;font-weight:700;margin-top:2px;}
+        .pedidos-controls{padding:10px 24px;display:flex;gap:10px;align-items:center;border-bottom:1px solid #2a2d3e;}
+        .pedidos-controls select,.pedidos-controls input{background:#1e2035;border:1px solid #2a2d3e;color:#e1e4eb;padding:6px 10px;border-radius:6px;font-size:12px;}
+        .export-btn{background:#1a1d2e;border:1px solid #2a2d3e;color:#06B6D4;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;margin-left:auto;}
+        .export-btn:hover{background:#252840;}
+        .table-wrap{flex:1;overflow-y:auto;padding:0 24px 24px;}
+        table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;}
+        th{background:#1a1d2e;padding:8px 10px;text-align:left;font-weight:600;color:#8b8fa3;position:sticky;top:0;white-space:nowrap;border-bottom:2px solid #2a2d3e;cursor:pointer;}
+        th:hover{color:#7C3AED;}
+        td{padding:6px 10px;border-bottom:1px solid #1e2035;white-space:nowrap;}
+        tr:hover td{background:#1e2035;}
+        .num{text-align:right;font-variant-numeric:tabular-nums;}
+        .st-P{color:#10B981;font-weight:600;} .st-C{color:#EF4444;font-weight:600;} .st-E{color:#F59E0B;font-weight:600;} .st-O{color:#8b8fa3;}
+        .empty{text-align:center;padding:60px;color:#8b8fa3;font-size:14px;}
+        .loading{text-align:center;padding:40px;color:#7C3AED;}
+        .page-nav{padding:10px 24px;display:flex;gap:8px;align-items:center;border-top:1px solid #2a2d3e;font-size:12px;color:#8b8fa3;}
+        .page-btn{background:#1e2035;border:1px solid #2a2d3e;color:#e1e4eb;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;}
+        .page-btn:hover{background:#252840;} .page-btn:disabled{opacity:0.3;cursor:default;}
+    </style>
+</head>
+<body>
+<div class="header">
+    <div><h1>Pedidos por Marca</h1><span>Cada pedido individual por empresa/marca</span></div>
+</div>
+<div class="layout">
+    <div class="sidebar">
+        <div class="sidebar-search"><input type="text" id="busca" placeholder="Buscar empresa ou marca..." oninput="filterList()"></div>
+        <div class="sidebar-list" id="sidebarList"></div>
+    </div>
+    <div class="main-area">
+        <div class="main-header" id="mainHeader"><h2>Selecione uma empresa</h2><div class="sub">Clique em uma empresa na lista ao lado para ver os pedidos</div></div>
+        <div class="kpi-row" id="kpis" style="display:none;"></div>
+        <div class="pedidos-controls" id="pedControls" style="display:none;">
+            <select id="fStatus" onchange="renderPedidos()"><option value="">Todos Status</option><option value="P">Pagos</option><option value="C">Cancelados</option><option value="E">Pendentes</option></select>
+            <input type="date" id="fDe" onchange="renderPedidos()" title="Data inicial">
+            <input type="date" id="fAte" onchange="renderPedidos()" title="Data final">
+            <button class="export-btn" onclick="exportCSV()">Exportar CSV</button>
+        </div>
+        <div class="table-wrap" id="tableWrap"><div class="empty">Selecione uma empresa para ver os pedidos</div></div>
+        <div class="page-nav" id="pageNav" style="display:none;">
+            <button class="page-btn" onclick="changePage(-1)" id="btnPrev" disabled>&lt; Anterior</button>
+            <span id="pageInfo"></span>
+            <button class="page-btn" onclick="changePage(1)" id="btnNext">Próxima &gt;</button>
+        </div>
+    </div>
+</div>
+<script>
+const fmtN=v=>(v||0).toLocaleString('pt-BR');
+const fmtC=v=>'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const stLabel={P:'Pago',C:'Cancelado',E:'Pendente',O:'Outro'};
+
+const E=DADOS.empresas;
+let selectedId=null, pedidosCache={}, currentPedidos=[], page=0;
+const PAGE_SIZE=200;
+
+// Sidebar
+function filterList(){
+    const q=(document.getElementById('busca').value||'').toLowerCase();
+    const filtered=q?E.filter(e=>e.nome.toLowerCase().includes(q)||(e.marca||'').toLowerCase().includes(q)||(e.cnpj||'').includes(q)):E;
+    renderSidebar(filtered.slice(0,200));
+}
+function renderSidebar(list){
+    document.getElementById('sidebarList').innerHTML=list.map(e=>
+        '<div class="emp-item'+(e.id===selectedId?' active':'')+'" onclick="selectEmp(\''+e.id+'\')">'+
+        '<div class="emp-nome">'+e.nome+'</div>'+
+        '<div class="emp-info">'+
+        (e.marca?'<span class="marca">'+e.marca+'</span>':'')+
+        '<span>'+e.canal+'</span>'+
+        '<span class="qtd">'+fmtN(e.qtd)+' pedidos</span>'+
+        '</div></div>'
+    ).join('');
+}
+
+// Load chunk
+const loadedChunks={};
+function loadChunk(data){
+    Object.assign(pedidosCache,data);
+}
+async function ensurePedidos(empId){
+    if(pedidosCache[empId])return;
+    const chunkNum=CHUNKS[empId];
+    if(chunkNum===undefined)return;
+    if(loadedChunks[chunkNum])return;
+    loadedChunks[chunkNum]=true;
+    return new Promise((resolve,reject)=>{
+        const s=document.createElement('script');
+        s.src='data/chunk_'+chunkNum+'.js';
+        s.onload=resolve;s.onerror=reject;
+        document.head.appendChild(s);
+    });
+}
+
+async function selectEmp(id){
+    selectedId=id;
+    const emp=E.find(e=>e.id===id);
+    document.getElementById('mainHeader').innerHTML='<h2>'+emp.nome+'</h2><div class="sub">'+[emp.marca?'Marca: '+emp.marca:'',emp.plano?'Plano: '+emp.plano:'','CNPJ: '+(emp.cnpj||'-'),'Anjo: '+(emp.anjo||'-'),'Canal: '+(emp.canal||'-')].filter(Boolean).join(' &nbsp;|&nbsp; ')+'</div>';
+    document.getElementById('tableWrap').innerHTML='<div class="loading">Carregando pedidos...</div>';
+    document.getElementById('kpis').style.display='none';
+    document.getElementById('pedControls').style.display='none';
+    document.getElementById('pageNav').style.display='none';
+    filterList();
+
+    await ensurePedidos(id);
+    document.getElementById('kpis').style.display='flex';
+    document.getElementById('pedControls').style.display='flex';
+    document.getElementById('fStatus').value='';
+    document.getElementById('fDe').value='';
+    document.getElementById('fAte').value='';
+    page=0;
+    renderPedidos();
+}
+
+function getFilteredPedidos(){
+    const raw=pedidosCache[selectedId]||[];
+    const fs=document.getElementById('fStatus').value;
+    const de=document.getElementById('fDe').value;
+    const ate=document.getElementById('fAte').value;
+    return raw.filter(p=>{
+        if(fs&&p[2]!==fs)return false;
+        if(de&&p[0]<de)return false;
+        if(ate&&p[0]>ate)return false;
+        return true;
+    });
+}
+
+function renderPedidos(){
+    currentPedidos=getFilteredPedidos();
+    // KPIs
+    const tot=currentPedidos.length;
+    const pagos=currentPedidos.filter(p=>p[2]==='P');
+    const canc=currentPedidos.filter(p=>p[2]==='C');
+    const pend=currentPedidos.filter(p=>p[2]==='E');
+    const valT=currentPedidos.reduce((s,p)=>s+p[1],0);
+    const valP=pagos.reduce((s,p)=>s+p[1],0);
+    document.getElementById('kpis').innerHTML=[
+        {l:'Total Pedidos',v:fmtN(tot),c:'#06B6D4'},
+        {l:'Pagos',v:fmtN(pagos.length),c:'#10B981'},
+        {l:'Cancelados',v:fmtN(canc.length),c:'#EF4444'},
+        {l:'Pendentes',v:fmtN(pend.length),c:'#F59E0B'},
+        {l:'Valor Total',v:fmtC(valT),c:'#7C3AED'},
+        {l:'Valor Pagos',v:fmtC(valP),c:'#10B981'},
+    ].map(k=>'<div class="kpi"><div class="kpi-label">'+k.l+'</div><div class="kpi-val" style="color:'+k.c+'">'+k.v+'</div></div>').join('');
+
+    page=0;
+    renderPage();
+}
+
+function renderPage(){
+    const start=page*PAGE_SIZE;
+    const show=currentPedidos.slice(start,start+PAGE_SIZE);
+    const totalPages=Math.ceil(currentPedidos.length/PAGE_SIZE);
+
+    document.getElementById('tableWrap').innerHTML=show.length===0?'<div class="empty">Nenhum pedido encontrado</div>':
+        '<table><thead><tr><th>#</th><th>Data</th><th class="num">Valor</th><th>Status</th><th>Método Pgto</th></tr></thead><tbody>'+
+        show.map((p,i)=>'<tr><td style="color:#8b8fa3">'+(start+i+1)+'</td><td>'+formatDate(p[0])+'</td><td class="num">'+fmtC(p[1])+'</td><td class="st-'+p[2]+'">'+stLabel[p[2]]+'</td><td>'+(p[3]||'-')+'</td></tr>').join('')+
+        '</tbody></table>';
+
+    document.getElementById('pageNav').style.display=totalPages>1?'flex':'none';
+    document.getElementById('pageInfo').textContent='Página '+(page+1)+' de '+totalPages+' ('+fmtN(currentPedidos.length)+' pedidos)';
+    document.getElementById('btnPrev').disabled=page===0;
+    document.getElementById('btnNext').disabled=page>=totalPages-1;
+}
+
+function changePage(d){page+=d;renderPage();document.getElementById('tableWrap').scrollTop=0;}
+function formatDate(d){if(!d||d.length<10)return d;return d.substring(8,10)+'/'+d.substring(5,7)+'/'+d.substring(0,4);}
+
+function exportCSV(){
+    const emp=E.find(e=>e.id===selectedId);
+    const header='Data,Valor,Status,Metodo Pagamento\n';
+    const rows=currentPedidos.map(p=>[formatDate(p[0]),p[1],stLabel[p[2]],p[3]].map(v=>'"'+(v!=null?v:'')+'"').join(',')).join('\n');
+    const blob=new Blob(['\uFEFF'+header+rows],{type:'text/csv;charset=utf-8;'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='pedidos_'+(emp?emp.nome:'').replace(/\s+/g,'_')+'.csv';a.click();
+}
+
+renderSidebar(E.slice(0,200));
+</script>
+</body>
+</html>
