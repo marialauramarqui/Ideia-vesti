@@ -133,7 +133,7 @@ async function main() {
     // --- 2. SQL queries (Lakehouse historical) ---
     console.log('\nFetching from VestiLake SQL...');
     const quotesRows = await runSQL(sqlToken,
-        "SELECT company_id, domain_id, total_price, created_at, status_payment, app FROM dbo.ODBC_Quotes",
+        "SELECT company_id, domain_id, total_price, created_at, status_payment, status, app FROM dbo.ODBC_Quotes",
         'ODBC_Quotes');
     const anteriorRows = await runSQL(sqlToken,
         "SELECT company_id, domain_id, total_price, created_at FROM dbo.OBDC_Quotes_Anterior2023",
@@ -192,8 +192,17 @@ async function main() {
         const empId = resolveEmpId(r.company_id, r.domain_id);
         if (!empId) continue;
         if (!pedidosPorEmp[empId]) pedidosPorEmp[empId] = [];
-        const sp = (r.status_payment || '').toString();
-        const status = sp.includes('PAGO') ? 'P' : sp.includes('CANCEL') ? 'C' : sp.includes('PEND') ? 'E' : 'O';
+        const sp = (r.status_payment || '').toString().toUpperCase();
+        const stNum = r.status;
+        // status_payment: PAGO, AUTORIZADO = Pago; CANCELADA, REJEITADO = Cancelado; ANÁLISE = Pendente
+        // status (numeric): 1 = ativo/pago, 3 = cancelado
+        let status;
+        if (sp === 'PAGO' || sp === 'AUTORIZADO') status = 'P';
+        else if (sp.includes('CANCEL') || sp === 'REJEITADO') status = 'C';
+        else if (sp.includes('ANALISE') || sp.includes('ANÁLISE')) status = 'E';
+        else if (stNum === 3) status = 'C';
+        else if (stNum === 1) status = 'P';
+        else status = 'O';
         const dt = r.created_at ? new Date(r.created_at).toISOString().substring(0, 10) : '';
         const met = (r.app || '').toString().substring(0, 15);
         pedidosPorEmp[empId].push([dt, Math.round((parseFloat(r.total_price) || 0) * 100) / 100, status, met]);
