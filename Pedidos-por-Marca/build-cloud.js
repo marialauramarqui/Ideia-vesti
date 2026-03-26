@@ -140,27 +140,18 @@ async function main() {
             "SELECT id, company_id, domain_id, customer_id, total_price, created_at FROM dbo.OBDC_Quotes_Anterior2023",
             'OBDC_Quotes_Anterior2023'),
         runSQL(sqlToken,
-            "SELECT TOP 1 * FROM dbo.ODBC_Users",
-            'ODBC_Users cols'),
+            "SELECT c.id as customer_id, u.name, u.lastname FROM dbo.ODBC_Costumers c INNER JOIN dbo.ODBC_Users u ON c.user_id = u.id",
+            'Customer names (join)'),
     ]);
 
     // --- 3. Build empresas ---
     // Build customer name map
     console.log('\nProcessing...');
     const customerNames = {};
-    if (customersRows.length > 0) {
-        const cols = Object.keys(customersRows[0]);
-        console.log('  ODBC_Users columns: ' + cols.join(', '));
-        const nameCol = cols.find(c => c.toLowerCase().includes('name') || c.toLowerCase().includes('nome'));
-        const idCol = cols.find(c => c.toLowerCase() === 'id');
-        console.log('  Using: id=' + idCol + ' name=' + nameCol);
-        if (nameCol && idCol) {
-            const allUsers = await runSQL(sqlToken,
-                'SELECT [' + idCol + '], [' + nameCol + '] FROM dbo.ODBC_Users',
-                'ODBC_Users full');
-            for (const r of allUsers) {
-                if (r[idCol] && r[nameCol]) customerNames[r[idCol]] = r[nameCol];
-            }
+    for (const r of customersRows) {
+        if (r.customer_id) {
+            const fullName = ((r.name || '') + ' ' + (r.lastname || '')).trim();
+            if (fullName) customerNames[r.customer_id] = fullName;
         }
     }
     console.log('  Customer names loaded: ' + Object.keys(customerNames).length);
