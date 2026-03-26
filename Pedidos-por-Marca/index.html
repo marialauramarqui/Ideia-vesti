@@ -4,11 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pedidos por Marca | Vesti</title>
-    <script src="dados.js"></script>
-    <script src="chunks.js"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
         body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f1117;color:#e1e4eb;min-height:100vh;}
+        .login-screen{display:flex;align-items:center;justify-content:center;height:100vh;}
+        .login-box{background:#1a1d2e;border:1px solid #2a2d3e;border-radius:12px;padding:40px;text-align:center;width:340px;}
+        .login-box h2{font-size:18px;margin-bottom:8px;background:linear-gradient(135deg,#7C3AED,#06B6D4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .login-box p{color:#8b8fa3;font-size:12px;margin-bottom:20px;}
+        .login-box input{width:100%;background:#161825;border:1px solid #2a2d3e;color:#e1e4eb;padding:10px 14px;border-radius:8px;font-size:14px;text-align:center;margin-bottom:12px;}
+        .login-box input:focus{outline:none;border-color:#7C3AED;}
+        .login-box .btn-login{width:100%;background:linear-gradient(135deg,#7C3AED,#06B6D4);color:#fff;border:none;padding:10px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;}
+        .login-box .btn-login:hover{opacity:0.9;}
+        .login-error{color:#EF4444;font-size:12px;margin-top:8px;display:none;}
+        .app-content{display:none;}
         .header{background:linear-gradient(135deg,#1a1d2e,#252840);padding:20px 30px;border-bottom:1px solid #2a2d3e;display:flex;align-items:center;justify-content:space-between;}
         .header h1{font-size:20px;background:linear-gradient(135deg,#7C3AED,#06B6D4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
         .header span{color:#8b8fa3;font-size:12px;}
@@ -50,43 +58,18 @@
         .page-btn{background:#1e2035;border:1px solid #2a2d3e;color:#e1e4eb;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;}
         .page-btn:hover{background:#252840;} .page-btn:disabled{opacity:0.3;cursor:default;}
     </style>
-        .login-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#0f1117;z-index:9999;display:flex;align-items:center;justify-content:center;}
-        .login-box{background:#1a1d2e;border:1px solid #2a2d3e;border-radius:12px;padding:40px;text-align:center;width:340px;}
-        .login-box h2{font-size:18px;margin-bottom:8px;background:linear-gradient(135deg,#7C3AED,#06B6D4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-        .login-box p{color:#8b8fa3;font-size:12px;margin-bottom:20px;}
-        .login-box input{width:100%;background:#161825;border:1px solid #2a2d3e;color:#e1e4eb;padding:10px 14px;border-radius:8px;font-size:14px;text-align:center;margin-bottom:12px;}
-        .login-box input:focus{outline:none;border-color:#7C3AED;}
-        .login-box button{width:100%;background:linear-gradient(135deg,#7C3AED,#06B6D4);color:#fff;border:none;padding:10px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;}
-        .login-box button:hover{opacity:0.9;}
-        .login-error{color:#EF4444;font-size:12px;margin-top:8px;display:none;}
-    </style>
 </head>
 <body>
-<div class="login-overlay" id="loginOverlay">
+<div class="login-screen" id="loginScreen">
     <div class="login-box">
         <h2>Pedidos por Marca</h2>
         <p>Digite a senha para acessar</p>
         <input type="password" id="loginPass" placeholder="Senha" onkeydown="if(event.key==='Enter')doLogin()">
-        <button onclick="doLogin()">Entrar</button>
+        <button class="btn-login" onclick="doLogin()">Entrar</button>
         <div class="login-error" id="loginError">Senha incorreta</div>
     </div>
 </div>
-<script>
-function doLogin(){
-    const pass=document.getElementById('loginPass').value;
-    crypto.subtle.digest('SHA-256',new TextEncoder().encode(pass)).then(buf=>{
-        const hex=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-        if(hex==='bc2e1f676370b8131e3a1f84fc6c1cd6c9266f279030c92604fde8cfa8a1e0d3'){
-            sessionStorage.setItem('auth_pedidos','ok');
-            document.getElementById('loginOverlay').style.display='none';
-        } else {
-            document.getElementById('loginError').style.display='block';
-            document.getElementById('loginPass').value='';
-        }
-    });
-}
-if(sessionStorage.getItem('auth_pedidos')==='ok'){document.getElementById('loginOverlay').style.display='none';}
-</script>
+<div class="app-content" id="appContent">
 <div class="header">
     <div><h1>Pedidos por Marca</h1><span>Cada pedido individual por empresa/marca</span></div>
 </div>
@@ -117,7 +100,7 @@ const fmtN=v=>(v||0).toLocaleString('pt-BR');
 const fmtC=v=>'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 const stLabel={P:'Pago',C:'Cancelado',E:'Pendente',O:'Outro'};
 
-const E=DADOS.empresas;
+var E=[];
 let selectedId=null, pedidosCache={}, currentPedidos=[], page=0;
 const PAGE_SIZE=200;
 
@@ -241,7 +224,42 @@ function exportCSV(){
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='pedidos_'+(emp?emp.nome:'').replace(/\s+/g,'_')+'.csv';a.click();
 }
 
-renderSidebar(E.slice(0,200));
+function initApp(){
+    E=DADOS.empresas;
+    // Populate filters
+    const canais=[...new Set(E.map(e=>e.canal).filter(Boolean))].sort();
+    const anjos=[...new Set(E.map(e=>e.anjo).filter(Boolean))].sort();
+    renderSidebar(E.slice(0,200));
+}
+</script>
+</div>
+<script>
+function doLogin(){
+    const pass=document.getElementById('loginPass').value;
+    crypto.subtle.digest('SHA-256',new TextEncoder().encode(pass)).then(buf=>{
+        const hex=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+        if(hex==='bc2e1f676370b8131e3a1f84fc6c1cd6c9266f279030c92604fde8cfa8a1e0d3'){
+            sessionStorage.setItem('auth_pedidos','ok');
+            loadApp();
+        } else {
+            document.getElementById('loginError').style.display='block';
+            document.getElementById('loginPass').value='';
+        }
+    });
+}
+function loadApp(){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('appContent').style.display='block';
+    // Load data scripts then init
+    const s1=document.createElement('script');s1.src='dados.js';
+    s1.onload=function(){
+        const s2=document.createElement('script');s2.src='chunks.js';
+        s2.onload=function(){ initApp(); };
+        document.head.appendChild(s2);
+    };
+    document.head.appendChild(s1);
+}
+if(sessionStorage.getItem('auth_pedidos')==='ok'){loadApp();}
 </script>
 </body>
 </html>
