@@ -127,20 +127,32 @@ async function main() {
     const [cadastros, marcas, pedidos] = await Promise.all([
         daxQuery(pbiToken, "EVALUATE 'Cadastros Empresas'", 'Cadastros'),
         daxQuery(pbiToken, "EVALUATE 'Marcas e Planos'", 'Marcas e Planos'),
-        daxQuery(pbiToken, `EVALUATE SELECTCOLUMNS('Merged Pedidos', "EmpId", 'Merged Pedidos'[ID Empresa], "DomId", 'Merged Pedidos'[ID Dominio], "Dt", 'Merged Pedidos'[Data Criacao], "V", 'Merged Pedidos'[Total], "Pg", 'Merged Pedidos'[Pago], "Cn", 'Merged Pedidos'[Cancelado], "Pn", 'Merged Pedidos'[Pendente], "Mt", 'Merged Pedidos'[docs.payment.method])`, 'Merged Pedidos'),
+        daxQuery(pbiToken, `EVALUATE SELECTCOLUMNS('Merged Pedidos', "EmpId", 'Merged Pedidos'[ID Empresa], "DomId", 'Merged Pedidos'[ID Dominio], "Dt", 'Merged Pedidos'[Data Criacao], "V", 'Merged Pedidos'[Total], "Pg", 'Merged Pedidos'[Pago], "Cn", 'Merged Pedidos'[Cancelado], "Pn", 'Merged Pedidos'[Pendente], "Mt", 'Merged Pedidos'[docs.payment.method], "Pid", 'Merged Pedidos'[ID Pedido], "Dom", 'Merged Pedidos'[Nome do Dominio])`, 'Merged Pedidos'),
     ]);
 
     // --- 2. SQL queries (Lakehouse historical) ---
     console.log('\nFetching from VestiLake SQL...');
-    const quotesRows = await runSQL(sqlToken,
-        "SELECT company_id, domain_id, total_price, created_at, status_payment, status, app FROM dbo.ODBC_Quotes",
-        'ODBC_Quotes');
-    const anteriorRows = await runSQL(sqlToken,
-        "SELECT company_id, domain_id, total_price, created_at FROM dbo.OBDC_Quotes_Anterior2023",
-        'OBDC_Quotes_Anterior2023');
+    const [quotesRows, anteriorRows, customersRows] = await Promise.all([
+        runSQL(sqlToken,
+            "SELECT id, company_id, domain_id, customer_id, total_price, created_at, status_payment, status, app FROM dbo.ODBC_Quotes",
+            'ODBC_Quotes'),
+        runSQL(sqlToken,
+            "SELECT id, company_id, domain_id, customer_id, total_price, created_at FROM dbo.OBDC_Quotes_Anterior2023",
+            'OBDC_Quotes_Anterior2023'),
+        runSQL(sqlToken,
+            "SELECT id, name FROM dbo.ODBC_Customers",
+            'ODBC_Customers'),
+    ]);
 
     // --- 3. Build empresas ---
+    // Build customer name map
     console.log('\nProcessing...');
+    const customerNames = {};
+    for (const r of customersRows) {
+        if (r.id && r.name) customerNames[r.id] = r.name;
+    }
+    console.log('  Customer names loaded: ' + Object.keys(customerNames).length);
+
     const empresas = {};
     const empresasByDom = {}; // domain_id -> empresa id
     for (const r of cadastros) {
@@ -166,6 +178,7 @@ async function main() {
     const pedidosPorEmp = {};
 
     // 4a. Merged Pedidos (current - 2025+)
+    // Format: [dt, val, status, metodo, pedidoId, nomeCliente]
     let countMerged = 0;
     for (const r of pedidos) {
         const empId = resolveEmpId(r['EmpId'], r['DomId']);
@@ -174,7 +187,9 @@ async function main() {
         const status = r['Pg'] === true || r['Pg'] === 'True' ? 'P' : r['Cn'] === true || r['Cn'] === 'True' ? 'C' : r['Pn'] === true || r['Pn'] === 'True' ? 'E' : 'O';
         const dt = (r['Dt'] || '').toString().substring(0, 10);
         const met = (r['Mt'] || '').toString().substring(0, 15);
-        pedidosPorEmp[empId].push([dt, Math.round((parseFloat(r['V']) || 0) * 100) / 100, status, met]);
+        const pid = (r['Pid'] || '').toString().substring(0, 24);
+        const dom = (r['Dom'] || '').toString();
+        pedidosPorEmp[empId].push([dt, Math.round((parseFloat(r['V']) || 0) * 100) / 100, status, met, pid, dom]);
         countMerged++;
     }
     console.log('  Merged Pedidos processed: ' + countMerged);
@@ -205,7 +220,9 @@ async function main() {
         else status = 'O';
         const dt = r.created_at ? new Date(r.created_at).toISOString().substring(0, 10) : '';
         const met = (r.app || '').toString().substring(0, 15);
-        pedidosPorEmp[empId].push([dt, Math.round((parseFloat(r.total_price) || 0) * 100) / 100, status, met]);
+        const pid = (r.id || '').toString().substring(0, 36);
+        const custName = r.customer_id ? (customerNames[r.customer_id] || '') : '';
+        pedidosPorEmp[empId].push([dt, Math.round((parseFloat(r.total_price) || 0) * 100) / 100, status, met, pid, custName]);
         if (!(r.company_id && empresas[r.company_id])) countQuotesDom++;
         countQuotes++;
     }
@@ -218,7 +235,9 @@ async function main() {
         if (!empId) continue;
         if (!pedidosPorEmp[empId]) pedidosPorEmp[empId] = [];
         const dt = r.created_at ? new Date(r.created_at).toISOString().substring(0, 10) : '';
-        pedidosPorEmp[empId].push([dt, Math.round((parseFloat(r.total_price) || 0) * 100) / 100, 'O', '']);
+        const pid = (r.id || '').toString().substring(0, 36);
+        const custName = r.customer_id ? (customerNames[r.customer_id] || '') : '';
+        pedidosPorEmp[empId].push([dt, Math.round((parseFloat(r.total_price) || 0) * 100) / 100, 'O', '', pid, custName]);
         if (!(r.company_id && empresas[r.company_id])) countAnteriorDom++;
         countAnterior++;
     }

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pedidos por Marca | Vesti</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
         body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f1117;color:#e1e4eb;min-height:100vh;}
@@ -85,6 +86,8 @@
             <select id="fStatus" onchange="renderPedidos()"><option value="">Todos Status</option><option value="P">Pagos</option><option value="C">Cancelados</option><option value="E">Pendentes</option></select>
             <input type="date" id="fDe" onchange="renderPedidos()" title="Data inicial">
             <input type="date" id="fAte" onchange="renderPedidos()" title="Data final">
+            <select id="fStatus2" onchange="renderPedidos()" style="display:none;"><option value="">Sem Status</option><option value="O">Apenas Sem Status</option></select>
+            <button class="export-btn" onclick="exportXLSX()">Exportar Excel</button>
             <button class="export-btn" onclick="exportCSV()">Exportar CSV</button>
         </div>
         <div class="table-wrap" id="tableWrap"><div class="empty">Selecione uma empresa para ver os pedidos</div></div>
@@ -163,13 +166,15 @@ async function selectEmp(id){
 
 function getFilteredPedidos(){
     const raw=pedidosCache[selectedId]||[];
-    const fs=document.getElementById('fStatus').value;
+    const fSt=document.getElementById('fStatus').value;
     const de=document.getElementById('fDe').value;
     const ate=document.getElementById('fAte').value;
+    if(!fSt&&!de&&!ate)return raw;
     return raw.filter(p=>{
-        if(fs&&p[2]!==fs)return false;
-        if(de&&p[0]<de)return false;
-        if(ate&&p[0]>ate)return false;
+        if(fSt&&p[2]!==fSt)return false;
+        const dt=p[0]||'';
+        if(de&&dt<de)return false;
+        if(ate&&dt>ate)return false;
         return true;
     });
 }
@@ -204,8 +209,8 @@ function renderPage(){
     const totalPages=Math.ceil(currentPedidos.length/PAGE_SIZE);
 
     document.getElementById('tableWrap').innerHTML=show.length===0?'<div class="empty">Nenhum pedido encontrado</div>':
-        '<table><thead><tr><th>#</th><th>Data</th><th class="num">Valor</th><th>Status</th><th>Método Pgto</th></tr></thead><tbody>'+
-        show.map((p,i)=>'<tr><td style="color:#8b8fa3">'+(start+i+1)+'</td><td>'+formatDate(p[0])+'</td><td class="num">'+fmtC(p[1])+'</td><td class="st-'+p[2]+'">'+stLabel[p[2]]+'</td><td>'+(p[3]||'-')+'</td></tr>').join('')+
+        '<table><thead><tr><th>#</th><th>Data</th><th>Cliente</th><th>N. Pedido</th><th class="num">Valor</th><th>Status</th><th>Método Pgto</th></tr></thead><tbody>'+
+        show.map((p,i)=>'<tr><td style="color:#8b8fa3">'+(start+i+1)+'</td><td>'+formatDate(p[0])+'</td><td>'+(p[5]||'-')+'</td><td style="font-size:11px;color:#8b8fa3">'+(p[4]?p[4].substring(0,12)+'...':'-')+'</td><td class="num">'+fmtC(p[1])+'</td><td class="st-'+p[2]+'">'+stLabel[p[2]]+'</td><td>'+(p[3]||'-')+'</td></tr>').join('')+
         '</tbody></table>';
 
     document.getElementById('pageNav').style.display=totalPages>1?'flex':'none';
@@ -217,12 +222,24 @@ function renderPage(){
 function changePage(d){page+=d;renderPage();document.getElementById('tableWrap').scrollTop=0;}
 function formatDate(d){if(!d||d.length<10)return d;return d.substring(8,10)+'/'+d.substring(5,7)+'/'+d.substring(0,4);}
 
-function exportCSV(){
+function getExportFileName(){
     const emp=E.find(e=>e.id===selectedId);
-    const header='Data,Valor,Status,Metodo Pagamento\n';
-    const rows=currentPedidos.map(p=>[formatDate(p[0]),p[1],stLabel[p[2]],p[3]].map(v=>'"'+(v!=null?v:'')+'"').join(',')).join('\n');
+    return 'pedidos_'+(emp?emp.nome:'').replace(/\s+/g,'_');
+}
+function exportCSV(){
+    const header='Data,Cliente,N Pedido,Valor,Status,Metodo Pagamento\n';
+    const rows=currentPedidos.map(p=>[formatDate(p[0]),p[5]||'',p[4]||'',p[1],stLabel[p[2]],p[3]].map(v=>'"'+(v!=null?v:'').toString().replace(/"/g,'""')+'"').join(',')).join('\n');
     const blob=new Blob(['\uFEFF'+header+rows],{type:'text/csv;charset=utf-8;'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='pedidos_'+(emp?emp.nome:'').replace(/\s+/g,'_')+'.csv';a.click();
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=getExportFileName()+'.csv';a.click();
+}
+function exportXLSX(){
+    const data=[['Data','Cliente','N Pedido','Valor','Status','Metodo Pagamento']];
+    currentPedidos.forEach(p=>data.push([formatDate(p[0]),p[5]||'',p[4]||'',p[1],stLabel[p[2]],p[3]||'']));
+    const ws=XLSX.utils.aoa_to_sheet(data);
+    ws['!cols']=[{wch:12},{wch:30},{wch:26},{wch:12},{wch:12},{wch:16}];
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'Pedidos');
+    XLSX.writeFile(wb,getExportFileName()+'.xlsx');
 }
 
 function initApp(){
