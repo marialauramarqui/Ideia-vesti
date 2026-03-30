@@ -254,13 +254,10 @@
     <div class="empresa-info-item"><strong>Filial (Plano):</strong> <span id="eiPlanoFilial">-</span></div>
     <div class="empresa-info-item"><strong>Descontos:</strong> <span id="eiDescontos">-</span></div>
     <div class="empresa-info-item"><strong>Total Cobrado:</strong> <span id="eiTotalCobrado">-</span></div>
-    <div class="empresa-info-item"><strong>Etapa Hub:</strong> <span id="eiHub">-</span></div>
     <div class="empresa-info-item"><strong>Tem Oráculo:</strong> <span id="eiTemOraculo">-</span></div>
     <div class="empresa-info-item"><strong>Fase Oráculo:</strong> <span id="eiOraculoColuna">-</span></div>
     <div class="empresa-info-item"><strong>Risco Churn:</strong> <span id="eiChurn">-</span></div>
-    <div class="empresa-info-item"><strong>Não Pagos:</strong> <span id="eiNaoPagos">-</span></div>
     <div class="empresa-info-item"><strong>Filial:</strong> <span id="eiFilial">-</span></div>
-    <div class="empresa-info-item"><strong>Ped. Jan/Fev/Mar:</strong> <span id="eiPedMes">-</span></div>
 </div>
 <div id="oraculoDetailPanel" style="display:none;padding:14px 32px;background:rgba(168,85,247,0.06);border-bottom:1px solid var(--border);">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -597,14 +594,14 @@ function applyFilters(){
             e._pedidosPendentes=sumMonthly(e,3,fPedDe,fPedAte);
             e._valTotal=sumMonthly(e,4,fPedDe,fPedAte);
             e._valPedidosPagos=sumMonthly(e,5,fPedDe,fPedAte);
-            e._valPedidosCancelados=0; // não disponível por mês separado
-            e._valPedidosPendentes=sumMonthly(e,6,fPedDe,fPedAte); // pos 6 = val - valPagos
-            e._transCartao=sumMonthly(e,7,fPedDe,fPedAte);
-            e._transPix=sumMonthly(e,8,fPedDe,fPedAte);
-            e._valCartao=sumMonthly(e,9,fPedDe,fPedAte);
-            e._valPix=sumMonthly(e,10,fPedDe,fPedAte);
-            e._links=sumMonthly(e,11,fPedDe,fPedAte);
-            e._cliques=sumMonthly(e,12,fPedDe,fPedAte);
+            e._valPedidosCancelados=sumMonthly(e,6,fPedDe,fPedAte);
+            e._valPedidosPendentes=sumMonthly(e,7,fPedDe,fPedAte);
+            e._transCartao=sumMonthly(e,8,fPedDe,fPedAte);
+            e._transPix=sumMonthly(e,9,fPedDe,fPedAte);
+            e._valCartao=sumMonthly(e,10,fPedDe,fPedAte);
+            e._valPix=sumMonthly(e,11,fPedDe,fPedAte);
+            e._links=sumMonthly(e,12,fPedDe,fPedAte);
+            e._cliques=sumMonthly(e,13,fPedDe,fPedAte);
         } else {
             e._pedidos=e.pedidos||0;e._pedidosPagos=e.pedidosPagos||0;
             e._pedidosCancelados=e.pedidosCancelados||0;e._pedidosPendentes=e.pedidosPendentes||0;
@@ -660,7 +657,6 @@ function updateEmpresaPanel(){
         document.getElementById('eiPlanoFilial').textContent=show.planoFilial?fmtCFull(show.planoFilial):'-';
         document.getElementById('eiDescontos').textContent=show.planoDescontos?fmtCFull(show.planoDescontos):'-';
         document.getElementById('eiTotalCobrado').textContent=show.planoTotalCobrado?fmtCFull(show.planoTotalCobrado):'-';
-        document.getElementById('eiHub').textContent=show.etapaHub||'-';
         // Oráculo: Tem ou não + coluna
         const temOrac=document.getElementById('eiTemOraculo');
         const colOrac=document.getElementById('eiOraculoColuna');
@@ -698,13 +694,7 @@ function updateEmpresaPanel(){
         else if(show.churnRisco==='Medio'||show.churnRisco==='Médio')cb.style.cssText='color:var(--warning);font-weight:700;';
         else if(show.churnRisco==='Baixo')cb.style.cssText='color:var(--success);font-weight:700;';
         else cb.style.cssText='';
-        document.getElementById('eiNaoPagos').textContent=show.naoPagos||'0';
         document.getElementById('eiFilial').textContent=show.filial||'-';
-        // Pedidos por mês (últimos 3 meses)
-        const mKeys=show.m?Object.keys(show.m).sort():[];
-        const lastM=mKeys.slice(-3);
-        const pedMes=lastM.map(k=>{const d=show.m[k];return(d?d[0]:0);}).join('/');
-        document.getElementById('eiPedMes').textContent=pedMes||'0/0/0';
         // Filiais filter (always uses main match)
         updateFiliaisFilter(match);
         // Filiais section in Transações tab
@@ -944,11 +934,11 @@ function renderTab0(){
 
     // Chart: Transações Mensais Cartão vs PIX (responde aos filtros)
     const tcM=meses.map(m=>{
-        if(isFiltered){return es.reduce((s,e)=>{const md=e.m&&e.m[m];return s+(md?md[7]:0);},0);}
+        if(isFiltered){return es.reduce((s,e)=>{const md=e.m&&e.m[m];return s+(md?md[8]:0);},0);}
         const mm=DADOS.mensal.find(x=>x.mes===m);return mm?mm.cartao||0:0;
     });
     const tpM=meses.map(m=>{
-        if(isFiltered){return es.reduce((s,e)=>{const md=e.m&&e.m[m];return s+(md?md[8]:0);},0);}
+        if(isFiltered){return es.reduce((s,e)=>{const md=e.m&&e.m[m];return s+(md?md[9]:0);},0);}
         const mm=DADOS.mensal.find(x=>x.mes===m);return mm?mm.pix||0:0;
     });
     getOrCreate('chartTransMensal',{type:'bar',data:{labels:meses.map(m=>m.substring(5)+'/'+m.substring(2,4)),datasets:[{label:'Cartão',data:tcM,backgroundColor:'rgba(124,58,237,0.7)'},{label:'PIX',data:tpM,backgroundColor:'rgba(6,182,212,0.7)'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:darkLegend,tooltip:darkTooltip},scales:{x:{ticks:darkTick,grid:darkGrid},y:{ticks:darkTick,grid:darkGrid}}}});
@@ -959,11 +949,11 @@ function renderTab0(){
 
     // Chart: Links Enviados vs Cliques (responde aos filtros)
     const linksMensal=meses.map(m=>{
-        if(isFiltered){return es.reduce((s,e)=>{const md=e.m&&e.m[m];return s+(md?md[11]:0);},0);}
+        if(isFiltered){return es.reduce((s,e)=>{const md=e.m&&e.m[m];return s+(md?md[12]:0);},0);}
         const mm=DADOS.mensal.find(x=>x.mes===m);return mm?mm.links||0:0;
     });
     const cliquesMensal=meses.map(m=>{
-        if(isFiltered){return es.reduce((s,e)=>{const md=e.m&&e.m[m];return s+(md?md[12]:0);},0);}
+        if(isFiltered){return es.reduce((s,e)=>{const md=e.m&&e.m[m];return s+(md?md[13]:0);},0);}
         const mm=DADOS.mensal.find(x=>x.mes===m);return mm?mm.cliques||0:0;
     });
     getOrCreate('chartLinksCliques',{type:'line',data:{labels:meses.map(m=>m.substring(5)+'/'+m.substring(2,4)),datasets:[
