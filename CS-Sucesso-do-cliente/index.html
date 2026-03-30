@@ -793,26 +793,47 @@ function updateFiliaisSection(match){
 function updateFinanceiroDetail(match){
     const detail=document.getElementById('finEmpresaDetail');
     const tbody=document.getElementById('finEmpresaBody');
-    if(match&&match.planoTotalCobrado>0){
+    const hasFat=match&&match.faturamento;
+    const hasPlano=match&&match.planoTotalCobrado>0;
+    if(hasFat||hasPlano){
         detail.style.display='block';
-        const planos=match.planos||[{plano:match.plano,mensalidade:match.planoMensalidade,integracao:match.planoIntegracao,assistente:match.planoAssistente,filial:match.planoFilial,descontos:match.planoDescontos,totalCobrado:match.planoTotalCobrado,setup:match.planoSetup}];
-        const cols=['Plano','Mensalidade','Integração','Assistente','Filial','Descontos','Total Cobrado','Setup'];
-        let html='<tr>'+cols.map(c=>'<th style="padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-secondary);border-bottom:1px solid var(--border);">'+c+'</th>').join('')+'</tr>';
-        planos.forEach(p=>{
-            html+='<tr>';
-            html+='<td style="padding:8px 12px;font-weight:600;color:var(--primary);">'+( p.plano||'-')+'</td>';
-            html+='<td style="padding:8px 12px;">'+(p.mensalidade?fmtCFull(p.mensalidade):'-')+'</td>';
-            html+='<td style="padding:8px 12px;">'+(p.integracao?fmtCFull(p.integracao):'-')+'</td>';
-            html+='<td style="padding:8px 12px;">'+(p.assistente?fmtCFull(p.assistente):'-')+'</td>';
-            html+='<td style="padding:8px 12px;">'+(p.filial?fmtCFull(p.filial):'-')+'</td>';
-            html+='<td style="padding:8px 12px;">'+(p.descontos?fmtCFull(p.descontos):'-')+'</td>';
-            html+='<td style="padding:8px 12px;font-weight:700;color:var(--success);">'+fmtCFull(p.totalCobrado)+'</td>';
-            html+='<td style="padding:8px 12px;">'+(p.setup?fmtCFull(p.setup):'Isento')+'</td>';
-            html+='</tr>';
-        });
-        // No total row - each plan shown individually
-        // Subconta + Observações
-        html+='<tr><td colspan="8" style="padding:8px 12px;font-size:11px;color:var(--text-muted);border-top:1px solid var(--border);"><strong>Subconta:</strong> '+(match.planoSubconta||'-')+' &nbsp;|&nbsp; <strong>Obs:</strong> '+(match.planoObservacoes||'-')+'</td></tr>';
+        let html='';
+        // Invoices (Iugu) - primary source
+        if(hasFat){
+            const f=match.faturamento;
+            const statusBadge=(s)=>{if(s==='paid')return'<span class="cell-badge badge-sim">Pago</span>';if(s==='pending')return'<span class="cell-badge" style="background:rgba(245,158,11,0.15);color:var(--warning);">Pendente</span>';if(s==='expired')return'<span class="cell-badge badge-nao">Vencido</span>';if(s==='canceled')return'<span class="cell-badge" style="background:rgba(90,94,114,0.15);color:var(--text-muted);">Cancelado</span>';if(s==='externally_paid')return'<span class="cell-badge badge-sim">Pago ext.</span>';return s;};
+            // Summary KPIs
+            html+='<tr><td colspan="4" style="padding:10px 12px;font-weight:700;color:var(--primary);font-size:13px;border-bottom:1px solid var(--border);">Faturas Iugu — '+f.planoIugu+'</td></tr>';
+            html+='<tr><td style="padding:6px 12px;font-weight:600;color:var(--text-secondary);">Total Pago</td><td style="padding:6px 12px;color:var(--success);font-weight:700;">'+fmtCFull(f.totalPago)+'</td>';
+            html+='<td style="padding:6px 12px;font-weight:600;color:var(--text-secondary);">Pendente</td><td style="padding:6px 12px;color:var(--warning);font-weight:700;">'+(f.totalPendente?fmtCFull(f.totalPendente):'-')+'</td></tr>';
+            html+='<tr><td style="padding:6px 12px;font-weight:600;color:var(--text-secondary);">Vencido</td><td style="padding:6px 12px;color:var(--danger);font-weight:700;">'+(f.totalVencido?fmtCFull(f.totalVencido):'-')+'</td>';
+            html+='<td style="padding:6px 12px;font-weight:600;color:var(--text-secondary);">Faturas</td><td style="padding:6px 12px;font-weight:600;">'+f.qtdFaturas+'</td></tr>';
+            // Individual invoices table
+            if(f.faturas&&f.faturas.length>0){
+                html+='<tr><td colspan="4" style="padding:10px 12px 4px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);border-top:1px solid var(--border);">Histórico de Faturas</td></tr>';
+                html+='<tr><th style="padding:6px 12px;font-size:10px;text-transform:uppercase;color:var(--text-secondary);">Mês</th><th style="padding:6px 12px;font-size:10px;text-transform:uppercase;color:var(--text-secondary);">Status</th><th style="padding:6px 12px;font-size:10px;text-transform:uppercase;color:var(--text-secondary);">Valor</th><th></th></tr>';
+                f.faturas.forEach(inv=>{
+                    html+='<tr><td style="padding:4px 12px;">'+inv.mes+'</td><td style="padding:4px 12px;">'+statusBadge(inv.status)+'</td><td style="padding:4px 12px;font-weight:600;">'+fmtCFull(inv.total)+'</td><td></td></tr>';
+                });
+            }
+        }
+        // Marcas e Planos - show below if available
+        if(hasPlano){
+            const planos=match.planos||[{plano:match.plano,mensalidade:match.planoMensalidade,integracao:match.planoIntegracao,assistente:match.planoAssistente,filial:match.planoFilial,descontos:match.planoDescontos,totalCobrado:match.planoTotalCobrado,setup:match.planoSetup}];
+            html+='<tr><td colspan="4" style="padding:10px 12px 4px;font-weight:700;color:var(--accent-purple);font-size:13px;border-top:2px solid var(--border);">Plano Contratado (Marcas e Planos)</td></tr>';
+            const cols=['Plano','Mensalidade','Integração','Assistente','Filial','Descontos','Total','Setup'];
+            html+='<tr>'+cols.map(c=>'<th style="padding:6px 8px;font-size:10px;text-transform:uppercase;color:var(--text-secondary);">'+c+'</th>').join('')+'</tr>';
+            planos.forEach(p=>{
+                html+='<tr><td style="padding:4px 8px;font-weight:600;color:var(--primary);">'+(p.plano||'-')+'</td>';
+                html+='<td style="padding:4px 8px;">'+(p.mensalidade?fmtCFull(p.mensalidade):'-')+'</td>';
+                html+='<td style="padding:4px 8px;">'+(p.integracao?fmtCFull(p.integracao):'-')+'</td>';
+                html+='<td style="padding:4px 8px;">'+(p.assistente?fmtCFull(p.assistente):'-')+'</td>';
+                html+='<td style="padding:4px 8px;">'+(p.filial?fmtCFull(p.filial):'-')+'</td>';
+                html+='<td style="padding:4px 8px;">'+(p.descontos?fmtCFull(p.descontos):'-')+'</td>';
+                html+='<td style="padding:4px 8px;font-weight:700;color:var(--success);">'+fmtCFull(p.totalCobrado)+'</td>';
+                html+='<td style="padding:4px 8px;">'+(p.setup?fmtCFull(p.setup):'-')+'</td></tr>';
+            });
+        }
         tbody.innerHTML=html;
     } else {
         detail.style.display='none';
@@ -1064,6 +1085,18 @@ function renderTabFin(){
         uniquePlano.push(e);
     });
 
+    // Invoices (Iugu) aggregates - deduplicated by CNPJ
+    const seenFatCnpj=new Set();
+    let fatPago=0,fatPendente=0,fatVencido=0,fatQtd=0,fatEmpresas=0;
+    es.forEach(e=>{
+        if(!e.faturamento)return;
+        const cnpj=(e.cnpj||'').replace(/[.\-\/]/g,'');
+        if(cnpj&&seenFatCnpj.has(cnpj))return;
+        if(cnpj)seenFatCnpj.add(cnpj);
+        fatPago+=e.faturamento.totalPago;fatPendente+=e.faturamento.totalPendente;
+        fatVencido+=e.faturamento.totalVencido;fatQtd+=e.faturamento.qtdFaturas;fatEmpresas++;
+    });
+
     // Aggregate totals (used by KPIs and charts) - deduplicated
     let totalPlano=0,totalOraculo=0,totalMensal=0,totalInteg=0,totalAssist=0,totalFilial=0,totalDesc=0;
     uniquePlano.forEach(e=>{
@@ -1085,27 +1118,29 @@ function renderTabFin(){
     const isSingleBrand=allCnpjs.size===1&&uniquePlano.length===1;
     const ref=isSingleBrand?uniquePlano[0]:null;
 
-    if(isSingleBrand&&ref&&ref.planos&&ref.planos.length>1){
-        const kpis=ref.planos.map(p=>{
-            const isOrac=/oraculo|oráculo|integração|integracao|pacote/i.test(p.plano);
-            return {icon:isOrac?'&#128302;':'&#128176;',label:p.plano||'Plano',value:fmtCFull(p.totalCobrado),color:isOrac?'var(--accent-purple)':undefined};
-        });
-        document.getElementById('kpiGridFin').innerHTML=kpiHTML(kpis);
-    } else if(isSingleBrand&&ref){
-        document.getElementById('kpiGridFin').innerHTML=kpiHTML([
-            {icon:'&#128176;',label:ref.plano||'Plano',value:fmtCFull(ref.planoTotalCobrado)},
-        ]);
-    } else {
-        const kpis=[
-            {icon:'&#128176;',label:'Total Planos',value:fmtCFull(totalPlano)},
-            {icon:'&#128178;',label:'Mensalidade',value:fmtCFull(totalMensal)},
-            {icon:'&#127970;',label:'Valor Filial',value:totalFilial>0?fmtCFull(totalFilial):'Sem filial'},
-            {icon:'&#128279;',label:'Valor Integração',value:totalInteg>0?fmtCFull(totalInteg):'Sem integração'},
-            {icon:'&#129302;',label:'Assistente (Plano)',value:totalAssist>0?fmtCFull(totalAssist):'Sem assistente'},
-        ];
-        if(totalOraculo>0) kpis.push({icon:'&#128302;',label:'Total Oráculo',value:fmtCFull(totalOraculo),color:'var(--accent-purple)'});
-        document.getElementById('kpiGridFin').innerHTML=kpiHTML(kpis);
+    // Build KPIs - Faturamento Iugu first, then Marcas e Planos
+    const kpis=[];
+    // Invoices KPIs
+    if(fatPago>0||fatPendente>0) {
+        kpis.push({icon:'&#128176;',label:'Faturado (Pago)',value:fmtCFull(fatPago)});
+        if(fatPendente>0)kpis.push({icon:'&#9888;',label:'Pendente',value:fmtCFull(fatPendente),color:'var(--warning)'});
+        if(fatVencido>0)kpis.push({icon:'&#10060;',label:'Vencido',value:fmtCFull(fatVencido),color:'var(--danger)'});
+        kpis.push({icon:'&#128196;',label:'Faturas',value:fmtN(fatQtd)});
     }
+    // Marcas e Planos KPIs
+    if(isSingleBrand&&ref&&ref.planos&&ref.planos.length>1){
+        ref.planos.forEach(p=>{
+            const isOrac=/oraculo|oráculo|integração|integracao|pacote/i.test(p.plano);
+            kpis.push({icon:isOrac?'&#128302;':'&#128179;',label:p.plano||'Plano',value:fmtCFull(p.totalCobrado),color:isOrac?'var(--accent-purple)':undefined});
+        });
+    } else if(isSingleBrand&&ref){
+        kpis.push({icon:'&#128179;',label:ref.plano||'Plano',value:fmtCFull(ref.planoTotalCobrado)});
+    } else if(totalPlano>0){
+        kpis.push({icon:'&#128179;',label:'Total Planos',value:fmtCFull(totalPlano)});
+        kpis.push({icon:'&#128178;',label:'Mensalidade',value:fmtCFull(totalMensal)});
+        if(totalOraculo>0)kpis.push({icon:'&#128302;',label:'Total Oráculo',value:fmtCFull(totalOraculo),color:'var(--accent-purple)'});
+    }
+    document.getElementById('kpiGridFin').innerHTML=kpiHTML(kpis);
 
     // Distribuição por Plano (pie) - deduplicated
     const planoMap={};uniquePlano.forEach(e=>{const p=e.plano||'Sem plano';planoMap[p]=(planoMap[p]||0)+1;});
