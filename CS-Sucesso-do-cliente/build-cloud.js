@@ -883,6 +883,7 @@ async function main() {
                         md ? md.qtd : 0, md ? md.pagos : 0, md ? md.cancelados : 0, md ? md.pendentes : 0,
                         md ? Math.round(md.val * 100) / 100 : 0,
                         md ? Math.round(md.valPagos * 100) / 100 : 0,
+                        0, // valCancelados (not available per month in cloud build)
                         md ? Math.round((md.val - md.valPagos) * 100) / 100 : 0,
                         md ? md.tc : 0, md ? md.tp : 0,
                         md ? Math.round(md.vc * 100) / 100 : 0,
