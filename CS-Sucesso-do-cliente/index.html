@@ -1025,32 +1025,36 @@ function renderTab1(){
 function renderTabFin(){
     const es=filtered;
     const comPlano=es.filter(e=>e.planoTotalCobrado>0||e.planos);
-    const {display:selEmp}=getDisplayEmpresa();
-    const isSingle=!!selEmp;
+    // Deduplicate by CNPJ to avoid doubling plan values for filiais
+    const seenCnpj=new Set();
+    const uniquePlano=[];
+    comPlano.forEach(e=>{
+        const cnpj=(e.cnpj||'').replace(/[.\-\/]/g,'');
+        if(cnpj&&seenCnpj.has(cnpj))return;
+        if(cnpj)seenCnpj.add(cnpj);
+        uniquePlano.push(e);
+    });
 
-    // Single company: show each plan line as a separate KPI card
-    if(isSingle&&selEmp.planos&&selEmp.planos.length>1){
-        const kpis=selEmp.planos.map(p=>{
+    // Check if all filtered are same CNPJ (single brand)
+    const allCnpjs=new Set(comPlano.map(e=>(e.cnpj||'').replace(/[.\-\/]/g,'')).filter(Boolean));
+    const isSingleBrand=allCnpjs.size===1&&uniquePlano.length===1;
+    const ref=isSingleBrand?uniquePlano[0]:null;
+
+    if(isSingleBrand&&ref&&ref.planos&&ref.planos.length>1){
+        // Single brand with multiple plans: show each as card
+        const kpis=ref.planos.map(p=>{
             const isOrac=/oraculo|oráculo|integração|integracao|pacote/i.test(p.plano);
-            const parts=[];
-            if(p.mensalidade)parts.push('Mensal: '+fmtCFull(p.mensalidade));
-            if(p.integracao)parts.push('Integ: '+fmtCFull(p.integracao));
-            if(p.assistente)parts.push('Assist: '+fmtCFull(p.assistente));
-            if(p.filial)parts.push('Filial: '+fmtCFull(p.filial));
-            if(p.descontos)parts.push('Desc: '+fmtCFull(p.descontos));
-            if(p.setup)parts.push('Setup: '+fmtCFull(p.setup));
             return {icon:isOrac?'&#128302;':'&#128176;',label:p.plano||'Plano',value:fmtCFull(p.totalCobrado),color:isOrac?'var(--accent-purple)':undefined};
         });
         document.getElementById('kpiGridFin').innerHTML=kpiHTML(kpis);
-    } else if(isSingle&&selEmp.planoTotalCobrado>0){
-        // Single company, single plan
+    } else if(isSingleBrand&&ref){
         document.getElementById('kpiGridFin').innerHTML=kpiHTML([
-            {icon:'&#128176;',label:selEmp.plano||'Plano',value:fmtCFull(selEmp.planoTotalCobrado)},
+            {icon:'&#128176;',label:ref.plano||'Plano',value:fmtCFull(ref.planoTotalCobrado)},
         ]);
     } else {
-        // Multiple companies: aggregate KPIs
+        // Multiple brands: aggregate using deduplicated list
         let totalPlano=0,totalOraculo=0,totalMensal=0,totalInteg=0,totalAssist=0,totalFilial=0,totalDesc=0;
-        comPlano.forEach(e=>{
+        uniquePlano.forEach(e=>{
             if(e.planos&&e.planos.length>1){
                 e.planos.forEach(p=>{
                     const isOrac=/oraculo|oráculo|integração|integracao|pacote/i.test(p.plano);
@@ -1074,19 +1078,19 @@ function renderTabFin(){
         document.getElementById('kpiGridFin').innerHTML=kpiHTML(kpis);
     }
 
-    // Distribuição por Plano (pie)
-    const planoMap={};comPlano.forEach(e=>{const p=e.plano||'Sem plano';planoMap[p]=(planoMap[p]||0)+1;});
+    // Distribuição por Plano (pie) - deduplicated
+    const planoMap={};uniquePlano.forEach(e=>{const p=e.plano||'Sem plano';planoMap[p]=(planoMap[p]||0)+1;});
     const planoLabels=Object.keys(planoMap).sort((a,b)=>planoMap[b]-planoMap[a]);
     const planoColors=['#7C3AED','#06B6D4','#A855F7','#EC4899','#8B5CF6','#EAB308','#10B981','#EF4444'];
     getOrCreate('chartPlanos',{type:'pie',data:{labels:planoLabels,datasets:[{data:planoLabels.map(l=>planoMap[l]),backgroundColor:planoColors.slice(0,planoLabels.length),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:darkLegend,tooltip:darkTooltip}}});
 
-    // Receita por Plano (bar)
-    const receitaPlano={};comPlano.forEach(e=>{const p=e.plano||'Sem plano';receitaPlano[p]=(receitaPlano[p]||0)+e.planoTotalCobrado;});
+    // Receita por Plano (bar) - deduplicated
+    const receitaPlano={};uniquePlano.forEach(e=>{const p=e.plano||'Sem plano';receitaPlano[p]=(receitaPlano[p]||0)+e.planoTotalCobrado;});
     const rLabels=Object.keys(receitaPlano).sort((a,b)=>receitaPlano[b]-receitaPlano[a]);
     getOrCreate('chartReceitaPlano',{type:'bar',data:{labels:rLabels,datasets:[{label:'Receita',data:rLabels.map(l=>receitaPlano[l]),backgroundColor:'rgba(16,185,129,0.7)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...darkTooltip,callbacks:{label:ctx=>fmtC(ctx.raw)}}},scales:{x:{ticks:darkTick,grid:darkGrid},y:{ticks:{...darkTick,callback:v=>fmtC(v)},grid:darkGrid}}}});
 
-    // Top 10 por Total Cobrado
-    const top10C=[...comPlano].sort((a,b)=>b.planoTotalCobrado-a.planoTotalCobrado).slice(0,10).reverse();
+    // Top 10 por Total Cobrado - deduplicated
+    const top10C=[...uniquePlano].sort((a,b)=>b.planoTotalCobrado-a.planoTotalCobrado).slice(0,10).reverse();
     getOrCreate('chartTopCobrado',{type:'bar',data:{labels:top10C.map(e=>e.nome.length>20?e.nome.substring(0,20)+'...':e.nome),datasets:[{label:'Total Cobrado',data:top10C.map(e=>e.planoTotalCobrado),backgroundColor:'rgba(124,58,237,0.7)',borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...darkTooltip,callbacks:{label:ctx=>fmtC(ctx.raw)}}},scales:{x:{ticks:{...darkTick,callback:v=>fmtC(v)},grid:darkGrid},y:{ticks:darkTick,grid:darkGrid}}}});
 
     // Composição de Valores (stacked bar)
