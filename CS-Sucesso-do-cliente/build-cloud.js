@@ -556,17 +556,18 @@ async function main() {
             if (starterSheets.length > 0) sheetsToRead.push(starterSheets[0]);
             if (vestiSheets.length > 0) sheetsToRead.push(vestiSheets[0]);
             if (sheetsToRead.length === 0) sheetsToRead.push(wb.SheetNames[0]);
+            // Collect all lines per CNPJ, then merge (sum numeric fields)
+            const allLinesByCnpj = {};
             for (const sheetName of sheetsToRead) {
                 const ws = wb.Sheets[sheetName];
                 const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
                 for (const row of rows) {
                     const cnpj = String(row['CPFCNPJ'] || row['CPF e CNPJ'] || '').replace(/[.\-\/\s]/g, '');
                     if (!cnpj || cnpj.length < 11) continue;
-                    const plano = (row['PLANO'] || '').trim();
-                    const isOraculo = plano.toLowerCase().includes('oraculo') || plano.toLowerCase().includes('oráculo');
-                    const marca = {
+                    if (!allLinesByCnpj[cnpj]) allLinesByCnpj[cnpj] = [];
+                    allLinesByCnpj[cnpj].push({
                         marca: row['MARCA'] || '',
-                        plano,
+                        plano: (row['PLANO'] || '').trim(),
                         setup: parseFloat(row['SETUP']) || 0,
                         mensalidade: parseFloat(row['MENSALIDADE']) || 0,
                         integracao: parseFloat(row['INTEGRAÇÃO'] || row['INTEGRACAO']) || 0,
@@ -577,18 +578,23 @@ async function main() {
                         observacoes: row['OBSERVAÇÕES'] || row['OBSERVACOES'] || '',
                         canal: row['CANAL'] || row['CANAL/Agência'] || '',
                         subconta: row['Subconta'] || '',
-                    };
-                    // Non-Oráculo entries always win over Oráculo entries
-                    if (!isOraculo) {
-                        marcasMap[cnpj] = marca;
-                    } else if (!marcasMap[cnpj]) {
-                        marcasMap[cnpj] = marca;
-                    }
+                    });
                 }
                 console.log('  Excel sheet "' + sheetName + '": ' + rows.length + ' rows');
             }
+            // Merge: main plan name from non-extra line, sum all numeric fields
+            const isExtra = (p) => /oraculo|oráculo|integração|integracao|pacote/i.test(p);
+            for (const [cnpj, lines] of Object.entries(allLinesByCnpj)) {
+                const main = lines.find(l => !isExtra(l.plano)) || lines[0];
+                const merged = { marca: main.marca, plano: main.plano, setup: 0, mensalidade: 0, integracao: 0, assistente: 0, filial: 0, descontos: 0, totalCobrado: 0, observacoes: main.observacoes, canal: main.canal, subconta: main.subconta };
+                for (const line of lines) {
+                    for (const k of ['setup', 'mensalidade', 'integracao', 'assistente', 'filial', 'descontos', 'totalCobrado']) merged[k] += line[k];
+                }
+                for (const k of ['setup', 'mensalidade', 'integracao', 'assistente', 'filial', 'descontos', 'totalCobrado']) merged[k] = Math.round(merged[k] * 100) / 100;
+                marcasMap[cnpj] = merged;
+            }
             marcasSource = 'Excel';
-            console.log('  Marcas e Planos (Excel): ' + Object.keys(marcasMap).length + ' CNPJs');
+            console.log('  Marcas e Planos (Excel merged): ' + Object.keys(marcasMap).length + ' CNPJs');
         } catch (e) {
             console.log('  WARN: Excel read failed: ' + e.message + ', falling back to PowerBI data');
         }
