@@ -781,20 +781,7 @@ function updateFinanceiroDetail(match){
             html+='<td style="padding:8px 12px;">'+(p.setup?fmtCFull(p.setup):'Isento')+'</td>';
             html+='</tr>';
         });
-        // Total row if multiple plans
-        if(planos.length>1){
-            const sum=(k)=>planos.reduce((s,p)=>s+(p[k]||0),0);
-            html+='<tr style="border-top:2px solid var(--border);background:rgba(124,58,237,0.05);">';
-            html+='<td style="padding:8px 12px;font-weight:700;">TOTAL</td>';
-            html+='<td style="padding:8px 12px;font-weight:600;">'+(sum('mensalidade')?fmtCFull(sum('mensalidade')):'-')+'</td>';
-            html+='<td style="padding:8px 12px;font-weight:600;">'+(sum('integracao')?fmtCFull(sum('integracao')):'-')+'</td>';
-            html+='<td style="padding:8px 12px;font-weight:600;">'+(sum('assistente')?fmtCFull(sum('assistente')):'-')+'</td>';
-            html+='<td style="padding:8px 12px;font-weight:600;">'+(sum('filial')?fmtCFull(sum('filial')):'-')+'</td>';
-            html+='<td style="padding:8px 12px;font-weight:600;">'+(sum('descontos')?fmtCFull(sum('descontos')):'-')+'</td>';
-            html+='<td style="padding:8px 12px;font-weight:800;color:var(--success);font-size:14px;">'+fmtCFull(sum('totalCobrado'))+'</td>';
-            html+='<td style="padding:8px 12px;font-weight:600;">'+(sum('setup')?fmtCFull(sum('setup')):'Isento')+'</td>';
-            html+='</tr>';
-        }
+        // No total row - each plan shown individually
         // Subconta + Observações
         html+='<tr><td colspan="8" style="padding:8px 12px;font-size:11px;color:var(--text-muted);border-top:1px solid var(--border);"><strong>Subconta:</strong> '+(match.planoSubconta||'-')+' &nbsp;|&nbsp; <strong>Obs:</strong> '+(match.planoObservacoes||'-')+'</td></tr>';
         tbody.innerHTML=html;
@@ -1038,21 +1025,31 @@ function renderTab1(){
 function renderTabFin(){
     const es=filtered;
     const comPlano=es.filter(e=>e.planoTotalCobrado>0);
-    const totalMensal=comPlano.reduce((s,e)=>s+e.planoMensalidade,0);
-    const totalCobrado=comPlano.reduce((s,e)=>s+e.planoTotalCobrado,0);
-    const totalInteg=comPlano.reduce((s,e)=>s+(e.planoIntegracao||0),0);
-    const totalAssist=comPlano.reduce((s,e)=>s+(e.planoAssistente||0),0);
-    const totalFilial=comPlano.reduce((s,e)=>s+(e.planoFilial||0),0);
-    const totalDesc=comPlano.reduce((s,e)=>s+(e.planoDescontos||0),0);
-    const ticketMedio=comPlano.length>0?totalCobrado/comPlano.length:0;
+    // Separate main plan vs Oráculo/extras from planos array
+    let totalPlano=0,totalOraculo=0,totalMensal=0,totalInteg=0,totalAssist=0,totalFilial=0,totalDesc=0;
+    comPlano.forEach(e=>{
+        if(e.planos&&e.planos.length>1){
+            e.planos.forEach(p=>{
+                const isOrac=/oraculo|oráculo|integração|integracao|pacote/i.test(p.plano);
+                if(isOrac){totalOraculo+=p.totalCobrado;}
+                else{totalPlano+=p.totalCobrado;totalMensal+=p.mensalidade;totalInteg+=p.integracao;totalFilial+=p.filial;totalDesc+=p.descontos;totalAssist+=p.assistente;}
+            });
+        } else {
+            totalPlano+=e.planoTotalCobrado;totalMensal+=e.planoMensalidade;
+            totalInteg+=(e.planoIntegracao||0);totalAssist+=(e.planoAssistente||0);
+            totalFilial+=(e.planoFilial||0);totalDesc+=(e.planoDescontos||0);
+        }
+    });
 
-    document.getElementById('kpiGridFin').innerHTML=kpiHTML([
-        {icon:'&#128176;',label:'Total Cobrado',value:fmtCFull(totalCobrado)},
+    const kpis=[
+        {icon:'&#128176;',label:'Total Planos',value:fmtCFull(totalPlano)},
         {icon:'&#128178;',label:'Mensalidade',value:fmtCFull(totalMensal)},
         {icon:'&#127970;',label:'Valor Filial',value:totalFilial>0?fmtCFull(totalFilial):'Sem filial'},
         {icon:'&#128279;',label:'Valor Integração',value:totalInteg>0?fmtCFull(totalInteg):'Sem integração'},
-        {icon:'&#129302;',label:'Valor Assistente',value:totalAssist>0?fmtCFull(totalAssist):'Sem assistente'},
-    ]);
+        {icon:'&#129302;',label:'Assistente (Plano)',value:totalAssist>0?fmtCFull(totalAssist):'Sem assistente'},
+    ];
+    if(totalOraculo>0) kpis.push({icon:'&#128302;',label:'Total Oráculo',value:fmtCFull(totalOraculo),color:'var(--accent-purple)'});
+    document.getElementById('kpiGridFin').innerHTML=kpiHTML(kpis);
 
     // Distribuição por Plano (pie)
     const planoMap={};comPlano.forEach(e=>{const p=e.plano||'Sem plano';planoMap[p]=(planoMap[p]||0)+1;});
@@ -1070,10 +1067,12 @@ function renderTabFin(){
     getOrCreate('chartTopCobrado',{type:'bar',data:{labels:top10C.map(e=>e.nome.length>20?e.nome.substring(0,20)+'...':e.nome),datasets:[{label:'Total Cobrado',data:top10C.map(e=>e.planoTotalCobrado),backgroundColor:'rgba(124,58,237,0.7)',borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...darkTooltip,callbacks:{label:ctx=>fmtC(ctx.raw)}}},scales:{x:{ticks:{...darkTick,callback:v=>fmtC(v)},grid:darkGrid},y:{ticks:darkTick,grid:darkGrid}}}});
 
     // Composição de Valores (stacked bar)
-    const cats=['Mensalidade','Integração','Assistente','Filial'];
+    const cats=['Mensalidade','Integração','Assistente (Plano)','Filial'];
     const catVals=[totalMensal,totalInteg,totalAssist,totalFilial];
     const descVal=Math.abs(totalDesc);
-    getOrCreate('chartComposicao',{type:'doughnut',data:{labels:[...cats,'Descontos'],datasets:[{data:[...catVals,descVal],backgroundColor:['#7C3AED','#06B6D4','#A855F7','#EC4899','#EF4444'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:darkLegend,tooltip:{...darkTooltip,callbacks:{label:ctx=>ctx.label+': '+fmtC(ctx.raw)}}}}});
+    const compLabels=[...cats,'Descontos'];const compVals=[...catVals,descVal];const compColors=['#7C3AED','#06B6D4','#A855F7','#EC4899','#EF4444'];
+    if(totalOraculo>0){compLabels.push('Oráculo');compVals.push(totalOraculo);compColors.push('#8B5CF6');}
+    getOrCreate('chartComposicao',{type:'doughnut',data:{labels:compLabels,datasets:[{data:compVals,backgroundColor:compColors,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:darkLegend,tooltip:{...darkTooltip,callbacks:{label:ctx=>ctx.label+': '+fmtC(ctx.raw)}}}}});
 }
 
 /* ========== TAB 3: ANALISE DE CHURN ========== */
