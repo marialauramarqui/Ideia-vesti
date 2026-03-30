@@ -437,6 +437,7 @@
 
     <!-- TAB 4: Dados para Exportação -->
     <div class="tab-content" id="tab4">
+        <div class="kpi-grid" id="kpiGridExport" style="margin-bottom:16px;"></div>
         <div class="table-card">
             <div class="table-header">
                 <div class="table-title">Dados para Exportação</div>
@@ -470,7 +471,7 @@ const darkTooltip={backgroundColor:'#1a1d27',titleColor:'#f0f2f5',bodyColor:'#8b
 let filtered=[];
 let tablePage=1;
 const PER_PAGE=10;
-let sortCol=-1,sortDir=1;
+let sortCol=19,sortDir=-1; // default: GMV desc
 
 /* ========== INIT (called from login script) ========== */
 
@@ -507,7 +508,7 @@ function clearFilters(){
     document.getElementById('fEmpresa').value='';
     document.getElementById('tableSearch').value='';
     document.getElementById('filialFilterGroup').style.display='none';
-    tablePage=1;sortCol=-1;
+    tablePage=1;sortCol=19;sortDir=-1;
     applyFilters();
 }
 
@@ -1197,6 +1198,27 @@ const TABLE_COLS=[
 ];
 
 function renderTable(){
+    // KPI summary for export tab (same totals as Visão Geral)
+    const es=filtered;
+    const gmvT=es.reduce((s,e)=>s+e._gmv,0);
+    const pedT=es.reduce((s,e)=>s+e._pedidos,0);
+    const pagosT=es.reduce((s,e)=>s+e._pedidosPagos,0);
+    const valPagT=es.reduce((s,e)=>s+e._valPedidosPagos,0);
+    const linksT=es.reduce((s,e)=>s+e._links,0);
+    const cliqT=es.reduce((s,e)=>s+e._cliques,0);
+    const ticketT=pagosT>0?valPagT/pagosT:0;
+    const cancT=es.reduce((s,e)=>s+e._pedidosCancelados,0);
+    document.getElementById('kpiGridExport').innerHTML=kpiHTML([
+        {icon:'&#128176;',label:'GMV Total',value:fmtC(gmvT)},
+        {icon:'&#127980;',label:'Empresas',value:fmtN(es.length)},
+        {icon:'&#128230;',label:'Total Pedidos',value:fmtN(pedT)},
+        {icon:'&#9989;',label:'Pedidos Pagos',value:fmtN(pagosT)},
+        {icon:'&#128178;',label:'Valor Pagos',value:fmtC(valPagT)},
+        {icon:'&#128279;',label:'Links Enviados',value:fmtN(linksT)},
+        {icon:'&#127915;',label:'Ticket Médio',value:fmtC(ticketT)},
+        {icon:'&#10060;',label:'Cancelados',value:fmtN(cancT)},
+    ]);
+
     const search=document.getElementById('tableSearch').value.trim().toLowerCase();
     let data=filtered;
     if(search){data=data.filter(e=>e.nome.toLowerCase().includes(search)||(e.cnpj||'').includes(search)||(e.anjo||'').toLowerCase().includes(search)||(e.canal||'').toLowerCase().includes(search));}
@@ -1248,16 +1270,25 @@ function goPage(p){tablePage=p;renderTable();}
 /* ========== EXPORT CSV ========== */
 function getExportData(){
     const search=document.getElementById('tableSearch').value.trim().toLowerCase();
-    let data=filtered;
+    let data=[...filtered];
     if(search){data=data.filter(e=>e.nome.toLowerCase().includes(search)||(e.cnpj||'').includes(search));}
+    if(sortCol>=0){
+        const col=TABLE_COLS[sortCol];
+        data.sort((a,b)=>{let va=a[col.key],vb=b[col.key];if(typeof va==='string')va=(va||'').toLowerCase();if(typeof vb==='string')vb=(vb||'').toLowerCase();if(va<vb)return -1*sortDir;if(va>vb)return 1*sortDir;return 0;});
+    }
     return data;
+}
+function getExportValue(c,e){
+    let v=e[c.key];
+    if(v===undefined){const html=c.fmt(v,e);return typeof html==='string'?html.replace(/<[^>]*>/g,''):'';}
+    return v;
 }
 
 function exportCSV(){
     const data=getExportData();
     const headers=TABLE_COLS.map(c=>c.label);
     const rows=data.map(e=>TABLE_COLS.map(c=>{
-        let v=e[c.key];
+        let v=getExportValue(c,e);
         if(typeof v==='boolean')v=v?'Sim':'Nao';
         if(typeof v==='number')v=v.toString().replace('.',',');
         return '"'+(v!=null?String(v).replace(/"/g,'""'):'')+'"';
@@ -1275,7 +1306,7 @@ function exportExcel(){
     const data=getExportData();
     const headers=TABLE_COLS.map(c=>c.label);
     const rows=data.map(e=>TABLE_COLS.map(c=>{
-        let v=e[c.key];
+        let v=getExportValue(c,e);
         if(typeof v==='boolean')v=v?'Sim':'Não';
         return v!=null?v:'';
     }));
