@@ -261,19 +261,23 @@
     <div class="empresa-info-item"><strong>Risco Churn:</strong> <span id="eiChurn">-</span></div>
     <div class="empresa-info-item"><strong>Filial:</strong> <span id="eiFilial">-</span></div>
 </div>
-<div id="csatPanel" style="display:none;padding:10px 32px;background:rgba(234,179,8,0.06);border-bottom:1px solid var(--border);">
-    <div style="font-size:13px;font-weight:700;color:var(--accent-gold);margin-bottom:8px;">CSAT - Satisfação do Cliente</div>
-    <div id="csatContent" style="display:flex;gap:16px;flex-wrap:wrap;"></div>
-</div>
-<div id="oraculoDetailPanel" style="display:none;padding:14px 32px;background:rgba(168,85,247,0.06);border-bottom:1px solid var(--border);">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="font-size:13px;font-weight:700;color:var(--accent-purple);">Oráculo</div>
-        <div style="display:flex;gap:6px;">
-            <button onclick="oraculoSlide(-1)" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-primary);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;">&#9664;</button>
-            <button onclick="oraculoSlide(1)" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-primary);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;">&#9654;</button>
+<div id="oraculoCsatRow" style="display:none;padding:14px 32px;border-bottom:1px solid var(--border);display:none;">
+    <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;">
+        <div id="oraculoDetailPanel" style="flex:1;min-width:280px;padding:14px;background:rgba(168,85,247,0.06);border-radius:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <div style="font-size:13px;font-weight:700;color:var(--accent-purple);">Oráculo</div>
+                <div style="display:flex;gap:6px;">
+                    <button onclick="oraculoSlide(-1)" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-primary);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;">&#9664;</button>
+                    <button onclick="oraculoSlide(1)" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-primary);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;">&#9654;</button>
+                </div>
+            </div>
+            <div id="oraculoDetailContent"></div>
+        </div>
+        <div id="csatPanel" style="flex:1;min-width:220px;padding:14px;background:rgba(234,179,8,0.06);border-radius:10px;display:none;">
+            <div style="font-size:13px;font-weight:700;color:var(--accent-gold);margin-bottom:8px;">CSAT / NPS</div>
+            <div id="csatContent" style="display:flex;gap:12px;flex-wrap:wrap;"></div>
         </div>
     </div>
-    <div id="oraculoDetailContent"></div>
 </div>
 
 <div class="main">
@@ -780,6 +784,13 @@ function updateEmpresaPanel(){
         } else {
             csatPanel.style.display='none';
         }
+        // Show/hide the combined row container
+        const rowContainer=document.getElementById('oraculoCsatRow');
+        if(oraculoPanel.style.display!=='none'||csatPanel.style.display!=='none'){
+            rowContainer.style.display='block';
+        } else {
+            rowContainer.style.display='none';
+        }
         // Filiais filter (always uses main match)
         updateFiliaisFilter(match);
         // Filiais section in Transações tab
@@ -790,6 +801,7 @@ function updateEmpresaPanel(){
         panel.classList.remove('visible');
         oraculoPanel.style.display='none';
         document.getElementById('csatPanel').style.display='none';
+        document.getElementById('oraculoCsatRow').style.display='none';
         document.getElementById('filiaisSection').style.display='none';
         document.getElementById('filialFilterGroup').style.display='none';
         document.getElementById('finEmpresaDetail').style.display='none';
