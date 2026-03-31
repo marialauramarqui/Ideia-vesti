@@ -330,7 +330,7 @@ async function fetchOraculoTickets() {
     }
 }
 
-// ===================== ORÁCULO FABRIC: PAINEL STATS =====================
+// ===================== ORÁCULO FABRIC: PAINEL STATS (with monthly data) =====================
 async function fetchOraculoPainelStats(accessToken) {
     try {
         console.log('  Listing Oráculo painéis datasets...');
@@ -343,29 +343,82 @@ async function fetchOraculoPainelStats(accessToken) {
         if (dsRes.statusCode !== 200) { console.log('  WARN: Oráculo painéis list failed HTTP ' + dsRes.statusCode); return new Map(); }
         const datasets = JSON.parse(dsRes.body).value || [];
 
-        const dax = "EVALUATE ROW(\"pedidos\", COUNTROWS('f_Pedidos Oraculo'), \"interacoes\", COUNTROWS('f_Interacoes Oraculo Semanal'), \"atendimentos\", [KPI Atendimentos Oraculo], \"pctIA\", [KPI % Atendimento Oraculo], \"vendas\", [KPI Vendas Totais])";
+        // Use direct queries instead of KPI measures (which return null for some datasets)
+        const daxPedidos = "EVALUATE SUMMARIZECOLUMNS('f_Pedidos Oraculo'[settings_createdAt_TIMESTAMP], \"pedidos\", COUNTROWS('f_Pedidos Oraculo'), \"vendas\", SUM('f_Pedidos Oraculo'[summary_total]))";
+        const daxInteracoes = "EVALUATE SUMMARIZECOLUMNS('f_Interacoes Oraculo Semanal'[DataReferencia], \"interacoes\", COUNTROWS('f_Interacoes Oraculo Semanal'), \"ia\", SUM('f_Interacoes Oraculo Semanal'[IA]))";
+
         const map = new Map();
         let ok = 0, fail = 0;
         for (const ds of datasets) {
             if (ds.name === 'Report Usage Metrics Model') continue;
-            const name = ds.name.replace(' - Oráculo', '').trim();
-            const body = JSON.stringify({ queries: [{ query: dax }], serializerSettings: { includeNulls: true } });
+            const name = ds.name.replace(' - Oráculo', '').replace(' - Oraculo', '').trim();
             try {
-                const res = await httpsRequest({
+                // Fetch pedidos
+                const pBody = JSON.stringify({ queries: [{ query: daxPedidos }], serializerSettings: { includeNulls: true } });
+                const pRes = await httpsRequest({
                     hostname: 'api.powerbi.com',
                     path: '/v1.0/myorg/groups/' + ORACULO_PAINEIS_WS_ID + '/datasets/' + ds.id + '/executeQueries',
                     method: 'POST',
-                    headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
-                }, body);
-                if (res.statusCode === 200) {
-                    const val = JSON.parse(res.body).results?.[0]?.tables?.[0]?.rows?.[0] || {};
+                    headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(pBody) },
+                }, pBody);
+                // Fetch interacoes
+                const iBody = JSON.stringify({ queries: [{ query: daxInteracoes }], serializerSettings: { includeNulls: true } });
+                const iRes = await httpsRequest({
+                    hostname: 'api.powerbi.com',
+                    path: '/v1.0/myorg/groups/' + ORACULO_PAINEIS_WS_ID + '/datasets/' + ds.id + '/executeQueries',
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(iBody) },
+                }, iBody);
+
+                const pRows = (pRes.statusCode === 200 ? JSON.parse(pRes.body).results?.[0]?.tables?.[0]?.rows : null) || [];
+                const iRows = (iRes.statusCode === 200 ? JSON.parse(iRes.body).results?.[0]?.tables?.[0]?.rows : null) || [];
+
+                // Aggregate by month
+                const monthly = {};
+                let totalPedidos = 0, totalVendas = 0, totalInteracoes = 0, totalIA = 0;
+                pRows.forEach(r => {
+                    const dt = r["f_Pedidos Oraculo[settings_createdAt_TIMESTAMP]"] || '';
+                    const mes = dt.substring(0, 7);
+                    if (!mes) return;
+                    const ped = r['[pedidos]'] || 0;
+                    const ven = r['[vendas]'] || 0;
+                    if (!monthly[mes]) monthly[mes] = { pedidos: 0, vendas: 0, interacoes: 0, ia: 0 };
+                    monthly[mes].pedidos += ped;
+                    monthly[mes].vendas += ven;
+                    totalPedidos += ped;
+                    totalVendas += ven;
+                });
+                iRows.forEach(r => {
+                    const dt = r["f_Interacoes Oraculo Semanal[DataReferencia]"] || '';
+                    const mes = dt.substring(0, 7);
+                    if (!mes) return;
+                    const inter = r['[interacoes]'] || 0;
+                    const ia = r['[ia]'] || 0;
+                    if (!monthly[mes]) monthly[mes] = { pedidos: 0, vendas: 0, interacoes: 0, ia: 0 };
+                    monthly[mes].interacoes += inter;
+                    monthly[mes].ia += ia;
+                    totalInteracoes += inter;
+                    totalIA += ia;
+                });
+
+                const atendimentos = totalInteracoes; // unique customers approximated by total interactions
+                const pctIA = totalInteracoes > 0 ? Math.round((totalIA / totalInteracoes) * 1000) / 10 : 0;
+
+                // Build monthly array sorted desc
+                const mensalArr = Object.entries(monthly)
+                    .map(([mes, d]) => ({ mes, pedidos: d.pedidos, vendas: Math.round(d.vendas * 100) / 100, interacoes: d.interacoes, ia: d.ia, pctIA: d.interacoes > 0 ? Math.round((d.ia / d.interacoes) * 1000) / 10 : 0 }))
+                    .sort((a, b) => b.mes.localeCompare(a.mes))
+                    .slice(0, 12);
+
+                if (totalPedidos > 0 || totalInteracoes > 0) {
                     map.set(name.toLowerCase(), {
                         name,
-                        pedidosOraculo: val['[pedidos]'] || 0,
-                        interacoesOraculo: val['[interacoes]'] || 0,
-                        atendimentosOraculo: val['[atendimentos]'] || 0,
-                        pctIAOraculo: val['[pctIA]'] != null ? Math.round(val['[pctIA]'] * 1000) / 10 : 0,
-                        vendasOraculo: val['[vendas]'] != null ? Math.round(val['[vendas]'] * 100) / 100 : 0,
+                        pedidosOraculo: totalPedidos,
+                        interacoesOraculo: totalInteracoes,
+                        atendimentosOraculo: atendimentos,
+                        pctIAOraculo: pctIA,
+                        vendasOraculo: Math.round(totalVendas * 100) / 100,
+                        mensal: mensalArr,
                     });
                     ok++;
                 } else { fail++; }
@@ -1307,6 +1360,7 @@ async function main() {
                     atendimentosOraculo: oraculoStats ? oraculoStats.atendimentosOraculo : 0,
                     pctIAOraculo: oraculoStats ? oraculoStats.pctIAOraculo : 0,
                     vendasOraculo: oraculoStats ? oraculoStats.vendasOraculo : 0,
+                    mensal: oraculoStats ? oraculoStats.mensal : undefined,
                 } : undefined,
                 usuario: ctrl ? ctrl.usuario : '',
                 senha: ctrl ? ctrl.senha : '',

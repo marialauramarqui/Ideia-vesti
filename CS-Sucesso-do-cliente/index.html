@@ -265,7 +265,7 @@
     <div style="font-size:13px;font-weight:700;color:var(--accent-gold);margin-bottom:8px;">CSAT - Satisfação do Cliente</div>
     <div id="csatContent" style="display:flex;gap:16px;flex-wrap:wrap;"></div>
 </div>
-<div id="oraculoDetailPanel" style="display:none;padding:14px 32px;background:rgba(168,85,247,0.06);border-bottom:1px solid var(--border);">
+<div id="oraculoDetailPanel" style="display:none;padding:10px 24px;background:rgba(168,85,247,0.06);border-bottom:1px solid var(--border);max-width:600px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <div style="font-size:13px;font-weight:700;color:var(--accent-purple);">Oráculo</div>
         <div style="display:flex;gap:6px;">
@@ -562,8 +562,8 @@ function applyFilters(){
         if(fCr==='Nao'&&e.cartao==='Sim')return false;
         if(fPx==='Sim'&&e.pix!=='Sim')return false;
         if(fPx==='Nao'&&e.pix==='Sim')return false;
-        if(fIn==='Sim'&&!e.temIntegracao)return false;
-        if(fIn==='Nao'&&e.temIntegracao)return false;
+        if(fIn==='Sim'&&e.temIntegracao!=='Sim')return false;
+        if(fIn==='Nao'&&e.temIntegracao==='Sim')return false;
         if(fMo&&e.modulo!==fMo)return false;
         if(fAt==='1'&&(e.pedidos||0)===0)return false;
         if(fEH&&e.etapaHub!==fEH)return false;
@@ -649,7 +649,7 @@ function updateEmpresaPanel(){
         document.getElementById('eiDominioId').textContent=show.idDominio||'-';
         document.getElementById('eiCnpj').textContent=show.cnpj||'-';
         document.getElementById('eiUsuario').textContent=show.usuario||'-';
-        document.getElementById('eiInteg').textContent=show.temIntegracao?'Sim':'Não';
+        document.getElementById('eiInteg').textContent=show.temIntegracao==='Sim'?'Sim':'Não';
         document.getElementById('eiIntegDetalhe').textContent=show.integracao||'-';
         document.getElementById('eiTipoInteg').textContent=show.tipoIntegracao||'-';
         document.getElementById('eiCanal').textContent=show.canal||'-';
@@ -690,14 +690,27 @@ function updateEmpresaPanel(){
         if(show.temOraculoFabric&&show.oraculoFabric){
             oraculoPanel.style.display='block';
             const oc=show.oraculoFabric;
+            // Check if period filter is active - if so, filter monthly data
+            const fPedDe=document.getElementById('fPedDe').value;
+            const fPedAte=document.getElementById('fPedAte').value;
+            let ocPed=oc.pedidosOraculo||0,ocInter=oc.interacoesOraculo||0,ocAtend=oc.atendimentosOraculo||0,ocPctIA=(oc.pctIAOraculo||0),ocVendas=oc.vendasOraculo||0;
+            let periodoLabel='total';
+            if((fPedDe||fPedAte)&&oc.mensal&&oc.mensal.length>0){
+                const filtered=oc.mensal.filter(m=>(!fPedDe||m.mes>=fPedDe)&&(!fPedAte||m.mes<=fPedAte));
+                if(filtered.length>0){
+                    ocPed=filtered.reduce((s,m)=>s+m.pedidos,0);
+                    ocInter=filtered.reduce((s,m)=>s+m.interacoes,0);
+                    ocAtend=ocInter;
+                    const totalIA=filtered.reduce((s,m)=>s+m.ia,0);
+                    ocPctIA=ocInter>0?Math.round(totalIA/ocInter*1000)/10:0;
+                    ocVendas=filtered.reduce((s,m)=>s+m.vendas,0);
+                    periodoLabel=filtered.map(m=>m.mes).join(', ');
+                }
+            }
             window._oraculoSlides=[
-                // Slide 1: Atendimentos
-                {title:'Clientes Atendidos',kpi:fmtN(oc.atendimentosOraculo||0),label:'atendimentos totais',color:'var(--primary)',bg:'rgba(124,58,237,0.1)',sub:'Pedidos: '+fmtN(oc.pedidosOraculo||0)+' | Interações: '+fmtN(oc.interacoesOraculo||0)},
-                // Slide 2: % IA
-                {title:'% Atendimento por IA',kpi:(oc.pctIAOraculo||0).toFixed(1)+'%',label:'dos atendimentos feitos por IA',color:'var(--teal)',bg:'rgba(6,182,212,0.1)',sub:fmtN(Math.round((oc.atendimentosOraculo||0)*(oc.pctIAOraculo||0)/100))+' atendimentos por IA de '+fmtN(oc.atendimentosOraculo||0)+' totais'},
-                // Slide 3: Vendas
-                {title:'Vendas pelo Oráculo',kpi:oc.vendasOraculo>0?fmtCFull(oc.vendasOraculo):'Sem dados',label:'valor total em vendas',color:'var(--success)',bg:'rgba(16,185,129,0.1)',sub:'Pedidos pelo Oráculo: '+fmtN(oc.pedidosOraculo||0)},
-                // Slide 4: Config
+                {title:'Clientes Atendidos',kpi:fmtN(ocAtend),label:'atendimentos ('+periodoLabel+')',color:'var(--primary)',bg:'rgba(124,58,237,0.1)',sub:'Pedidos: '+fmtN(ocPed)+' | Interações: '+fmtN(ocInter)},
+                {title:'% Atendimento por IA',kpi:ocPctIA.toFixed(1)+'%',label:'dos atendimentos feitos por IA',color:'var(--teal)',bg:'rgba(6,182,212,0.1)',sub:fmtN(Math.round(ocAtend*ocPctIA/100))+' por IA de '+fmtN(ocAtend)+' totais'},
+                {title:'Vendas pelo Oráculo',kpi:ocVendas>0?fmtCFull(ocVendas):'Sem dados',label:'valor em vendas ('+periodoLabel+')',color:'var(--success)',bg:'rgba(16,185,129,0.1)',sub:'Pedidos: '+fmtN(ocPed)},
                 {title:'Configuração',kpi:'',label:'',color:'var(--accent-purple)',bg:'rgba(168,85,247,0.1)',config:true,oc},
             ];
             window._oraculoSlideIdx=0;
@@ -1004,7 +1017,7 @@ function renderTab0(){
 
     // Chart: Implementação (stacked bar)
     const implLabels=['Cartão','PIX','Integração','Marca Ativa'];
-    const simCounts=[es.filter(e=>e.cartao==='Sim').length,es.filter(e=>e.pix==='Sim').length,es.filter(e=>e.temIntegracao).length,es.filter(e=>e.marcaAtiva).length];
+    const simCounts=[es.filter(e=>e.cartao==='Sim').length,es.filter(e=>e.pix==='Sim').length,es.filter(e=>e.temIntegracao==='Sim').length,es.filter(e=>e.marcaAtiva==='Sim').length];
     const naoCounts=[es.length-simCounts[0],es.length-simCounts[1],es.length-simCounts[2],es.length-simCounts[3]];
     getOrCreate('chartImpl',{type:'bar',data:{labels:implLabels,datasets:[{label:'Sim',data:simCounts,backgroundColor:'rgba(16,185,129,0.7)'},{label:'Não',data:naoCounts,backgroundColor:'rgba(214,69,80,0.5)'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:darkLegend,tooltip:darkTooltip},scales:{x:{stacked:true,ticks:darkTick,grid:darkGrid},y:{stacked:true,ticks:darkTick,grid:darkGrid}}}});
 
@@ -1067,7 +1080,7 @@ function renderTab1(){
     getOrCreate('chartTopVal',{type:'bar',data:{labels:top10V.map(e=>e.nome.length>20?e.nome.substring(0,20)+'...':e.nome),datasets:[{label:'Valor',data:top10V.map(e=>e._valCartao+e._valPix),backgroundColor:'rgba(124,58,237,0.7)',borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...darkTooltip,callbacks:{label:ctx=>fmtC(ctx.raw)}}},scales:{x:{ticks:{...darkTick,callback:v=>fmtC(v)},grid:darkGrid},y:{ticks:darkTick,grid:darkGrid}}}});
 
     // Marcas Ativas doughnut
-    const ativas=es.filter(e=>e.marcaAtiva).length;
+    const ativas=es.filter(e=>e.marcaAtiva==='Sim').length;
     const inativas=es.length-ativas;
     getOrCreate('chartMarcas',{type:'doughnut',data:{labels:['Ativas','Inativas'],datasets:[{data:[ativas,inativas],backgroundColor:['#10B981','#5a5e72'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:darkLegend,tooltip:darkTooltip}}});
 
@@ -1300,7 +1313,7 @@ const TABLE_COLS=[
     {key:'cnpj',label:'CNPJ',fmt:v=>v||'-'},
     {key:'cartao',label:'Cartão',fmt:v=>v==='Sim'?'<span class="cell-badge badge-sim">Sim</span>':'<span class="cell-badge badge-nao">Não</span>'},
     {key:'pix',label:'PIX',fmt:v=>v==='Sim'?'<span class="cell-badge badge-sim">Sim</span>':'<span class="cell-badge badge-nao">Não</span>'},
-    {key:'temIntegracao',label:'Integração',fmt:v=>v?'<span class="cell-badge badge-sim">Sim</span>':'<span class="cell-badge badge-nao">Não</span>'},
+    {key:'temIntegracao',label:'Integração',fmt:v=>v==='Sim'?'<span class="cell-badge badge-sim">Sim</span>':'<span class="cell-badge badge-nao">Não</span>'},
     {key:'tipoIntegracao',label:'Tipo Integ.',fmt:v=>v||'-'},
     {key:'plano',label:'Plano',fmt:v=>v||'-'},
     {key:'planoMensalidade',label:'Mensalidade (Plano)',fmt:(v,e)=>e.plano?fmtCFull(v||0):'-',css:'cell-currency'},
