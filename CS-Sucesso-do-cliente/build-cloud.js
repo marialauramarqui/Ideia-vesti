@@ -1348,7 +1348,7 @@ async function main() {
                 planoObservacoes: marca ? marca.observacoes : '',
                 planoSubconta: marca ? marca.subconta : '',
                 planos: marca && marca.planos ? marca.planos : undefined,
-                marcaAtiva: (metricasMap[e.id] && metricasMap[e.id].statusEmpresa === 'Ativa') || e.pedidos > 0 ? 'Sim' : 'Não',
+                marcaAtiva: metricasMap[e.id] && metricasMap[e.id].statusEmpresa === 'Ativa' ? 'Sim' : metricasMap[e.id] && metricasMap[e.id].statusEmpresa === 'Desativada' ? 'Não' : '',
                 mensalidade,
                 etapaHub,
                 oraculoEtapa,

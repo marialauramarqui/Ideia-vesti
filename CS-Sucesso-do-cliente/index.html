@@ -1120,10 +1120,11 @@ function renderTab1(){
     const top10V=[...es].sort((a,b)=>(b._valCartao+b._valPix)-(a._valCartao+a._valPix)).slice(0,10).reverse();
     getOrCreate('chartTopVal',{type:'bar',data:{labels:top10V.map(e=>e.nome.length>20?e.nome.substring(0,20)+'...':e.nome),datasets:[{label:'Valor',data:top10V.map(e=>e._valCartao+e._valPix),backgroundColor:'rgba(124,58,237,0.7)',borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...darkTooltip,callbacks:{label:ctx=>fmtC(ctx.raw)}}},scales:{x:{ticks:{...darkTick,callback:v=>fmtC(v)},grid:darkGrid},y:{ticks:darkTick,grid:darkGrid}}}});
 
-    // Marcas Ativas doughnut
-    const ativas=es.filter(e=>e.marcaAtiva==='Sim').length;
-    const inativas=es.length-ativas;
-    getOrCreate('chartMarcas',{type:'doughnut',data:{labels:['Ativas','Inativas'],datasets:[{data:[ativas,inativas],backgroundColor:['#10B981','#5a5e72'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:darkLegend,tooltip:darkTooltip}}});
+    // Marcas Ativas doughnut - only count empresas that have statusEmpresa data
+    const comStatus=es.filter(e=>e.statusEmpresa);
+    const ativas=comStatus.filter(e=>e.statusEmpresa==='Ativa').length;
+    const inativas=comStatus.filter(e=>e.statusEmpresa==='Desativada').length;
+    getOrCreate('chartMarcas',{type:'doughnut',data:{labels:['Ativas ('+ativas+')','Desativadas ('+inativas+')'],datasets:[{data:[ativas,inativas],backgroundColor:['#10B981','#EF4444'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:darkLegend,tooltip:darkTooltip}}});
 
     // Evolucao valor mensal (GMV por mês - responde aos filtros)
     const meses=DADOS.meses||[];
