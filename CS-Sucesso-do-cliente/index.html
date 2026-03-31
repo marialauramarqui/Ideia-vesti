@@ -175,6 +175,7 @@
     <div class="header-right">
         <span class="header-badge" id="badgeTotal"></span>
         <span class="header-badge" id="badgeDate"></span>
+        <span class="header-badge" id="badgeVisits" title="Acessos ao dashboard" style="cursor:default;"></span>
     </div>
 </div>
 
@@ -185,7 +186,7 @@
         <datalist id="dlEmpresas"></datalist>
     </div>
     <div class="filter-group">
-        <span class="filter-label">Anjo</span>
+        <span class="filter-label">CS</span>
         <select id="fAnjo" class="filter-select"><option value="">Todos</option></select>
     </div>
     <div class="filter-group">
@@ -233,7 +234,7 @@
 </div>
 
 <div class="empresa-info-panel" id="empresaInfoPanel">
-    <div class="empresa-info-item"><strong>Anjo:</strong> <span id="eiAnjo">-</span></div>
+    <div class="empresa-info-item"><strong>CS:</strong> <span id="eiAnjo">-</span></div>
     <div class="empresa-info-item"><strong>Company ID:</strong> <span id="eiCompanyId" style="font-size:11px;user-select:all">-</span></div>
     <div class="empresa-info-item"><strong>Domínio:</strong> <span id="eiDominio">-</span></div>
     <div class="empresa-info-item"><strong>Domínio ID:</strong> <span id="eiDominioId" style="font-size:11px;user-select:all">-</span></div>
@@ -360,7 +361,7 @@
         </div>
         <div class="charts-grid">
             <div class="chart-card full-width">
-                <div class="chart-header"><div><div class="chart-title">Distribuição por Anjo</div></div></div>
+                <div class="chart-header"><div><div class="chart-title">Distribuição por CS</div></div></div>
                 <div class="chart-wrapper"><canvas id="chartAnjo"></canvas></div>
             </div>
         </div>
@@ -422,7 +423,7 @@
         </div>
         <div class="charts-grid">
             <div class="chart-card">
-                <div class="chart-header"><div><div class="chart-title">Risco de Churn por Anjo</div><div class="chart-subtitle">Clientes em risco por responsável</div></div><span class="chart-badge badge-orange">Ação</span></div>
+                <div class="chart-header"><div><div class="chart-title">Risco de Churn por CS</div><div class="chart-subtitle">Clientes em risco por responsável</div></div><span class="chart-badge badge-orange">Ação</span></div>
                 <div class="chart-wrapper tall"><canvas id="chartHubChurn"></canvas></div>
             </div>
             <div class="chart-card">
@@ -945,6 +946,7 @@ function renderTab0(){
         {icon:'&#127915;',label:'Ticket Médio',value:fmtC(ticket)},
         {icon:'&#10060;',label:'Pedidos Cancelados',value:fmtN(canc)},
         {icon:'&#9888;',label:'Risco Alto Churn',value:fmtN(riscoAlto),color:'var(--danger)'},
+        {icon:'&#128666;',label:'Frete Total',value:fmtC(es.reduce((s,e)=>s+(e.freteTotal||0),0))},
     ]);
 
     // Chart: Pedidos - Últimos 6 Meses (responde aos filtros)
@@ -1227,7 +1229,7 @@ function renderTab2(){
     // Risco de Churn por Anjo (horizontal stacked bar)
     const anjoRisco={};
     es.forEach(e=>{
-        const anjo=e.anjo||'Sem anjo';
+        const anjo=e.anjo||'Sem CS';
         if(!anjoRisco[anjo])anjoRisco[anjo]={alto:0,medio:0,baixo:0,gmvRisco:0};
         if(e.churnRisco==='Alto'){anjoRisco[anjo].alto++;anjoRisco[anjo].gmvRisco+=(e._gmv||0);}
         else if(e.churnRisco==='Medio'||e.churnRisco==='Médio')anjoRisco[anjo].medio++;
@@ -1289,7 +1291,7 @@ function renderTab2(){
 const TABLE_COLS=[
     {key:'nome',label:'Nome Fantasia',fmt:v=>v},
     {key:'canal',label:'Canal',fmt:v=>v||'-'},
-    {key:'anjo',label:'Anjo',fmt:v=>v||'-'},
+    {key:'anjo',label:'CS',fmt:v=>v||'-'},
     {key:'cnpj',label:'CNPJ',fmt:v=>v||'-'},
     {key:'cartao',label:'Cartão',fmt:v=>v==='Sim'?'<span class="cell-badge badge-sim">Sim</span>':'<span class="cell-badge badge-nao">Não</span>'},
     {key:'pix',label:'PIX',fmt:v=>v==='Sim'?'<span class="cell-badge badge-sim">Sim</span>':'<span class="cell-badge badge-nao">Não</span>'},
@@ -1473,6 +1475,11 @@ function loadApp(){
         document.getElementById('badgeTotal').textContent=DADOS.totalEmpresas+' empresas';
         document.getElementById('badgeDate').textContent=DADOS.geradoEm?new Date(DADOS.geradoEm).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
         populateFilters();
+        // Default period: last month to current month
+        const now=new Date();
+        const lastMonth=new Date(now.getFullYear(),now.getMonth()-1,1);
+        document.getElementById('fPedDe').value=lastMonth.getFullYear()+'-'+String(lastMonth.getMonth()+1).padStart(2,'0');
+        document.getElementById('fPedAte').value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
         applyFilters();
         document.querySelectorAll('.filter-select,.filter-date,.filter-input').forEach(el=>el.addEventListener('change',()=>{tablePage=1;applyFilters();}));
         document.getElementById('fAnjo').addEventListener('change',()=>{updateEmpresaDatalist();});
@@ -1493,6 +1500,19 @@ if(sessionStorage.getItem('auth_cs')==='ok'){
     if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',loadApp);}
     else{loadApp();}
 }
+// Visitor counter using CountAPI-compatible localStorage + namespace
+(function(){
+    const KEY='cs_dashboard_visits';
+    let count=parseInt(localStorage.getItem(KEY)||'0',10);
+    // Count once per session
+    if(!sessionStorage.getItem('cs_counted')){
+        count++;
+        localStorage.setItem(KEY,count);
+        sessionStorage.setItem('cs_counted','1');
+    }
+    const el=document.getElementById('badgeVisits');
+    if(el) el.textContent=count+' acesso'+(count!==1?'s':'');
+})();
 </script>
 </body>
 </html>

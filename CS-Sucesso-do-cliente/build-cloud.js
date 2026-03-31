@@ -35,6 +35,10 @@ const INV_DATASET_ID = '583e34d7-6dd1-467b-86aa-3b74cfe1ca56';
 const METRICAS_WORKSPACE_ID = '786bfd95-0733-4fcb-aa84-ef2c97518959';
 const METRICAS_DATASET_ID = '6d232602-d209-4dab-8be5-d9c34db57c0b';
 
+// Frete - dataset "Relatorio Confeccoes - Agencia"
+const FRETE_WORKSPACE_ID = '0f5bd202-471f-482d-bf3d-38295044d7db';
+const FRETE_DATASET_ID = '92a0cf18-2bfd-4b02-873f-615df3ce2d7f';
+
 // Oráculo Fabric workspace + datasets
 const FABRIC_CLIENT_ID = '14d82eec-204b-4c2f-b7e8-296a70dab67e';
 const ORACULO_WS_ID = '2929476c-7b92-4366-9236-ccd13ffbd917';
@@ -532,8 +536,11 @@ async function main() {
     // Status Empresa + Controle de Estoque - from Confeccao Métricas 2025
     const daxMetricas = `EVALUATE SELECTCOLUMNS(Query1, "id", Query1[Id Empresa], "status", Query1[Status Empresa 2], "estoque", Query1[Controle de Estoque])`;
 
+    // Frete por empresa/mês - from Relatorio Confeccoes
+    const daxFrete = `EVALUATE FILTER(SUMMARIZECOLUMNS(Merged[Companies.company_name], Merged[Recebido].[Year], Merged[Recebido].[MonthNo], "TotalFrete", SUM(Merged[Valor Frete])), [TotalFrete] > 0)`;
+
     // Run all queries in parallel (including VestiPago companies from separate dataset)
-    const [cadastrosRows, configRows, marcasRows, productRows, rankingsRows, pedidosCompanyRows, pedidosMonthlyRows, pedidosCompanyMonthlyRows, vestiPagoRows, linksMonthlyRows, cliquesMonthlyRows, linksCompanyMonthlyRows, cliquesCompanyMonthlyRows, invoiceRows, metricasRows] = await Promise.all([
+    const [cadastrosRows, configRows, marcasRows, productRows, rankingsRows, pedidosCompanyRows, pedidosMonthlyRows, pedidosCompanyMonthlyRows, vestiPagoRows, linksMonthlyRows, cliquesMonthlyRows, linksCompanyMonthlyRows, cliquesCompanyMonthlyRows, invoiceRows, metricasRows, freteRows] = await Promise.all([
         executeDaxQuery(accessToken, daxCadastros, 'Cadastros Empresas'),
         executeDaxQuery(accessToken, daxConfig, 'Config Empresas'),
         executeDaxQuery(accessToken, daxMarcas, 'Marcas e Planos'),
@@ -549,6 +556,7 @@ async function main() {
         executeDaxQuery(accessToken, daxCliquesCompanyMonthly, 'Cliques Company Monthly'),
         executeDaxQueryOn(accessToken, INV_WORKSPACE_ID, INV_DATASET_ID, daxInvoices, 'Invoices Iugu'),
         executeDaxQueryOn(accessToken, METRICAS_WORKSPACE_ID, METRICAS_DATASET_ID, daxMetricas, 'Métricas (Status/Estoque)'),
+        executeDaxQueryOn(accessToken, FRETE_WORKSPACE_ID, FRETE_DATASET_ID, daxFrete, 'Frete por empresa'),
     ]);
 
     // Build VestiPago set
@@ -563,6 +571,29 @@ async function main() {
         if (id) metricasMap[id] = { statusEmpresa: r.status || '', controleEstoque: r.estoque || '' };
     });
     console.log('  Métricas (status/estoque): ' + Object.keys(metricasMap).length);
+
+    // Build Frete map by company name
+    const freteByCompany = {};
+    freteRows.forEach(r => {
+        const name = r['Merged[Companies.company_name]'] || r['Companies.company_name'] || '';
+        const frete = r['[TotalFrete]'] || 0;
+        const keys = Object.keys(r);
+        const yearKey = keys.find(k => k.includes('[Year]'));
+        const monthKey = keys.find(k => k.includes('[MonthNo]'));
+        const year = yearKey ? r[yearKey] : null;
+        const month = monthKey ? r[monthKey] : null;
+        if (!name || !year || !month) return;
+        const mes = year + '-' + String(month).padStart(2, '0');
+        const key = normalize(name);
+        if (!freteByCompany[key]) freteByCompany[key] = { mensal: [], total: 0 };
+        freteByCompany[key].mensal.push({ mes, valor: Math.round(frete * 100) / 100 });
+        freteByCompany[key].total += frete;
+    });
+    for (const c of Object.values(freteByCompany)) {
+        c.mensal.sort((a, b) => b.mes.localeCompare(a.mes));
+        c.total = Math.round(c.total * 100) / 100;
+    }
+    console.log('  Frete companies: ' + Object.keys(freteByCompany).length);
 
     // ---------- 2b. Process Invoices (Painel CS) ----------
     const seenInvIds = new Set();
@@ -1271,6 +1302,9 @@ async function main() {
                 churnMotivos: churnMotivos.length > 0 ? churnMotivos.join('; ') : '',
                 statusEmpresa: metricasMap[e.id] ? metricasMap[e.id].statusEmpresa : '',
                 controleEstoque: metricasMap[e.id] ? metricasMap[e.id].controleEstoque : '',
+                freteAtivo: !!freteByCompany[normalize(nome)],
+                freteTotal: freteByCompany[normalize(nome)] ? freteByCompany[normalize(nome)].total : 0,
+                freteMensal: freteByCompany[normalize(nome)] ? freteByCompany[normalize(nome)].mensal.slice(0, 12) : undefined,
                 naoPagos: e.pedidosPendentes,
                 csat: (() => {
                     const nk = nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
