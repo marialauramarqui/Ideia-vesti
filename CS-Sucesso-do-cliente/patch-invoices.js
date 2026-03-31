@@ -48,7 +48,7 @@ async function main() {
     const DS = 'becfc71d-0794-41fd-abdb-38bf9e0f2fd0';
 
     console.log('Buscando Invoices...');
-    const dax = `EVALUATE SELECTCOLUMNS(Invoices, "subId", Invoices[items.id], "name", Invoices[items.customer_name], "invId", Invoices[items.recent_invoices.id], "due", Invoices[items.recent_invoices.due_date], "status", Invoices[items.recent_invoices.status], "total", Invoices[items.recent_invoices.total], "plan", Invoices[items.plan_name], "custId", Invoices[items.customer_id])`;
+    const dax = `EVALUATE SELECTCOLUMNS(Invoices, "invId", Invoices[id], "custId", Invoices[customer_id], "status", Invoices[status], "plan", Invoices[plano], "priceCents", Invoices[items_price_cents], "qty", Invoices[items_quantity])`;
     const body = JSON.stringify({ queries: [{ query: dax }], serializerSettings: { includeNulls: true } });
     const res = await hr({ hostname: 'api.powerbi.com', path: '/v1.0/myorg/groups/' + WS + '/datasets/' + DS + '/executeQueries', method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } }, body);
     const data = JSON.parse(res.b);
@@ -56,25 +56,42 @@ async function main() {
     const rows = data.results[0].tables[0].rows;
     console.log('Raw rows:', rows.length);
 
-    // Deduplicate by invoice ID (groupby)
+    // Fetch Customers table to get brand names
+    console.log('Buscando Customers...');
+    const daxCust = `EVALUATE SELECTCOLUMNS(Customers, "custId", Customers[id], "name", Customers[name])`;
+    const bodyCust = JSON.stringify({ queries: [{ query: daxCust }], serializerSettings: { includeNulls: true } });
+    const resCust = await hr({ hostname: 'api.powerbi.com', path: '/v1.0/myorg/groups/' + WS + '/datasets/' + DS + '/executeQueries', method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(bodyCust) } }, bodyCust);
+    const dataCust = JSON.parse(resCust.b);
+    const custMap = {};
+    if (!dataCust.error) {
+        dataCust.results[0].tables[0].rows.forEach(r => {
+            const id = r['[custId]'];
+            const name = (r['[name]'] || '').split(' = ')[0].trim();
+            if (id) custMap[id] = name;
+        });
+    }
+    console.log('Customers loaded:', Object.keys(custMap).length);
+
+    // Deduplicate invoices by ID
     const seen = new Set();
     const invoices = [];
     rows.forEach(r => {
         const invId = r['[invId]'];
         if (invId && !seen.has(invId)) {
             seen.add(invId);
-            const brandName = (r['[name]'] || '').split(' = ')[0].trim();
-            const due = r['[due]'] || '';
-            const dueMonth = due.substring(0, 7); // YYYY-MM
+            const custId = r['[custId]'] || '';
+            const brandName = custMap[custId] || '';
+            const priceCents = r['[priceCents]'] || 0;
+            const total = Math.abs(priceCents) / 100; // centavos -> reais
             invoices.push({
                 brand: brandName,
                 invId,
-                due,
-                dueMonth,
+                due: '', // not available in this dataset
+                dueMonth: '',
                 status: r['[status]'] || '',
-                total: parseTotal(r['[total]']),
+                total,
                 plan: r['[plan]'] || '',
-                custId: r['[custId]'] || '',
+                custId,
             });
         }
     });
@@ -88,6 +105,7 @@ async function main() {
     // Group by customer brand name
     const byBrand = {};
     invoices.forEach(i => {
+        if (!i.brand) return;
         if (!byBrand[i.brand]) byBrand[i.brand] = { brand: i.brand, plan: '', invoices: [], paid: 0, pending: 0, expired: 0, canceled: 0, totalInvoices: 0 };
         const b = byBrand[i.brand];
         if (i.plan && !b.plan) b.plan = i.plan;
