@@ -653,13 +653,21 @@ function updateEmpresaPanel(){
         // Plano / Financeiro
         document.getElementById('eiPlano').textContent=show.plano||'-';
         document.getElementById('eiMensal').textContent=show.planoMensalidade?fmtCFull(show.planoMensalidade):(show.mensalidade||'-');
-        // Última fatura Iugu - status + valor + mês
+        // Última fatura Iugu - status da mensalidade
         const ufEl=document.getElementById('eiUltimaFatura');
-        if(show.faturamento&&show.faturamento.faturas&&show.faturamento.faturas.length>0){
-            const uf=show.faturamento.faturas[0]; // já ordenado por data desc
-            const statusMap={paid:'Pago',pending:'Pendente',expired:'Vencido',canceled:'Cancelado',externally_paid:'Pago ext.'};
-            const colorMap={paid:'var(--success)',pending:'var(--warning)',expired:'var(--danger)',canceled:'var(--text-muted)',externally_paid:'var(--success)'};
-            ufEl.innerHTML='<span style="color:'+( colorMap[uf.status]||'var(--text-primary)')+';font-weight:700;">'+(statusMap[uf.status]||uf.status)+'</span> — '+fmtCFull(uf.total)+' <span style="color:var(--text-muted);font-size:11px;">('+uf.mes+')</span>';
+        const statusMap={paid:'Pago',pending:'Pendente',expired:'Vencido',canceled:'Cancelado',externally_paid:'Pago ext.'};
+        const colorMap={paid:'var(--success)',pending:'var(--warning)',expired:'var(--danger)',canceled:'var(--text-muted)',externally_paid:'var(--success)'};
+        if(show.faturaStatus){
+            const s=show.faturaStatus;
+            let detail=(statusMap[s]||s);
+            if(show.faturasPagas)detail+=' ('+show.faturasPagas+' pagas';
+            if(show.faturasPendentes)detail+=', '+show.faturasPendentes+' pendentes';
+            if(show.faturasVencidas)detail+=', '+show.faturasVencidas+' vencidas';
+            detail+=')';
+            ufEl.innerHTML='<span style="color:'+(colorMap[s]||'var(--text-primary)')+';font-weight:700;">'+detail+'</span>';
+        } else if(show.faturamento&&show.faturamento.faturas&&show.faturamento.faturas.length>0){
+            const uf=show.faturamento.faturas[0];
+            ufEl.innerHTML='<span style="color:'+(colorMap[uf.status]||'var(--text-primary)')+';font-weight:700;">'+(statusMap[uf.status]||uf.status)+'</span> — '+fmtCFull(uf.total)+' <span style="color:var(--text-muted);font-size:11px;">('+uf.mes+')</span>';
         } else {
             ufEl.textContent='-';
         }
