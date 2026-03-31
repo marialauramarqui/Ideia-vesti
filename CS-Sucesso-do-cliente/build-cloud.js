@@ -1220,6 +1220,7 @@ async function main() {
                 modulo: e.modulo,
                 tags: e.tags,
                 temIntegracao: e.temIntegracao,
+                integracao: e.integracao || '',
                 tipoIntegracao: e.tipoIntegracao,
                 criacao: e.criacao,
                 valorPlano: e.valorPlano,
