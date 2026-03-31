@@ -684,6 +684,19 @@ async function main() {
         console.log('  SKIP: _csat.json not found');
     }
 
+    // ---------- 4c. Load NPS data from _nps.json ----------
+    const npsMap = {};
+    const npsPath = path.join(DIR, '_nps.json');
+    if (fs.existsSync(npsPath)) {
+        try {
+            const npsData = JSON.parse(fs.readFileSync(npsPath, 'utf-8'));
+            npsData.forEach(n => { if (n.dominio) npsMap[String(n.dominio)] = n.nps; });
+            console.log('  NPS loaded: ' + npsData.length + ' entries');
+        } catch (e) { console.log('  WARN: Failed to read _nps.json: ' + e.message); }
+    } else {
+        console.log('  SKIP: _nps.json not found');
+    }
+
     // ---------- 5. Process Power BI data ----------
     console.log('\nProcessing data...');
 
@@ -1313,6 +1326,7 @@ async function main() {
                         if (ck.length >= 4 && nk.startsWith(ck)) return cv;
                     }
                 })(),
+                nps: npsMap[String(e.idDominio)] != null ? npsMap[String(e.idDominio)] : undefined,
                 isMatriz: filiaisGroup.length > 1 ? isMatriz : undefined,
                 matrizId: filiaisGroup.length > 1 && !isMatriz ? matrizId : undefined,
                 filiais: filiais.length > 0 ? filiais : undefined,
