@@ -31,6 +31,10 @@ const VP_DATASET_ID = '606be0ee-2c8c-4f43-8ad6-0be04f95d616';
 const INV_WORKSPACE_ID = '2929476c-7b92-4366-9236-ccd13ffbd917';
 const INV_DATASET_ID = '583e34d7-6dd1-467b-86aa-3b74cfe1ca56';
 
+// Confeccao Métricas 2025 - Status Empresa + Controle de Estoque (mesmo workspace principal)
+const METRICAS_WORKSPACE_ID = '786bfd95-0733-4fcb-aa84-ef2c97518959';
+const METRICAS_DATASET_ID = '6d232602-d209-4dab-8be5-d9c34db57c0b';
+
 // Oráculo Fabric workspace + datasets
 const FABRIC_CLIENT_ID = '14d82eec-204b-4c2f-b7e8-296a70dab67e';
 const ORACULO_WS_ID = '2929476c-7b92-4366-9236-ccd13ffbd917';
@@ -522,11 +526,14 @@ async function main() {
     // Pedidos per company per month (churn + period filters + payment)
     const daxPedidosCompanyMonthly = `EVALUATE SUMMARIZECOLUMNS('Merged Pedidos'[ID Empresa], 'Merged Pedidos'[Data Criacao].[Year], 'Merged Pedidos'[Data Criacao].[MonthNo], "Qtd", COUNTROWS('Merged Pedidos'), "Pagos", CALCULATE(COUNTROWS('Merged Pedidos'), 'Merged Pedidos'[Pago]=TRUE()), "Cancelados", CALCULATE(COUNTROWS('Merged Pedidos'), 'Merged Pedidos'[Cancelado]=TRUE()), "Pendentes", CALCULATE(COUNTROWS('Merged Pedidos'), 'Merged Pedidos'[Pendente]=TRUE()), "Val", SUM('Merged Pedidos'[Total]), "ValPagos", CALCULATE(SUM('Merged Pedidos'[Total]), 'Merged Pedidos'[Pago]=TRUE()), "TC", CALCULATE(COUNTROWS('Merged Pedidos'), NOT(ISBLANK('Merged Pedidos'[docs.payment.method])) && ${filtroCartao}), "TP", CALCULATE(COUNTROWS('Merged Pedidos'), NOT(ISBLANK('Merged Pedidos'[docs.payment.method])) && ${filtroPix}), "VC", CALCULATE(SUM('Merged Pedidos'[Total]), NOT(ISBLANK('Merged Pedidos'[docs.payment.method])) && ${filtroCartao}), "VP", CALCULATE(SUM('Merged Pedidos'[Total]), NOT(ISBLANK('Merged Pedidos'[docs.payment.method])) && ${filtroPix}))`;
 
-    // Invoices (Iugu) - from Confecção - Assinaturas dataset
+    // Invoices (Iugu) - from Painel CS dataset
     const daxInvoices = `EVALUATE SELECTCOLUMNS(Invoices, "invId", Invoices[id], "dominio", Invoices[Dominio], "marca", Invoices[Marca], "iugu_name", Invoices[Iugu_name], "due", Invoices[due_date_TIMESTAMP], "status", Invoices[status], "valor", Invoices[ValorFatura], "plan", Invoices[Plano])`;
 
+    // Status Empresa + Controle de Estoque - from Confeccao Métricas 2025
+    const daxMetricas = `EVALUATE SELECTCOLUMNS(Query1, "id", Query1[Id Empresa], "status", Query1[Status Empresa 2], "estoque", Query1[Controle de Estoque])`;
+
     // Run all queries in parallel (including VestiPago companies from separate dataset)
-    const [cadastrosRows, configRows, marcasRows, productRows, rankingsRows, pedidosCompanyRows, pedidosMonthlyRows, pedidosCompanyMonthlyRows, vestiPagoRows, linksMonthlyRows, cliquesMonthlyRows, linksCompanyMonthlyRows, cliquesCompanyMonthlyRows, invoiceRows] = await Promise.all([
+    const [cadastrosRows, configRows, marcasRows, productRows, rankingsRows, pedidosCompanyRows, pedidosMonthlyRows, pedidosCompanyMonthlyRows, vestiPagoRows, linksMonthlyRows, cliquesMonthlyRows, linksCompanyMonthlyRows, cliquesCompanyMonthlyRows, invoiceRows, metricasRows] = await Promise.all([
         executeDaxQuery(accessToken, daxCadastros, 'Cadastros Empresas'),
         executeDaxQuery(accessToken, daxConfig, 'Config Empresas'),
         executeDaxQuery(accessToken, daxMarcas, 'Marcas e Planos'),
@@ -541,12 +548,21 @@ async function main() {
         executeDaxQuery(accessToken, daxLinksCompanyMonthly, 'Links Company Monthly'),
         executeDaxQuery(accessToken, daxCliquesCompanyMonthly, 'Cliques Company Monthly'),
         executeDaxQueryOn(accessToken, INV_WORKSPACE_ID, INV_DATASET_ID, daxInvoices, 'Invoices Iugu'),
+        executeDaxQueryOn(accessToken, METRICAS_WORKSPACE_ID, METRICAS_DATASET_ID, daxMetricas, 'Métricas (Status/Estoque)'),
     ]);
 
     // Build VestiPago set
     const vestiPagoSet = new Set();
     vestiPagoRows.forEach(r => { if (r.companyId) vestiPagoSet.add(r.companyId); });
     console.log('  VestiPago companies: ' + vestiPagoSet.size);
+
+    // Build Status/Estoque map from Métricas
+    const metricasMap = {};
+    metricasRows.forEach(r => {
+        const id = r.id;
+        if (id) metricasMap[id] = { statusEmpresa: r.status || '', controleEstoque: r.estoque || '' };
+    });
+    console.log('  Métricas (status/estoque): ' + Object.keys(metricasMap).length);
 
     // ---------- 2b. Process Invoices (Painel CS) ----------
     const seenInvIds = new Set();
@@ -1253,6 +1269,8 @@ async function main() {
                 churnScore,
                 churnRisco,
                 churnMotivos: churnMotivos.length > 0 ? churnMotivos.join('; ') : '',
+                statusEmpresa: metricasMap[e.id] ? metricasMap[e.id].statusEmpresa : '',
+                controleEstoque: metricasMap[e.id] ? metricasMap[e.id].controleEstoque : '',
                 naoPagos: e.pedidosPendentes,
                 csat: (() => {
                     const nk = nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
