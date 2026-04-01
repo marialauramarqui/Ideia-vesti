@@ -714,24 +714,12 @@ function updateEmpresaPanel(){
         if(show.temOraculoFabric&&show.oraculoFabric){
             oraculoPanel.style.display='block';
             const oc=show.oraculoFabric;
-            // Check if period filter is active - if so, filter monthly data
+            // Filtrar dados do oráculo por período selecionado
             const fPedDe=document.getElementById('fPedDe').value;
             const fPedAte=document.getElementById('fPedAte').value;
             let ocPed=oc.pedidosOraculo||0,ocInter=oc.interacoesOraculo||0,ocAtend=oc.atendimentosOraculo||0,ocPctIA=(oc.pctIAOraculo||0),ocVendas=oc.vendasOraculo||0;
             let periodoLabel='total';
-            if((fPedDe||fPedAte)&&oc.mensal&&oc.mensal.length>0){
-                const filtered=oc.mensal.filter(m=>(!fPedDe||m.mes>=fPedDe)&&(!fPedAte||m.mes<=fPedAte));
-                if(filtered.length>0){
-                    ocPed=filtered.reduce((s,m)=>s+m.pedidos,0);
-                    ocInter=filtered.reduce((s,m)=>s+m.interacoes,0);
-                    ocAtend=ocInter;
-                    const totalIA=filtered.reduce((s,m)=>s+m.ia,0);
-                    ocPctIA=ocInter>0?Math.round(totalIA/ocInter*1000)/10:0;
-                    ocVendas=filtered.reduce((s,m)=>s+m.vendas,0);
-                    periodoLabel=filtered.map(m=>m.mes).join(', ');
-                }
-            } else if((fPedDe||fPedAte)&&oc.vendasMensal&&Object.keys(oc.vendasMensal).length>0){
-                // Fallback: usar vendasMensal/pedidosMensal do patch-painel-cs
+            if((fPedDe||fPedAte)&&oc.vendasMensal&&Object.keys(oc.vendasMensal).length>0){
                 ocVendas=0;ocPed=0;
                 const mesesFiltrados=[];
                 Object.keys(oc.vendasMensal).sort().forEach(function(mes){
@@ -742,6 +730,13 @@ function updateEmpresaPanel(){
                     }
                 });
                 ocVendas=Math.round(ocVendas*100)/100;
+                // Estimar atendimentos proporcionalmente ao período
+                const totalMeses=Object.keys(oc.vendasMensal).length;
+                if(totalMeses>0&&mesesFiltrados.length>0){
+                    const proporcao=mesesFiltrados.length/totalMeses;
+                    ocAtend=Math.round((oc.atendimentosOraculo||0)*proporcao);
+                    ocInter=Math.round((oc.interacoesOraculo||0)*proporcao);
+                }
                 if(mesesFiltrados.length>0)periodoLabel=mesesFiltrados.map(function(m){return m.substring(5)+'/'+m.substring(2,4)}).join(', ');
             }
             window._oraculoSlides=[
