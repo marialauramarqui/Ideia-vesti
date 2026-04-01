@@ -277,12 +277,14 @@ async function main() {
             e.oraculoFabric = {
                 ...existing,
                 ...(config || {}),
-                pedidosOraculo: stats ? stats.pedidosOraculo : (existing.pedidosOraculo || 0),
-                interacoesOraculo: stats ? stats.interacoesOraculo : (existing.interacoesOraculo || 0),
-                atendimentosOraculo: stats ? stats.atendimentosOraculo : (existing.atendimentosOraculo || 0),
-                pctIAOraculo: stats ? stats.pctIAOraculo : (existing.pctIAOraculo || 0),
-                vendasOraculo: stats && stats.vendasOraculo ? stats.vendasOraculo : (existing.vendasOraculo || 0),
+                // Manter o MAIOR valor entre per-company e Painel CS
+                pedidosOraculo: Math.max(stats ? stats.pedidosOraculo : 0, existing.pedidosOraculo || 0),
+                interacoesOraculo: Math.max(stats ? stats.interacoesOraculo : 0, existing.interacoesOraculo || 0),
+                atendimentosOraculo: Math.max(stats ? stats.atendimentosOraculo : 0, existing.atendimentosOraculo || 0),
+                pctIAOraculo: stats && stats.pctIAOraculo ? stats.pctIAOraculo : (existing.pctIAOraculo || 0),
+                vendasOraculo: Math.max(stats && stats.vendasOraculo ? stats.vendasOraculo : 0, existing.vendasOraculo || 0),
                 vendasMensal: (stats && stats.vendasMensal && Object.keys(stats.vendasMensal).length > (existing.vendasMensal ? Object.keys(existing.vendasMensal).length : 0)) ? stats.vendasMensal : (existing.vendasMensal || undefined),
+                pedidosMensal: existing.pedidosMensal || undefined,
             };
             // Set oraculoEtapa if not already set
             if (!e.oraculoEtapa && stats) {

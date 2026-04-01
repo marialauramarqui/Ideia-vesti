@@ -719,30 +719,29 @@ function updateEmpresaPanel(){
             const fPedAte=document.getElementById('fPedAte').value;
             let ocPed=oc.pedidosOraculo||0,ocInter=oc.interacoesOraculo||0,ocAtend=oc.atendimentosOraculo||0,ocPctIA=(oc.pctIAOraculo||0),ocVendas=oc.vendasOraculo||0;
             let periodoLabel='total';
-            if((fPedDe||fPedAte)&&oc.vendasMensal&&Object.keys(oc.vendasMensal).length>0){
+            if(oc.vendasMensal&&Object.keys(oc.vendasMensal).length>0){
+                const allMeses=Object.keys(oc.vendasMensal).sort();
+                const hasPeriodo=fPedDe||fPedAte;
+                const mesesFiltrados=hasPeriodo?allMeses.filter(function(mes){return(!fPedDe||mes>=fPedDe)&&(!fPedAte||mes<=fPedAte)}):allMeses;
+                // Recalcular vendas e pedidos do período
                 ocVendas=0;ocPed=0;
-                const mesesFiltrados=[];
-                Object.keys(oc.vendasMensal).sort().forEach(function(mes){
-                    if((!fPedDe||mes>=fPedDe)&&(!fPedAte||mes<=fPedAte)){
-                        ocVendas+=oc.vendasMensal[mes];
-                        if(oc.pedidosMensal&&oc.pedidosMensal[mes])ocPed+=oc.pedidosMensal[mes];
-                        mesesFiltrados.push(mes);
-                    }
+                mesesFiltrados.forEach(function(mes){
+                    ocVendas+=oc.vendasMensal[mes]||0;
+                    if(oc.pedidosMensal)ocPed+=(oc.pedidosMensal[mes]||0);
                 });
                 ocVendas=Math.round(ocVendas*100)/100;
-                // Estimar atendimentos proporcionalmente ao período
-                const totalMeses=Object.keys(oc.vendasMensal).length;
-                if(totalMeses>0&&mesesFiltrados.length>0){
-                    const proporcao=mesesFiltrados.length/totalMeses;
-                    ocAtend=Math.round((oc.atendimentosOraculo||0)*proporcao);
-                    ocInter=Math.round((oc.interacoesOraculo||0)*proporcao);
+                // Estimar atendimentos/interações proporcionalmente
+                if(allMeses.length>0&&mesesFiltrados.length>0&&mesesFiltrados.length!==allMeses.length){
+                    const prop=mesesFiltrados.length/allMeses.length;
+                    ocAtend=Math.round((oc.atendimentosOraculo||0)*prop);
+                    ocInter=Math.round((oc.interacoesOraculo||0)*prop);
                 }
-                if(mesesFiltrados.length>0)periodoLabel=mesesFiltrados.map(function(m){return m.substring(5)+'/'+m.substring(2,4)}).join(', ');
+                if(hasPeriodo&&mesesFiltrados.length>0)periodoLabel=mesesFiltrados.map(function(m){return m.substring(5)+'/'+m.substring(2,4)}).join(', ');
             }
             window._oraculoSlides=[
-                {title:'Clientes Atendidos',kpi:fmtN(ocAtend),label:'atendimentos ('+periodoLabel+')',color:'var(--primary)',bg:'rgba(124,58,237,0.1)',sub:'Pedidos: '+fmtN(ocPed)+' | Interações: '+fmtN(ocInter)},
-                {title:'% Atendimento por IA',kpi:ocPctIA.toFixed(1)+'%',label:'dos atendimentos feitos por IA',color:'var(--teal)',bg:'rgba(6,182,212,0.1)',sub:fmtN(Math.round(ocAtend*ocPctIA/100))+' por IA de '+fmtN(ocAtend)+' totais'},
-                {title:'Vendas pelo Oráculo',kpi:ocVendas>0?fmtCFull(ocVendas):'Sem dados',label:'valor em vendas ('+periodoLabel+')',color:'var(--success)',bg:'rgba(16,185,129,0.1)',sub:'Pedidos: '+fmtN(ocPed)},
+                {title:'Pedidos Oráculo',kpi:fmtN(ocPed),label:'pedidos ('+periodoLabel+')',color:'var(--primary)',bg:'rgba(124,58,237,0.1)',sub:(ocAtend>0?'Atendimentos: '+fmtN(ocAtend)+' | ':'')+'Interações: '+fmtN(ocInter)},
+                {title:'% Atendimento por IA',kpi:ocAtend>0?ocPctIA.toFixed(1)+'%':'-',label:ocAtend>0?'dos atendimentos feitos por IA':'sem dados de atendimento',color:'var(--teal)',bg:'rgba(6,182,212,0.1)',sub:ocAtend>0?fmtN(Math.round(ocAtend*ocPctIA/100))+' por IA de '+fmtN(ocAtend)+' totais':'Pedidos no período: '+fmtN(ocPed)},
+                {title:'Vendas pelo Oráculo',kpi:ocVendas>0?fmtCFull(ocVendas):'R$ 0,00',label:'valor em vendas ('+periodoLabel+')',color:'var(--success)',bg:'rgba(16,185,129,0.1)',sub:'Pedidos: '+fmtN(ocPed)},
                 {title:'Configuração',kpi:'',label:'',color:'var(--accent-purple)',bg:'rgba(168,85,247,0.1)',config:true,oc},
             ];
             window._oraculoSlideIdx=0;
