@@ -278,6 +278,15 @@
             <div id="csatContent" style="display:flex;gap:12px;flex-wrap:wrap;"></div>
         </div>
     </div>
+    <div id="oraculoChartsRow" style="display:none;margin-top:16px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Vendas por Semana</div><div class="chart-subtitle">Venda Direta / Influenciada / Outros</div></div></div><div class="chart-wrapper"><canvas id="chartOracVendasSem"></canvas></div></div>
+            <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Interações Semanais</div><div class="chart-subtitle">IA vs Humano</div></div></div><div class="chart-wrapper"><canvas id="chartOracInterSem"></canvas></div></div>
+        </div>
+        <div style="margin-top:16px;">
+            <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Eventos por Semana</div><div class="chart-subtitle">Boas-Vindas, Carrinho Abandonado, Reativação, etc.</div></div></div><div class="chart-wrapper tall"><canvas id="chartOracEventosSem"></canvas></div></div>
+        </div>
+    </div>
 </div>
 
 <div class="main">
@@ -746,8 +755,10 @@ function updateEmpresaPanel(){
             ];
             window._oraculoSlideIdx=0;
             renderOraculoSlide();
+            renderOraculoCharts(oc);
         } else {
             oraculoPanel.style.display='none';
+            document.getElementById('oraculoChartsRow').style.display='none';
         }
         const cb=document.getElementById('eiChurn');
         cb.textContent=show.churnRisco||'-';
@@ -812,6 +823,7 @@ function updateEmpresaPanel(){
     } else {
         panel.classList.remove('visible');
         oraculoPanel.style.display='none';
+        document.getElementById('oraculoChartsRow').style.display='none';
         document.getElementById('csatPanel').style.display='none';
         document.getElementById('oraculoCsatRow').style.display='none';
         document.getElementById('filiaisSection').style.display='none';
@@ -954,6 +966,51 @@ function renderOraculoSlide(){
         el.innerHTML=h;
     } else {
         el.innerHTML='<div style="text-align:center;padding:8px 0"><div style="background:'+s.bg+';border-radius:12px;padding:16px;display:inline-block;min-width:280px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-secondary);margin-bottom:6px">'+s.title+'</div><div style="font-size:32px;font-weight:800;color:'+s.color+';margin-bottom:4px">'+s.kpi+'</div><div style="font-size:11px;color:var(--text-muted)">'+s.label+'</div></div><div style="font-size:12px;color:var(--text-secondary);margin-top:8px">'+s.sub+'</div>'+dotsRow+'</div>';
+    }
+}
+
+/* ========== ORÁCULO CHARTS ========== */
+function renderOraculoCharts(oc){
+    const chartsRow=document.getElementById('oraculoChartsRow');
+    if(!oc||(!oc.vendasSemanal&&!oc.interacoesSemanal&&!oc.eventosSemanal)){chartsRow.style.display='none';return;}
+    chartsRow.style.display='block';
+
+    // 1. Vendas por Semana (stacked bar: Direta / Influenciada / Outros)
+    if(oc.vendasSemanal&&oc.vendasSemanal.length>0){
+        const vs=oc.vendasSemanal.slice(-12);
+        const labels=vs.map(s=>s.label||'S'+s.sem);
+        getOrCreate('chartOracVendasSem',{type:'bar',data:{labels:labels,datasets:[
+            {label:'Venda Direta',data:vs.map(s=>s.vDireta||0),backgroundColor:'rgba(16,185,129,0.8)',borderRadius:2},
+            {label:'Venda Influenciada',data:vs.map(s=>s.vInfluenciada||0),backgroundColor:'rgba(124,58,237,0.8)',borderRadius:2},
+            {label:'Outros',data:vs.map(s=>s.vOutros||0),backgroundColor:'rgba(139,143,163,0.5)',borderRadius:2},
+        ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:darkLegend,tooltip:{...darkTooltip,callbacks:{label:ctx=>ctx.dataset.label+': '+fmtC(ctx.raw)}}},scales:{x:{stacked:true,ticks:darkTick,grid:darkGrid},y:{stacked:true,ticks:{...darkTick,callback:v=>fmtC(v)},grid:darkGrid}}}});
+    }
+
+    // 2. Interações Semanais (stacked bar: IA vs Humano)
+    if(oc.interacoesSemanal&&oc.interacoesSemanal.length>0){
+        const is=oc.interacoesSemanal.slice(-12);
+        const labels=is.map(s=>s.label||'S'+s.sem);
+        getOrCreate('chartOracInterSem',{type:'bar',data:{labels:labels,datasets:[
+            {label:'IA',data:is.map(s=>s.ia||0),backgroundColor:'rgba(6,182,212,0.8)',borderRadius:2},
+            {label:'Humano',data:is.map(s=>s.human||0),backgroundColor:'rgba(236,72,153,0.8)',borderRadius:2},
+        ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:darkLegend,tooltip:darkTooltip},scales:{x:{stacked:true,ticks:darkTick,grid:darkGrid},y:{stacked:true,ticks:darkTick,grid:darkGrid}}}});
+    }
+
+    // 3. Eventos por Semana (stacked bar com tipos)
+    if(oc.eventosSemanal&&oc.eventosSemanal.length>0){
+        const ev=oc.eventosSemanal.slice(-12);
+        const labels=ev.map(s=>'S'+s.sem);
+        // Collect all event types
+        const tipos=new Set();
+        ev.forEach(s=>{Object.keys(s).forEach(k=>{if(k!=='sem')tipos.add(k);});});
+        const tipoColors={'Boas-Vindas':'#10B981','Carrinho abandonado':'#F59E0B','Pedido confirmado':'#7C3AED','Aquecimento de Leads':'#06B6D4','Reativação de Inativos':'#EC4899','Código de Acesso':'#8B5CF6','Mídias Pedido':'#EAB308'};
+        const defaultColors=['#A855F7','#EF4444','#0891B2','#D64550','#5B21B6'];
+        let ci=0;
+        const datasets=[...tipos].map(t=>({
+            label:t,data:ev.map(s=>s[t]||0),
+            backgroundColor:tipoColors[t]||(defaultColors[ci++%defaultColors.length]),borderRadius:2
+        }));
+        getOrCreate('chartOracEventosSem',{type:'bar',data:{labels:labels,datasets:datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:darkLegend,tooltip:darkTooltip},scales:{x:{stacked:true,ticks:darkTick,grid:darkGrid},y:{stacked:true,ticks:darkTick,grid:darkGrid}}}});
     }
 }
 
