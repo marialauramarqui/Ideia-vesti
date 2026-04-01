@@ -261,25 +261,14 @@
     <div class="empresa-info-item"><strong>Risco Churn:</strong> <span id="eiChurn">-</span></div>
     <div class="empresa-info-item"><strong>Filial:</strong> <span id="eiFilial">-</span></div>
 </div>
-<div id="oraculoCsatRow" style="display:none;padding:14px 32px;border-bottom:1px solid var(--border);display:none;">
-    <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;">
-        <div id="oraculoDetailPanel" style="flex:1;min-width:280px;padding:14px;background:rgba(168,85,247,0.06);border-radius:10px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-                <div style="font-size:13px;font-weight:700;color:var(--accent-purple);">Oráculo</div>
-                <div style="display:flex;gap:6px;">
-                    <button onclick="oraculoSlide(-1)" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-primary);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;">&#9664;</button>
-                    <button onclick="oraculoSlide(1)" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-primary);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;">&#9654;</button>
-                </div>
-            </div>
-            <div id="oraculoDetailContent"></div>
-        </div>
-        <div id="csatPanel" style="flex:1;min-width:220px;padding:14px;background:rgba(234,179,8,0.06);border-radius:10px;display:none;">
-            <div style="font-size:13px;font-weight:700;color:var(--accent-gold);margin-bottom:8px;">CSAT / NPS</div>
-            <div id="csatContent" style="display:flex;gap:12px;flex-wrap:wrap;"></div>
-        </div>
+<div id="oraculoCsatRow" style="display:none;padding:14px 32px;border-bottom:1px solid var(--border);">
+    <div id="csatPanel" style="padding:14px;background:rgba(234,179,8,0.06);border-radius:10px;display:none;">
+        <div style="font-size:13px;font-weight:700;color:var(--accent-gold);margin-bottom:8px;">CSAT / NPS</div>
+        <div id="csatContent" style="display:flex;gap:12px;flex-wrap:wrap;"></div>
     </div>
-    <div id="oraculoChartsRow" style="display:none;"></div>
 </div>
+<div id="oraculoDetailPanel" style="display:none;"></div>
+<div id="oraculoChartsRow" style="display:none;"></div>
 
 <div class="main">
     <div class="tab-nav">
@@ -664,7 +653,7 @@ function getDisplayEmpresa(){
 
 function updateEmpresaPanel(){
     const panel=document.getElementById('empresaInfoPanel');
-    const oraculoPanel=document.getElementById('oraculoDetailPanel');
+    // oraculoPanel removido - dados na aba Oráculo
     const {main:match, display}=getDisplayEmpresa();
     if(match){
         // Show info for the selected filial (individual) or the main company
@@ -733,47 +722,7 @@ function updateEmpresaPanel(){
             temOrac.innerHTML='<span style="color:var(--accent-red);font-weight:700;">Não</span>';
             document.getElementById('rowFaseOraculo').style.display='none';
         }
-        // Oráculo detail panel (Fabric) - mini dashboard com slides
-        if(show.temOraculoFabric&&show.oraculoFabric){
-            oraculoPanel.style.display='block';
-            const oc=show.oraculoFabric;
-            // Filtrar dados do oráculo por período selecionado
-            const fPedDe=document.getElementById('fPedDe').value;
-            const fPedAte=document.getElementById('fPedAte').value;
-            let ocPed=oc.pedidosOraculo||0,ocInter=oc.interacoesOraculo||0,ocAtend=oc.atendimentosOraculo||0,ocPctIA=(oc.pctIAOraculo||0),ocVendas=oc.vendasOraculo||0;
-            let periodoLabel='total';
-            if(oc.vendasMensal&&Object.keys(oc.vendasMensal).length>0){
-                const allMeses=Object.keys(oc.vendasMensal).sort();
-                const hasPeriodo=fPedDe||fPedAte;
-                const mesesFiltrados=hasPeriodo?allMeses.filter(function(mes){return(!fPedDe||mes>=fPedDe)&&(!fPedAte||mes<=fPedAte)}):allMeses;
-                // Recalcular vendas e pedidos do período
-                ocVendas=0;ocPed=0;
-                mesesFiltrados.forEach(function(mes){
-                    ocVendas+=oc.vendasMensal[mes]||0;
-                    if(oc.pedidosMensal)ocPed+=(oc.pedidosMensal[mes]||0);
-                });
-                ocVendas=Math.round(ocVendas*100)/100;
-                // Estimar atendimentos/interações proporcionalmente
-                if(allMeses.length>0&&mesesFiltrados.length>0&&mesesFiltrados.length!==allMeses.length){
-                    const prop=mesesFiltrados.length/allMeses.length;
-                    ocAtend=Math.round((oc.atendimentosOraculo||0)*prop);
-                    ocInter=Math.round((oc.interacoesOraculo||0)*prop);
-                }
-                if(hasPeriodo&&mesesFiltrados.length>0)periodoLabel=mesesFiltrados.map(function(m){return m.substring(5)+'/'+m.substring(2,4)}).join(', ');
-            }
-            window._oraculoSlides=[
-                {title:'Pedidos Oráculo',kpi:fmtN(ocPed),label:'pedidos ('+periodoLabel+')',color:'var(--primary)',bg:'rgba(124,58,237,0.1)',sub:(ocAtend>0?'Atendimentos: '+fmtN(ocAtend)+' | ':'')+'Interações: '+fmtN(ocInter)},
-                {title:'% Atendimento por IA',kpi:ocAtend>0?ocPctIA.toFixed(1)+'%':'-',label:ocAtend>0?'dos atendimentos feitos por IA':'sem dados de atendimento',color:'var(--teal)',bg:'rgba(6,182,212,0.1)',sub:ocAtend>0?fmtN(Math.round(ocAtend*ocPctIA/100))+' por IA de '+fmtN(ocAtend)+' totais':'Pedidos no período: '+fmtN(ocPed)},
-                {title:'Vendas pelo Oráculo',kpi:ocVendas>0?fmtCFull(ocVendas):'R$ 0,00',label:'valor em vendas ('+periodoLabel+')',color:'var(--success)',bg:'rgba(16,185,129,0.1)',sub:'Pedidos: '+fmtN(ocPed)},
-                {title:'Configuração',kpi:'',label:'',color:'var(--accent-purple)',bg:'rgba(168,85,247,0.1)',config:true,oc},
-            ];
-            window._oraculoSlideIdx=0;
-            renderOraculoSlide();
-            renderOraculoCharts(oc);
-        } else {
-            oraculoPanel.style.display='none';
-            document.getElementById('oraculoChartsRow').style.display='none';
-        }
+        // Oráculo - dados agora ficam na aba Oráculo
         const cb=document.getElementById('eiChurn');
         cb.textContent=show.churnRisco||'-';
         cb.className='';
@@ -821,13 +770,9 @@ function updateEmpresaPanel(){
                 csatPanel.style.display='none';
             }
         }
-        // Show/hide the combined row container
+        // Show/hide CSAT row
         const rowContainer=document.getElementById('oraculoCsatRow');
-        if(oraculoPanel.style.display!=='none'||csatPanel.style.display!=='none'){
-            rowContainer.style.display='block';
-        } else {
-            rowContainer.style.display='none';
-        }
+        rowContainer.style.display=csatPanel.style.display!=='none'?'block':'none';
         // Filiais filter (always uses main match)
         updateFiliaisFilter(match);
         // Filiais section in Transações tab
@@ -836,8 +781,6 @@ function updateEmpresaPanel(){
         updateFinanceiroDetail(show);
     } else {
         panel.classList.remove('visible');
-        oraculoPanel.style.display='none';
-        document.getElementById('oraculoChartsRow').style.display='none';
         document.getElementById('csatPanel').style.display='none';
         document.getElementById('oraculoCsatRow').style.display='none';
         document.getElementById('filiaisSection').style.display='none';
