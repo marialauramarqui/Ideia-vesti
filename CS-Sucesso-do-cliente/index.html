@@ -278,15 +278,7 @@
             <div id="csatContent" style="display:flex;gap:12px;flex-wrap:wrap;"></div>
         </div>
     </div>
-    <div id="oraculoChartsRow" style="display:none;margin-top:16px;">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-            <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Vendas por Semana</div><div class="chart-subtitle">Venda Direta / Influenciada / Outros</div></div></div><div class="chart-wrapper"><canvas id="chartOracVendasSem"></canvas></div></div>
-            <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Interações Semanais</div><div class="chart-subtitle">IA vs Humano</div></div></div><div class="chart-wrapper"><canvas id="chartOracInterSem"></canvas></div></div>
-        </div>
-        <div style="margin-top:16px;">
-            <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Eventos por Semana</div><div class="chart-subtitle">Boas-Vindas, Carrinho Abandonado, Reativação, etc.</div></div></div><div class="chart-wrapper tall"><canvas id="chartOracEventosSem"></canvas></div></div>
-        </div>
-    </div>
+    <div id="oraculoChartsRow" style="display:none;"></div>
 </div>
 
 <div class="main">
@@ -295,6 +287,7 @@
         <button class="tab-btn" onclick="switchTab(1)">Transações</button>
         <button class="tab-btn" onclick="switchTab(2)">Financeiro</button>
         <button class="tab-btn" onclick="switchTab(3)">Análise de Churn</button>
+        <button class="tab-btn" onclick="switchTab(5)">Oráculo</button>
         <button class="tab-btn" onclick="switchTab(4)">Dados para Exportação</button>
     </div>
 
@@ -471,6 +464,26 @@
             <div class="table-footer"><span id="tableInfo"></span><div class="pagination" id="tablePag"></div></div>
         </div>
     </div>
+
+    <!-- TAB 5: Oráculo -->
+    <div class="tab-content" id="tab5">
+        <div id="oraculoTabEmpty" style="text-align:center;padding:60px 20px;color:var(--text-secondary);">
+            <div style="font-size:48px;margin-bottom:16px;">&#128302;</div>
+            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Selecione uma empresa com Oráculo</div>
+            <div style="font-size:13px;">Use o filtro de empresa acima para ver os dados do Oráculo</div>
+        </div>
+        <div id="oraculoTabContent" style="display:none;">
+            <div class="kpi-grid" id="kpiGridOraculo"></div>
+            <div id="oraculoConfigPanel" style="margin-bottom:24px;"></div>
+            <div class="charts-grid">
+                <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Vendas por Semana</div><div class="chart-subtitle">Venda Direta / Influenciada / Outros</div></div><span class="chart-badge badge-green">Semanal</span></div><div class="chart-wrapper tall"><canvas id="chartOracVendasSemTab"></canvas></div></div>
+                <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Interações Semanais</div><div class="chart-subtitle">IA vs Humano</div></div><span class="chart-badge badge-blue">Semanal</span></div><div class="chart-wrapper tall"><canvas id="chartOracInterSemTab"></canvas></div></div>
+            </div>
+            <div class="charts-grid">
+                <div class="chart-card full-width"><div class="chart-header"><div><div class="chart-title">Eventos por Semana</div><div class="chart-subtitle">Boas-Vindas, Carrinho Abandonado, Reativação, etc.</div></div><span class="chart-badge badge-orange">Automações</span></div><div class="chart-wrapper tall"><canvas id="chartOracEventosSemTab"></canvas></div></div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -633,6 +646,7 @@ function applyFilters(){
 
     updateEmpresaPanel();
     renderTab0();renderTab1();renderTabFin();renderTab2();renderTable();
+    if(document.getElementById('tab5').classList.contains('active'))renderTabOraculo();
 }
 
 /* ========== EMPRESA PANEL ========== */
@@ -969,48 +983,84 @@ function renderOraculoSlide(){
     }
 }
 
-/* ========== ORÁCULO CHARTS ========== */
+/* ========== ORÁCULO TAB ========== */
 function renderOraculoCharts(oc){
-    const chartsRow=document.getElementById('oraculoChartsRow');
-    if(!oc||(!oc.vendasSemanal&&!oc.interacoesSemanal&&!oc.eventosSemanal)){chartsRow.style.display='none';return;}
-    chartsRow.style.display='block';
+    // No-op: gráficos agora ficam na tab 5
+}
+function renderTabOraculo(){
+    const {display}=getDisplayEmpresa();
+    const show=display;
+    const empty=document.getElementById('oraculoTabEmpty');
+    const content=document.getElementById('oraculoTabContent');
+    if(!show||!show.temOraculoFabric||!show.oraculoFabric){
+        empty.style.display='block';content.style.display='none';return;
+    }
+    empty.style.display='none';content.style.display='block';
+    const oc=show.oraculoFabric;
 
-    // 1. Vendas por Semana (stacked bar: Direta / Influenciada / Outros)
+    // KPIs
+    const fPedDe=document.getElementById('fPedDe').value;
+    const fPedAte=document.getElementById('fPedAte').value;
+    let ocPed=oc.pedidosOraculo||0,ocAtend=oc.atendimentosOraculo||0,ocPctIA=oc.pctIAOraculo||0,ocVendas=oc.vendasOraculo||0,ocInter=oc.interacoesOraculo||0;
+    let periodoLabel='total';
+    if(oc.vendasMensal&&Object.keys(oc.vendasMensal).length>0){
+        const allM=Object.keys(oc.vendasMensal).sort();
+        const hasPer=fPedDe||fPedAte;
+        const mFilt=hasPer?allM.filter(m=>(!fPedDe||m>=fPedDe)&&(!fPedAte||m<=fPedAte)):allM;
+        ocVendas=0;ocPed=0;
+        mFilt.forEach(m=>{ocVendas+=oc.vendasMensal[m]||0;if(oc.pedidosMensal)ocPed+=(oc.pedidosMensal[m]||0);});
+        ocVendas=Math.round(ocVendas*100)/100;
+        if(allM.length>0&&mFilt.length>0&&mFilt.length!==allM.length){
+            const p=mFilt.length/allM.length;ocAtend=Math.round((oc.atendimentosOraculo||0)*p);ocInter=Math.round((oc.interacoesOraculo||0)*p);
+        }
+        if(hasPer&&mFilt.length>0)periodoLabel=mFilt.map(m=>m.substring(5)+'/'+m.substring(2,4)).join(', ');
+    }
+    const kpis=[
+        {icon:'&#128230;',label:'Pedidos Oráculo ('+periodoLabel+')',value:fmtN(ocPed)},
+        {icon:'&#128176;',label:'Vendas ('+periodoLabel+')',value:ocVendas>0?fmtC(ocVendas):'R$ 0'},
+        {icon:'&#129302;',label:'Atendimentos',value:fmtN(ocAtend)},
+        {icon:'&#129302;',label:'% Atendimento IA',value:ocPctIA>0?ocPctIA.toFixed(1)+'%':'-'},
+        {icon:'&#128172;',label:'Interações',value:fmtN(ocInter)},
+    ];
+    document.getElementById('kpiGridOraculo').innerHTML=kpiHTML(kpis);
+
+    // Config
+    const cfgEl=document.getElementById('oraculoConfigPanel');
+    let cfgH='<div class="chart-card" style="margin-bottom:0"><div class="chart-header"><div><div class="chart-title">Configuração do Oráculo</div></div></div><div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px;">';
+    const sn=v=>v?'<span style="color:var(--success);font-weight:600">Sim</span>':'<span style="color:var(--text-muted)">Não</span>';
+    if(oc.n8n_url)cfgH+='<div class="empresa-info-item"><strong>URL:</strong> <a href="'+oc.n8n_url+'" target="_blank" style="color:var(--teal);text-decoration:underline">'+oc.n8n_url+'</a></div>';
+    cfgH+='<div class="empresa-info-item"><strong>Tel. Vesti:</strong> '+sn(oc.phone_by_vesti)+'</div>';
+    cfgH+='<div class="empresa-info-item"><strong>Catálogo c/ Preço:</strong> '+sn(oc.catalogue_with_price)+'</div>';
+    cfgH+='<div class="empresa-info-item"><strong>Agente Varejo:</strong> '+sn(oc.agent_retail)+'</div>';
+    cfgH+='<div class="empresa-info-item"><strong>Praça Fechada:</strong> '+sn(oc.works_with_closed_square)+'</div>';
+    cfgH+='<div class="empresa-info-item"><strong>Ativo desde:</strong> '+(oc.created_at?new Date(oc.created_at).toLocaleDateString('pt-BR'):'-')+'</div>';
+    cfgH+='</div>';
+    if(oc.link_report)cfgH+='<div style="margin-top:12px"><a href="'+oc.link_report+'" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--primary),var(--teal));color:#fff;padding:7px 16px;border-radius:8px;text-decoration:none;font-size:12px;font-weight:600">Abrir Relatório Completo</a></div>';
+    cfgH+='</div>';
+    cfgEl.innerHTML=cfgH;
+
+    // Gráficos
     if(oc.vendasSemanal&&oc.vendasSemanal.length>0){
-        const vs=oc.vendasSemanal.slice(-12);
-        const labels=vs.map(s=>s.label||'S'+s.sem);
-        getOrCreate('chartOracVendasSem',{type:'bar',data:{labels:labels,datasets:[
-            {label:'Venda Direta',data:vs.map(s=>s.vDireta||0),backgroundColor:'rgba(16,185,129,0.8)',borderRadius:2},
-            {label:'Venda Influenciada',data:vs.map(s=>s.vInfluenciada||0),backgroundColor:'rgba(124,58,237,0.8)',borderRadius:2},
-            {label:'Outros',data:vs.map(s=>s.vOutros||0),backgroundColor:'rgba(139,143,163,0.5)',borderRadius:2},
-        ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:darkLegend,tooltip:{...darkTooltip,callbacks:{label:ctx=>ctx.dataset.label+': '+fmtC(ctx.raw)}}},scales:{x:{stacked:true,ticks:darkTick,grid:darkGrid},y:{stacked:true,ticks:{...darkTick,callback:v=>fmtC(v)},grid:darkGrid}}}});
+        const vs=oc.vendasSemanal.slice(-16);
+        getOrCreate('chartOracVendasSemTab',{type:'bar',data:{labels:vs.map(s=>s.label||'S'+s.sem),datasets:[
+            {label:'Venda Direta',data:vs.map(s=>s.vDireta||0),backgroundColor:'rgba(16,185,129,0.8)',borderRadius:3},
+            {label:'Venda Influenciada',data:vs.map(s=>s.vInfluenciada||0),backgroundColor:'rgba(124,58,237,0.8)',borderRadius:3},
+            {label:'Outros',data:vs.map(s=>s.vOutros||0),backgroundColor:'rgba(139,143,163,0.5)',borderRadius:3},
+        ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:darkLegend,tooltip:{...darkTooltip,callbacks:{label:ctx=>ctx.dataset.label+': '+fmtC(ctx.raw),footer:items=>'Total: '+fmtC(items.reduce((s,i)=>s+i.raw,0))}}},scales:{x:{stacked:true,ticks:darkTick,grid:darkGrid},y:{stacked:true,ticks:{...darkTick,callback:v=>fmtC(v)},grid:darkGrid}}}});
     }
-
-    // 2. Interações Semanais (stacked bar: IA vs Humano)
     if(oc.interacoesSemanal&&oc.interacoesSemanal.length>0){
-        const is=oc.interacoesSemanal.slice(-12);
-        const labels=is.map(s=>s.label||'S'+s.sem);
-        getOrCreate('chartOracInterSem',{type:'bar',data:{labels:labels,datasets:[
-            {label:'IA',data:is.map(s=>s.ia||0),backgroundColor:'rgba(6,182,212,0.8)',borderRadius:2},
-            {label:'Humano',data:is.map(s=>s.human||0),backgroundColor:'rgba(236,72,153,0.8)',borderRadius:2},
-        ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:darkLegend,tooltip:darkTooltip},scales:{x:{stacked:true,ticks:darkTick,grid:darkGrid},y:{stacked:true,ticks:darkTick,grid:darkGrid}}}});
+        const is=oc.interacoesSemanal.slice(-16);
+        getOrCreate('chartOracInterSemTab',{type:'bar',data:{labels:is.map(s=>s.label||'S'+s.sem),datasets:[
+            {label:'IA',data:is.map(s=>s.ia||0),backgroundColor:'rgba(6,182,212,0.8)',borderRadius:3},
+            {label:'Humano',data:is.map(s=>s.human||0),backgroundColor:'rgba(236,72,153,0.8)',borderRadius:3},
+        ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:darkLegend,tooltip:{...darkTooltip,callbacks:{footer:items=>'Total: '+fmtN(items.reduce((s,i)=>s+i.raw,0))}}},scales:{x:{stacked:true,ticks:darkTick,grid:darkGrid},y:{stacked:true,ticks:darkTick,grid:darkGrid}}}});
     }
-
-    // 3. Eventos por Semana (stacked bar com tipos)
     if(oc.eventosSemanal&&oc.eventosSemanal.length>0){
-        const ev=oc.eventosSemanal.slice(-12);
-        const labels=ev.map(s=>'S'+s.sem);
-        // Collect all event types
-        const tipos=new Set();
-        ev.forEach(s=>{Object.keys(s).forEach(k=>{if(k!=='sem')tipos.add(k);});});
-        const tipoColors={'Boas-Vindas':'#10B981','Carrinho abandonado':'#F59E0B','Pedido confirmado':'#7C3AED','Aquecimento de Leads':'#06B6D4','Reativação de Inativos':'#EC4899','Código de Acesso':'#8B5CF6','Mídias Pedido':'#EAB308'};
-        const defaultColors=['#A855F7','#EF4444','#0891B2','#D64550','#5B21B6'];
-        let ci=0;
-        const datasets=[...tipos].map(t=>({
-            label:t,data:ev.map(s=>s[t]||0),
-            backgroundColor:tipoColors[t]||(defaultColors[ci++%defaultColors.length]),borderRadius:2
-        }));
-        getOrCreate('chartOracEventosSem',{type:'bar',data:{labels:labels,datasets:datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:darkLegend,tooltip:darkTooltip},scales:{x:{stacked:true,ticks:darkTick,grid:darkGrid},y:{stacked:true,ticks:darkTick,grid:darkGrid}}}});
+        const ev=oc.eventosSemanal.slice(-16);
+        const tipos=new Set();ev.forEach(s=>{Object.keys(s).forEach(k=>{if(k!=='sem')tipos.add(k);});});
+        const tc={'Boas-Vindas':'#10B981','Carrinho abandonado':'#F59E0B','Pedido confirmado':'#7C3AED','Aquecimento de Leads':'#06B6D4','Reativação de Inativos':'#EC4899','Código de Acesso':'#8B5CF6','Mídias Pedido':'#EAB308'};
+        const dc=['#A855F7','#EF4444','#0891B2','#D64550','#5B21B6'];let ci=0;
+        getOrCreate('chartOracEventosSemTab',{type:'bar',data:{labels:ev.map(s=>'S'+s.sem),datasets:[...tipos].map(t=>({label:t,data:ev.map(s=>s[t]||0),backgroundColor:tc[t]||(dc[ci++%dc.length]),borderRadius:2}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:darkLegend,tooltip:darkTooltip},scales:{x:{stacked:true,ticks:darkTick,grid:darkGrid},y:{stacked:true,ticks:darkTick,grid:darkGrid}}}});
     }
 }
 
@@ -1018,6 +1068,7 @@ function renderOraculoCharts(oc){
 function switchTab(n){
     document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',i===n));
     document.querySelectorAll('.tab-content').forEach((c,i)=>c.classList.toggle('active',i===n));
+    if(n===5)renderTabOraculo();
 }
 
 /* ========== KPI HELPERS ========== */
