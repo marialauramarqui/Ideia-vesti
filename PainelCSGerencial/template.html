@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel CS Gerencial</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--p:#6C5CE7;--pl:rgba(108,92,231,.15);--s:#00B894;--w:#F39C12;--d:#E17055;--dk:#2D3436;--g:#636E72;--lg:#DFE6E9;--bg:#F8F9FA;--card:#FFF;--sh:0 2px 10px rgba(0,0,0,.07);--r:14px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--dk);overflow-x:hidden}
+.top-bar{background:linear-gradient(135deg,#2D3436,#636E72);color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+.top-bar .logo{font-size:18px;font-weight:700}
+.top-bar .info{font-size:11px;color:rgba(255,255,255,.6)}
+.container{max-width:1400px;margin:0 auto;padding:16px 20px}
+.filters{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:14px 18px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.filter-group{display:flex;align-items:center;gap:6px}
+.filter-group label{font-size:12px;font-weight:600;white-space:nowrap}
+.filter-container{position:relative;min-width:240px}
+.f-input{width:100%;padding:7px 12px;border:2px solid var(--lg);border-radius:8px;font-size:12px;font-family:'Inter',sans-serif;outline:none}
+.f-input:focus{border-color:var(--p)}
+.f-select{padding:7px 10px;border:2px solid var(--lg);border-radius:8px;font-size:12px;font-family:'Inter',sans-serif;outline:none;background:#fff;cursor:pointer}
+.f-dropdown{position:absolute;top:100%;left:0;right:0;background:#fff;border:2px solid var(--lg);border-top:none;border-radius:0 0 8px 8px;max-height:300px;overflow-y:auto;z-index:50;display:none}
+.f-dropdown.show{display:block}
+.f-opt{padding:7px 12px;cursor:pointer;font-size:11px;border-bottom:1px solid #f5f5f5}
+.f-opt:hover{background:#F0EFFF}
+.f-opt .fn{font-weight:600}.f-opt .fm{color:var(--g);font-size:10px;margin-top:1px}
+.f-tag{display:inline-flex;align-items:center;gap:5px;background:#F0EFFF;color:var(--p);padding:5px 10px;border-radius:16px;font-size:12px;font-weight:500}
+.f-tag .x{cursor:pointer;font-weight:700;font-size:14px}
+.f-btn{padding:6px 12px;background:var(--p);color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;font-size:11px;font-weight:500}
+.co-detail{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:16px 18px;margin-bottom:16px;display:none}
+.co-detail.show{display:block}
+.co-detail h3{font-size:15px;margin-bottom:10px}
+.d-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.d-item .dl{font-size:10px;color:var(--g);text-transform:uppercase;letter-spacing:.5px}
+.d-item .dv{font-size:13px;font-weight:600;margin-top:1px}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:14px 16px;position:relative}
+.kpi .kl{font-size:11px;color:var(--g);font-weight:500;margin-bottom:4px}
+.kpi .kv{font-size:26px;font-weight:700}
+.kpi .ks{font-size:10px;color:var(--g);margin-top:3px}
+.kpi .kt{font-size:11px;font-weight:600;margin-top:3px}
+.kpi .kt.up{color:var(--s)}.kpi .kt.down{color:var(--d)}
+.kpi .ki{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.section{margin-bottom:20px}.section-title{font-size:16px;font-weight:700;margin-bottom:12px;padding-bottom:6px;border-bottom:2px solid var(--lg)}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.chart-row.full{grid-template-columns:1fr}
+.ch{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:16px}
+.ch h4{font-size:13px;font-weight:600;margin-bottom:10px}
+.cw{position:relative;height:240px}.cw.tall{height:280px}
+.tbl-card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:16px;margin-bottom:16px}
+.tbl-card h4{font-size:13px;font-weight:600;margin-bottom:10px}
+table.dt{width:100%;border-collapse:collapse;font-size:11px}
+table.dt th{text-align:left;padding:6px 8px;background:#F8F9FA;font-weight:600;color:var(--g);font-size:10px;text-transform:uppercase;letter-spacing:.4px;border-bottom:2px solid var(--lg)}
+table.dt td{padding:6px 8px;border-bottom:1px solid #f0f0f0}
+table.dt tr:hover td{background:#FAFAFA}
+.badge{display:inline-block;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:600}
+.badge.pr{background:#E8F5E9;color:#00B894}.badge.pa{background:#FFF3E0;color:#F39C12}.badge.de{background:#FDEAEA;color:#E17055}.badge.sm{background:#F0F0F0;color:#999}.badge.ok{background:#E8F5E9;color:#00B894}.badge.fi{background:#E8EAF6;color:#5C6BC0}
+.click{cursor:pointer}.click:hover{color:var(--p);text-decoration:underline}
+@media(max-width:900px){.kpi-row{grid-template-columns:1fr 1fr}.chart-row{grid-template-columns:1fr}}
+@media(max-width:600px){.kpi-row{grid-template-columns:1fr}.filters{flex-direction:column;align-items:stretch}}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#ccc;border-radius:3px}
+</style>
+</head>
+<body>
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#2D3436,#636E72)">
+    <div style="background:#fff;border-radius:16px;padding:40px;width:360px;box-shadow:0 8px 32px rgba(0,0,0,.2);text-align:center">
+        <div style="font-size:28px;font-weight:700;color:#2D3436;margin-bottom:4px">CS Gerencial</div>
+        <div style="font-size:13px;color:#636E72;margin-bottom:28px">Painel de Customer Success</div>
+        <input type="password" id="loginPass" placeholder="Digite a senha..." style="width:100%;padding:12px 16px;border:2px solid #DFE6E9;border-radius:10px;font-size:14px;font-family:'Inter',sans-serif;outline:none;margin-bottom:12px;text-align:center" onkeydown="if(event.key==='Enter')doLogin()">
+        <div id="loginError" style="color:#E17055;font-size:12px;margin-bottom:12px;display:none">Senha incorreta</div>
+        <button onclick="doLogin()" style="width:100%;padding:12px;background:#6C5CE7;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">Entrar</button>
+    </div>
+</div>
+<!-- DASHBOARD (hidden until login) -->
+<div id="dashContent" style="display:none">
+<div class="top-bar"><div><span class="logo">CS Gerencial</span><span style="font-size:12px;opacity:.6;margin-left:8px;">Painel de Customer Success</span></div><div class="info">NPS: Fev-Nov/2025 | CSAT: Jan-Mar/2026</div></div>
+<div class="container">
+<div class="filters">
+    <div class="filter-group"><label>Empresa:</label><div class="filter-container"><input type="text" class="f-input" id="fEmpresa" placeholder="Buscar por nome ou CNPJ..." autocomplete="off"><div class="f-dropdown" id="fDropdown"></div></div><span id="fTag" style="display:none" class="f-tag"><span id="fTagName"></span><span class="x" onclick="clearEmpresa()">&times;</span></span></div>
+    <div class="filter-group"><label>CS:</label><select class="f-select" id="fCS" onchange="updateAll()"><option value="">Todos</option></select></div>
+    <div class="filter-group"><label>Exibir:</label><select class="f-select" id="fTipo" onchange="updateAll()"><option value="">Todas empresas</option><option value="nps">Somente com NPS</option><option value="csat">Somente com CSAT</option><option value="both">Com NPS e CSAT</option></select></div>
+    <button class="f-btn" onclick="clearAll()" id="fClear" style="display:none">Limpar Filtros</button>
+</div>
+<div class="co-detail" id="coDetail"><h3 id="cd-t"></h3><div class="d-grid"><div class="d-item"><div class="dl">Nome Fantasia</div><div class="dv" id="cd-nf">-</div></div><div class="d-item"><div class="dl">CNPJ</div><div class="dv" id="cd-cnpj">-</div></div><div class="d-item"><div class="dl">Razao Social</div><div class="dv" id="cd-rs">-</div></div><div class="d-item"><div class="dl">Anjo (CS)</div><div class="dv" id="cd-anjo">-</div></div><div class="d-item"><div class="dl">Canal</div><div class="dv" id="cd-canal">-</div></div><div class="d-item"><div class="dl">Integracao</div><div class="dv" id="cd-int">-</div></div><div class="d-item"><div class="dl">Tipo</div><div class="dv" id="cd-tipo">-</div></div></div></div>
+<div class="kpi-row">
+    <div class="kpi"><div class="ki" style="background:#F0EFFF">&#127970;</div><div class="kl">Total Empresas</div><div class="kv" style="color:var(--p)" id="k-total">--</div></div>
+    <div class="kpi"><div class="ki" style="background:#E0F7F0">&#127970;</div><div class="kl">Empresas (Matriz)</div><div class="kv" style="color:var(--s)" id="k-emp">--</div></div>
+    <div class="kpi"><div class="ki" style="background:#FFF3E0">&#127970;</div><div class="kl">Filiais</div><div class="kv" style="color:var(--w)" id="k-fil">--</div></div>
+    <div class="kpi"><div class="ki" style="background:#FDEAEA">&#127970;</div><div class="kl">Sem NPS e sem CSAT</div><div class="kv" style="color:var(--d)" id="k-sem">--</div></div>
+</div>
+<div class="kpi-row">
+    <div class="kpi"><div class="ki" style="background:#F0EFFF">&#11088;</div><div class="kl">NPS Score</div><div class="kv" style="color:var(--p)" id="k-nps">--</div><div class="ks" id="k-nps-s"></div></div>
+    <div class="kpi"><div class="ki" style="background:#E0F7F0">&#9989;</div><div class="kl">CSAT Medio</div><div class="kv" style="color:var(--s)" id="k-csat">--</div><div class="ks" id="k-csat-s"></div><div class="kt" id="k-csat-t"></div></div>
+    <div class="kpi"><div class="ki" style="background:#FFF3E0">&#128172;</div><div class="kl">Respostas NPS</div><div class="kv" style="color:var(--d)" id="k-resp">--</div><div class="ks" id="k-resp-s"></div></div>
+    <div class="kpi"><div class="ki" style="background:#E8F5E9">&#128202;</div><div class="kl">Empresas com pesquisa</div><div class="ks" style="margin-top:8px;font-size:12px" id="k-pesq"></div></div>
+</div>
+<div class="section"><div class="section-title">NPS - Net Promoter Score</div></div>
+<div class="chart-row full"><div class="ch"><h4>NPS Score - Evolucao Mensal</h4><div class="cw tall"><canvas id="c1"></canvas></div></div></div>
+<div class="chart-row"><div class="ch"><h4>Distribuicao NPS</h4><div class="cw"><canvas id="c2"></canvas></div></div><div class="ch"><h4>Respostas por Mes</h4><div class="cw"><canvas id="c3"></canvas></div></div></div>
+<div class="section"><div class="section-title">CSAT - Customer Satisfaction</div></div>
+<div class="kpi-row">
+    <div class="kpi"><div class="kl">CSAT Medio Geral</div><div class="kv" style="color:var(--s)" id="k2-csat">--</div></div>
+    <div class="kpi"><div class="kl">Melhor Mes</div><div class="kv" style="color:var(--s)" id="k2-best">--</div><div class="ks" id="k2-best-m"></div></div>
+    <div class="kpi"><div class="kl">Pior Mes</div><div class="kv" style="color:var(--d)" id="k2-worst">--</div><div class="ks" id="k2-worst-m"></div></div>
+    <div class="kpi"><div class="kl">Total Avaliacoes</div><div class="kv" style="color:var(--d)" id="k2-total">--</div></div>
+</div>
+<div class="chart-row full"><div class="ch"><h4>CSAT - Evolucao Mensal</h4><div class="cw"><canvas id="c4"></canvas></div></div></div>
+<div class="tbl-card"><h4>Detalhamento CSAT</h4><div style="max-height:300px;overflow-y:auto"><table class="dt" id="tCsat"><thead><tr><th>Mes</th><th>Empresa</th><th>Nota</th><th>Observacao</th></tr></thead><tbody></tbody></table></div></div>
+<div class="section"><div class="section-title">NPS por CS</div></div>
+<div class="chart-row full"><div class="ch"><h4>NPS Score por CS</h4><div class="cw tall"><canvas id="c5"></canvas></div></div></div>
+<div class="tbl-card"><h4>Ultimas Respostas NPS</h4><div style="max-height:350px;overflow-y:auto"><table class="dt" id="tNps"><thead><tr><th>Data</th><th>Empresa</th><th>Nota</th><th>Tipo</th><th>Anjo</th><th>Comentario</th></tr></thead><tbody></tbody></table></div></div>
+</div>
+</div><!-- end dashContent -->
+<script>
+function doLogin(){
+    var pass=document.getElementById('loginPass').value;
+    if(pass==='Mudar123'){
+        document.getElementById('loginScreen').style.display='none';
+        document.getElementById('dashContent').style.display='block';
+        sessionStorage.setItem('cs_auth','1');
+        initDashboard();
+    }else{
+        document.getElementById('loginError').style.display='block';
+        document.getElementById('loginPass').style.borderColor='#E17055';
+    }
+}
+// Auto-login if already authenticated in this session
+if(sessionStorage.getItem('cs_auth')==='1'){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('dashContent').style.display='block';
+}
+</script>
+<script>/*INLINE_DATA*/</script>
+<script>
+function initDashboard(){
+var coMap={};COMPANIES_DATA.forEach(function(c){coMap[c.name]=c;if(c.domain_id)coMap['_d_'+c.domain_id]=c});
+// Build empresa->CS lookup from COMPANIES_DATA (the real CS assignment)
+var empresaToCS={};COMPANIES_DATA.forEach(function(c){if(c.anjo)empresaToCS[c.name]=c.anjo});
+var npsPerCo={},csatPerCo={};
+NPS_DATA.forEach(function(r){if(!npsPerCo[r.empresa])npsPerCo[r.empresa]=[];npsPerCo[r.empresa].push(r.nota)});
+CSAT_DATA.forEach(function(r){if(!csatPerCo[r.empresa])csatPerCo[r.empresa]=[];csatPerCo[r.empresa].push(r.nota)});
+var activeList=[];
+COMPANIES_DATA.filter(function(c){return c.status==='Ativa'}).forEach(function(c){var nps=npsPerCo[c.name]||[],csat=csatPerCo[c.name]||[];activeList.push(Object.assign({},c,{npsN:nps,csatN:csat,npsAvg:nps.length?(nps.reduce(function(a,b){return a+b},0)/nps.length):null,csatAvg:csat.length?(csat.reduce(function(a,b){return a+b},0)/csat.length):null,hasNps:nps.length>0,hasCsat:csat.length>0}))});
+activeList.sort(function(a,b){return a.name.localeCompare(b.name)});
+var fCS=document.getElementById('fCS');CS_NAMES.forEach(function(n){var o=document.createElement('option');o.value=n;o.textContent=n;fCS.appendChild(o)});
+var selCo=null,charts={},fEmpresa=document.getElementById('fEmpresa'),fDropdown=document.getElementById('fDropdown');
+function getFilteredList(){var list=activeList,cs=fCS.value,tipo=document.getElementById('fTipo').value;if(cs)list=list.filter(function(c){return c.anjo===cs});if(tipo==='nps')list=list.filter(function(c){return c.hasNps});else if(tipo==='csat')list=list.filter(function(c){return c.hasCsat});else if(tipo==='both')list=list.filter(function(c){return c.hasNps&&c.hasCsat});return list}
+function renderDropdown(q){q=(q||'').toLowerCase();var list=getFilteredList(),f=list.filter(function(c){return c.name.toLowerCase().indexOf(q)>=0||(c.cnpj&&c.cnpj.indexOf(q)>=0)||(c.nome_fantasia&&c.nome_fantasia.toLowerCase().indexOf(q)>=0)});fDropdown.innerHTML='';if(!f.length)fDropdown.innerHTML='<div class="f-opt" style="color:#999">Nenhuma encontrada</div>';else f.slice(0,200).forEach(function(c){var div=document.createElement('div');div.className='f-opt';var meta='Anjo: '+(c.anjo||'-')+' | Canal: '+(c.canal||'-');if(c.is_filial)meta='<span class="badge fi">Filial de '+(c.matriz_name||'?')+'</span> '+meta;div.innerHTML='<div class="fn">'+c.name+'</div><div class="fm">'+meta+'</div>';div.onclick=function(){selectCo(c.name)};fDropdown.appendChild(div)});fDropdown.classList.add('show')}
+fEmpresa.addEventListener('focus',function(){renderDropdown(fEmpresa.value)});fEmpresa.addEventListener('input',function(){renderDropdown(fEmpresa.value)});
+document.addEventListener('click',function(e){if(!e.target.closest('.filter-container'))fDropdown.classList.remove('show')});
+function selectCo(name){selCo=name;fEmpresa.style.display='none';document.getElementById('fTag').style.display='inline-flex';document.getElementById('fTagName').textContent=name;document.getElementById('fClear').style.display='inline-block';fDropdown.classList.remove('show');var c=coMap[name];if(c){document.getElementById('cd-t').textContent=name;document.getElementById('cd-nf').textContent=c.nome_fantasia||'-';document.getElementById('cd-cnpj').textContent=c.cnpj||'-';document.getElementById('cd-rs').textContent=c.razao_social||'-';document.getElementById('cd-anjo').textContent=c.anjo||'-';document.getElementById('cd-canal').textContent=c.canal||'-';document.getElementById('cd-int').textContent=c.integracao||'-';document.getElementById('cd-tipo').textContent=c.is_filial?'Filial de '+(c.matriz_name||'?'):'Empresa (Matriz)';document.getElementById('coDetail').classList.add('show')}updateAll()}
+function clearEmpresa(){selCo=null;fEmpresa.value='';fEmpresa.style.display='block';document.getElementById('fTag').style.display='none';document.getElementById('coDetail').classList.remove('show');updateAll()}
+function clearAll(){clearEmpresa();fCS.value='';document.getElementById('fTipo').value='';document.getElementById('fClear').style.display='none';updateAll()}
+function getfNps(){var d=NPS_DATA;if(selCo)d=d.filter(function(r){return r.empresa===selCo});var cs=fCS.value;if(cs)d=d.filter(function(r){return empresaToCS[r.empresa]===cs});return d}
+function getfCsat(){var d=CSAT_DATA;if(selCo)d=d.filter(function(r){return r.empresa===selCo});return d}
+function calcNps(recs){if(!recs.length)return null;var p=recs.filter(function(r){return r.nota>=9}).length,d=recs.filter(function(r){return r.nota<=6}).length;return Math.round((p-d)/recs.length*100)}
+function npsM(recs){var m={};recs.forEach(function(r){var k=r.data.substring(0,7);if(!m[k])m[k]=[];m[k].push(r.nota)});return Object.keys(m).sort().map(function(k){return{lb:fmtM(k),sc:calcNps(m[k].map(function(n){return{nota:n}})),avg:m[k].reduce(function(a,b){return a+b},0)/m[k].length,ct:m[k].length,pr:m[k].filter(function(n){return n>=9}).length,ne:m[k].filter(function(n){return n>=7&&n<=8}).length,de:m[k].filter(function(n){return n<=6}).length}})}
+function csatM(recs){var m={};recs.forEach(function(r){if(!m[r.mes])m[r.mes]=[];m[r.mes].push(r.nota)});return Object.keys(m).sort().map(function(k){return{lb:fmtM(k),avg:m[k].reduce(function(a,b){return a+b},0)/m[k].length,ct:m[k].length}})}
+function fmtM(m){var n=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];return n[parseInt(m.split('-')[1])-1]+'/'+m.substring(2,4)}
+function kill(id){if(charts[id]){charts[id].destroy();delete charts[id]}}
+function updateAll(){
+    var nps=getfNps(),csat=getfCsat(),nm=npsM(nps),cm=csatM(csat),score=calcNps(nps),list=getFilteredList();
+    if(selCo||fCS.value||document.getElementById('fTipo').value)document.getElementById('fClear').style.display='inline-block';
+    var nEmp=list.filter(function(c){return c.isMatriz||!c.is_filial}).length,nFil=list.filter(function(c){return c.is_filial&&!c.isMatriz}).length;
+    document.getElementById('k-total').textContent=list.length;document.getElementById('k-emp').textContent=nEmp;document.getElementById('k-fil').textContent=nFil;document.getElementById('k-sem').textContent=list.filter(function(c){return!c.hasNps&&!c.hasCsat}).length;
+    document.getElementById('k-nps').textContent=score!==null?score:'--';document.getElementById('k-nps-s').textContent=nps.length?nps.length+' respostas de '+new Set(nps.map(function(r){return r.empresa})).size+' empresas':'Sem dados';
+    var ca=csat.length?(csat.reduce(function(a,b){return a+b.nota},0)/csat.length).toFixed(1):'--';
+    document.getElementById('k-csat').textContent=ca;document.getElementById('k-csat-s').textContent=csat.length?csat.length+' avaliacoes de '+new Set(csat.map(function(r){return r.empresa})).size+' empresas':'Sem dados';
+    if(cm.length>=2){var df=(cm[cm.length-1].avg-cm[cm.length-2].avg).toFixed(1);var el=document.getElementById('k-csat-t');el.textContent=(df>=0?'+':'')+df+' vs mes anterior';el.className='kt '+(df>0?'up':df<0?'down':'')}else document.getElementById('k-csat-t').textContent='';
+    document.getElementById('k-resp').textContent=nps.length;
+    var aN=new Set(NPS_DATA.map(function(r){return r.empresa})),aC=new Set(CSAT_DATA.map(function(r){return r.empresa})),ab=0;aN.forEach(function(e){if(aC.has(e))ab++});
+    document.getElementById('k-pesq').innerHTML='<b style="color:var(--p)">'+aN.size+'</b> com NPS &nbsp;|&nbsp; <b style="color:var(--s)">'+aC.size+'</b> com CSAT &nbsp;|&nbsp; <b style="color:var(--dk)">'+ab+'</b> com ambos';
+    document.getElementById('k-resp-s').textContent=nps.length?'De '+new Set(nps.map(function(r){return r.empresa})).size+' empresas':'';
+    kill('c1');if(nm.length)charts['c1']=new Chart(document.getElementById('c1'),{type:'line',data:{labels:nm.map(function(m){return m.lb}),datasets:[{label:'NPS Score',data:nm.map(function(m){return m.sc}),borderColor:'#6C5CE7',backgroundColor:'rgba(108,92,231,.15)',fill:true,tension:.4,pointRadius:5,pointBackgroundColor:'#6C5CE7',borderWidth:3},{label:'Media Nota',data:nm.map(function(m){return+m.avg.toFixed(1)}),borderColor:'#00B894',borderDash:[5,5],tension:.4,pointRadius:3,borderWidth:2,yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},plugins:{legend:{position:'top'}},scales:{y:{title:{display:true,text:'NPS Score'},min:-100,max:100},y1:{position:'right',title:{display:true,text:'Media'},min:0,max:10,grid:{drawOnChartArea:false}}}}});
+    kill('c2');if(nps.length){var pr=nps.filter(function(r){return r.nota>=9}).length,pa=nps.filter(function(r){return r.nota>=7&&r.nota<=8}).length,de=nps.filter(function(r){return r.nota<=6}).length;charts['c2']=new Chart(document.getElementById('c2'),{type:'doughnut',data:{labels:['Promotores (9-10)','Neutros (7-8)','Detratores (0-6)'],datasets:[{data:[pr,pa,de],backgroundColor:['#00B894','#F39C12','#E17055'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{padding:12}},datalabels:{display:true,color:'#fff',font:{weight:'bold',size:12},formatter:function(v,ctx){var t=ctx.chart.data.datasets[0].data.reduce(function(a,b){return a+b},0);return t?Math.round(v/t*100)+'%':''}}}},plugins:[ChartDataLabels]})}
+    kill('c3');if(nm.length)charts['c3']=new Chart(document.getElementById('c3'),{type:'bar',data:{labels:nm.map(function(m){return m.lb}),datasets:[{label:'Promotores',data:nm.map(function(m){return m.pr}),backgroundColor:'#00B894',borderRadius:3},{label:'Neutros',data:nm.map(function(m){return m.ne}),backgroundColor:'#F39C12',borderRadius:3},{label:'Detratores',data:nm.map(function(m){return m.de}),backgroundColor:'#E17055',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'},datalabels:{display:false}},scales:{x:{stacked:true},y:{stacked:true}}},plugins:[ChartDataLabels]});
+    if(csat.length&&cm.length){document.getElementById('k2-csat').textContent=ca;document.getElementById('k2-total').textContent=csat.length;var best=cm.reduce(function(a,b){return a.avg>b.avg?a:b}),worst=cm.reduce(function(a,b){return a.avg<b.avg?a:b});document.getElementById('k2-best').textContent=best.avg.toFixed(1);document.getElementById('k2-best-m').textContent=best.lb;document.getElementById('k2-worst').textContent=worst.avg.toFixed(1);document.getElementById('k2-worst-m').textContent=worst.lb}else{document.getElementById('k2-csat').textContent='--';document.getElementById('k2-total').textContent='0';document.getElementById('k2-best').textContent='--';document.getElementById('k2-best-m').textContent='';document.getElementById('k2-worst').textContent='--';document.getElementById('k2-worst-m').textContent=''}
+    kill('c4');if(cm.length)charts['c4']=new Chart(document.getElementById('c4'),{type:'bar',data:{labels:cm.map(function(m){return m.lb}),datasets:[{label:'CSAT',data:cm.map(function(m){return+m.avg.toFixed(2)}),backgroundColor:['#00B894','#F39C12','#6C5CE7'],borderRadius:8,barPercentage:.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{display:true,anchor:'end',align:'top',font:{weight:'bold',size:13},color:'#2D3436'}},scales:{y:{min:0,max:5}}},plugins:[ChartDataLabels]});
+    var ctb=document.querySelector('#tCsat tbody');ctb.innerHTML='';csat.slice().sort(function(a,b){return b.mes.localeCompare(a.mes)}).forEach(function(r){ctb.innerHTML+='<tr><td>'+fmtM(r.mes)+'</td><td>'+r.empresa+'</td><td><b>'+r.nota+'</b></td><td>'+(r.observacao||'-')+'</td></tr>'});
+    kill('c5');if(!selCo){var m={},outros=[];NPS_DATA.forEach(function(r){var a=empresaToCS[r.empresa];if(!a||CS_NAMES.indexOf(a)<0){outros.push(r.nota);return}if(!m[a])m[a]=[];m[a].push(r.nota)});var csF=fCS.value,anjos;if(csF)anjos=[csF].filter(function(a){return m[a]});else anjos=CS_NAMES.filter(function(a){return m[a]});var ba=anjos.map(function(a){return{anjo:a,score:calcNps(m[a].map(function(n){return{nota:n}})),ct:m[a].length}});if(!csF&&outros.length)ba.push({anjo:'Outros/Sem CS',score:calcNps(outros.map(function(n){return{nota:n}})),ct:outros.length});if(ba.length)charts['c5']=new Chart(document.getElementById('c5'),{type:'bar',data:{labels:ba.map(function(a){return a.anjo+' ('+a.ct+')'}),datasets:[{label:'NPS',data:ba.map(function(a){return a.score}),backgroundColor:ba.map(function(a){return a.score>=50?'#00B894':a.score>=0?'#F39C12':'#E17055'}),borderRadius:8,barPercentage:.5}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},datalabels:{display:true,anchor:'end',align:'right',font:{weight:'bold'}}},scales:{x:{min:-100,max:100}}},plugins:[ChartDataLabels]})}
+    var ntb=document.querySelector('#tNps tbody');var nhtml=[];nps.slice().sort(function(a,b){return b.data.localeCompare(a.data)}).slice(0,50).forEach(function(r){var cls=r.nota>=9?'pr':r.nota>=7?'pa':'de',lbl=r.nota>=9?'Promotor':r.nota>=7?'Neutro':'Detrator',esc=r.empresa.replace(/'/g,"\\'");nhtml.push('<tr><td>'+r.data+'</td><td class="click" onclick="selectCo(\''+esc+'\')">'+r.empresa+'</td><td><b>'+r.nota+'</b></td><td><span class="badge '+cls+'">'+lbl+'</span></td><td>'+(r.anjo||'-')+'</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(r.comentario||'').replace(/"/g,'&quot;')+'">'+(r.comentario||'-')+'</td></tr>')});ntb.innerHTML=nhtml.join('');
+    }
+// Expose functions globally for onclick handlers
+window.selectCo=selectCo;window.clearEmpresa=clearEmpresa;window.clearAll=clearAll;window.updateAll=updateAll;
+updateAll();
+} // end initDashboard
+// Auto-init if already authenticated
+if(sessionStorage.getItem('cs_auth')==='1') initDashboard();
+</script>
+</body>
+</html>
