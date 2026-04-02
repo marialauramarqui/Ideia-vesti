@@ -677,7 +677,10 @@ function updateEmpresaPanel(){
             const uf=show.faturamento.faturas.find(f=>f.mes<=mesAtual&&f.status!=='canceled')||show.faturamento.faturas.find(f=>f.mes<=mesAtual)||show.faturamento.faturas[0];
             const statusMap={paid:'Pago',pending:'Pendente',expired:'Vencido',canceled:'Cancelado',externally_paid:'Pago ext.'};
             const colorMap={paid:'var(--success)',pending:'var(--warning)',expired:'var(--danger)',canceled:'var(--text-muted)',externally_paid:'var(--success)'};
-            ufEl.innerHTML='<span style="color:'+( colorMap[uf.status]||'var(--text-primary)')+';font-weight:700;">'+(statusMap[uf.status]||uf.status)+'</span> — '+fmtCFull(uf.total)+' <span style="color:var(--text-muted);font-size:11px;">('+uf.mes+')</span>';
+            const totalCobrado=show.planoTotalCobrado||0;
+            ufEl.innerHTML='<span style="color:'+(colorMap[uf.status]||'var(--text-primary)')+';font-weight:700;">'+(statusMap[uf.status]||uf.status)+'</span> — '+fmtCFull(uf.total)+' <span style="color:var(--text-muted);font-size:11px;">('+uf.mes+')</span>'+(totalCobrado>0?' <span style="color:var(--primary);font-weight:600;font-size:11px;margin-left:6px;">Total Cobrado: '+fmtCFull(totalCobrado)+'</span>':'');
+        } else if(show.planoTotalCobrado>0){
+            ufEl.innerHTML='<span style="color:var(--text-muted);">Sem fatura</span> <span style="color:var(--primary);font-weight:600;font-size:11px;margin-left:6px;">Total Cobrado: '+fmtCFull(show.planoTotalCobrado)+'</span>';
         } else {
             ufEl.textContent='-';
         }
