@@ -1,0 +1,5 @@
+debug.html
+companies_data.json
+*.xlsx
+*.parquet
+__pycache__/

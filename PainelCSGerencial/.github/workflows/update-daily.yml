@@ -1,0 +1,146 @@
+name: Atualizar Dashboard Diariamente
+
+on:
+  schedule:
+    - cron: '30 7 * * *'  # 4:30am BRT (UTC-3 = 7:30 UTC)
+  workflow_dispatch: # permite rodar manualmente
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Checkout CS-Sucesso repo (dados fonte)
+        uses: actions/checkout@v4
+        with:
+          repository: marialauramarqui/Ideia-vesti
+          path: ideia-vesti
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Instalar dependencias Node
+        run: |
+          cd ideia-vesti/CS-Sucesso-do-cliente
+          npm install xlsx 2>/dev/null || true
+
+      - name: Rodar build-cloud.js (atualizar dados.js)
+        env:
+          FABRIC_REFRESH_TOKEN: ${{ secrets.FABRIC_REFRESH_TOKEN }}
+          FABRIC_TENANT_ID: ${{ secrets.FABRIC_TENANT_ID }}
+          HUBSPOT_TOKEN: ${{ secrets.HUBSPOT_TOKEN }}
+        run: |
+          cd ideia-vesti/CS-Sucesso-do-cliente
+          node build-cloud.js
+
+      - name: Copiar dados.js e gerar dashboard
+        run: |
+          cp ideia-vesti/CS-Sucesso-do-cliente/dados.js cs-dados.js
+          python3 << 'PYEOF'
+          import sys, json, os
+
+          # Read dados.js
+          with open('cs-dados.js', 'r', encoding='utf-8') as f:
+              content = f.read()
+          json_str = content[len('const DADOS = '):].rstrip().rstrip(';')
+          data = json.loads(json_str)
+          empresas = data['empresas']
+
+          # Read NPS from Excel
+          try:
+              import openpyxl
+              wb = openpyxl.load_workbook('Pesquisa NPS.xlsx', data_only=True)
+              ws = wb['Nota NPS']
+              nps = []
+              # Build anjo short->full map
+              anjo_map = {}
+              for e in empresas:
+                  anjo = e.get('anjo','')
+                  if anjo and anjo != 'N/A':
+                      first = anjo.split(' ')[0]
+                      anjo_map[first] = anjo
+              for row in ws.iter_rows(min_row=2, values_only=True):
+                  empresa, nota, d, anjo, com, dom = row[5], row[2], row[7], row[10], row[6], row[12]
+                  if empresa and nota is not None and d:
+                      anjo_clean = anjo.strip() if anjo and anjo.strip() not in ['N/A',''] else None
+                      if anjo_clean and anjo_clean in anjo_map:
+                          anjo_clean = anjo_map[anjo_clean]
+                      nps.append({'empresa':str(empresa),'nota':float(nota),'data':str(d)[:10],'anjo':anjo_clean,'comentario':str(com) if com and str(com)!='None' else None,'dominio':int(dom) if dom else None})
+          except:
+              nps = []
+
+          # CSAT (hardcoded for now)
+          csat = [
+              {"empresa":"Kelly Rodrigues","nota":5,"mes":"2026-01","observacao":None},
+              {"empresa":"Amiska","nota":4,"mes":"2026-01","observacao":None},
+              {"empresa":"Le Ricard","nota":3,"mes":"2026-01","observacao":"No inicio a implementacao pareceu um pouco solta"},
+              {"empresa":"Venoro","nota":4,"mes":"2026-01","observacao":None},
+              {"empresa":"Ousadia Feminina","nota":5,"mes":"2026-01","observacao":None},
+              {"empresa":"Aero Summer","nota":4,"mes":"2026-01","observacao":None},
+              {"empresa":"Nono Modas","nota":5,"mes":"2026-01","observacao":None},
+              {"empresa":"Villon Jeans","nota":5,"mes":"2026-01","observacao":None},
+              {"empresa":"Lemier","nota":4,"mes":"2026-02","observacao":None},
+              {"empresa":"Opera Kids","nota":5,"mes":"2026-03","observacao":None},
+              {"empresa":"Vout","nota":4,"mes":"2026-03","observacao":"Quer avaliar um pouco mais a ferramenta"},
+              {"empresa":"Le Ricard","nota":4,"mes":"2026-03","observacao":None},
+              {"empresa":"Kaessi","nota":4,"mes":"2026-03","observacao":None},
+              {"empresa":"Tricomix","nota":4.5,"mes":"2026-03","observacao":None},
+              {"empresa":"Alpelo","nota":3.5,"mes":"2026-03","observacao":None},
+              {"empresa":"Danque","nota":5,"mes":"2026-03","observacao":None},
+          ]
+
+          # Build companies list
+          id_to_name = {e.get('id',''): e.get('nome','') for e in empresas}
+          companies = []
+          for e in empresas:
+              is_filial = bool(e.get('matrizId') and not e.get('isMatriz'))
+              companies.append({
+                  'domain_id': str(e.get('idDominio','')),
+                  'name': e.get('nome','') or e.get('nomeDominio',''),
+                  'nome_fantasia': e.get('nomeFantasia','') or e.get('nome',''),
+                  'cnpj': e.get('cnpj',''),
+                  'razao_social': e.get('razaoSocial',''),
+                  'anjo': e.get('anjo','') if e.get('anjo','') != 'N/A' else '',
+                  'canal': e.get('canal',''),
+                  'integracao': e.get('integracao',''),
+                  'is_filial': is_filial,
+                  'isMatriz': bool(e.get('isMatriz')),
+                  'matriz_name': id_to_name.get(e.get('matrizId',''),'') if is_filial else '',
+                  'status': e.get('statusEmpresa',''),
+                  'pedidos': e.get('pedidos',0) or 0,
+              })
+
+          cs_names = sorted(set(c['anjo'] for c in companies if c['anjo']))
+
+          with open('dashboard_full_data.js', 'w', encoding='utf-8') as f:
+              f.write(f'const NPS_DATA = {json.dumps(nps, ensure_ascii=False)};\n')
+              f.write(f'const CSAT_DATA = {json.dumps(csat, ensure_ascii=False)};\n')
+              f.write(f'const COMPANIES_DATA = {json.dumps(companies, ensure_ascii=False)};\n')
+              f.write(f'const CS_NAMES = {json.dumps(cs_names, ensure_ascii=False)};\n')
+
+          # Build index.html from template
+          with open('template.html', 'r', encoding='utf-8') as f:
+              html = f.read()
+          with open('dashboard_full_data.js', 'r', encoding='utf-8') as f:
+              data_js = f.read()
+          html = html.replace('/*INLINE_DATA*/', data_js)
+          with open('index.html', 'w', encoding='utf-8') as f:
+              f.write(html)
+
+          print(f'Done: {len(empresas)} empresas, {len(nps)} NPS, {len(csat)} CSAT')
+          PYEOF
+
+      - name: Commit e push se houver mudancas
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add index.html dashboard_full_data.js
+          git diff --staged --quiet || git commit -m "Atualizacao automatica $(date +%Y-%m-%d)"
+          git push

@@ -1,0 +1,3116 @@
+[
+  {
+    "name": "Mary Acessórios",
+    "plan": "Plano Avançado",
+    "paid": 294000,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 5,
+    "lastDue": "2024-04-07T00:00:00"
+  },
+  {
+    "name": "ZUA Maringá",
+    "plan": "Plano Básico",
+    "paid": 285600,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 6,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "ZUA Apucarana",
+    "plan": "Plano Básico",
+    "paid": 285600,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 6,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Actually Jeans",
+    "plan": "Plano Básico",
+    "paid": 213600,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Bella Intima",
+    "plan": "Plano Básico",
+    "paid": 213600,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "IMAGIVAN",
+    "plan": "Plano Profissional",
+    "paid": 168000,
+    "pending": 84000,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-24T00:00:00"
+  },
+  {
+    "name": "Tee Fashion",
+    "plan": "Assitente do Vendedor",
+    "paid": 168000,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-22T00:00:00"
+  },
+  {
+    "name": "Spot Shoes Loja 02",
+    "plan": "Plano Básico",
+    "paid": 150000,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-18T00:00:00"
+  },
+  {
+    "name": "Spot Shoes Loja 01",
+    "plan": "Plano Básico",
+    "paid": 150000,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "John Cunningham",
+    "plan": "Plano Essencial",
+    "paid": 138250,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 6,
+    "lastDue": "2024-04-22T00:00:00"
+  },
+  {
+    "name": "Florita",
+    "plan": "Plano Básico",
+    "paid": 136000,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-18T00:00:00"
+  },
+  {
+    "name": "Tango Fantasias",
+    "plan": "Plano Básico",
+    "paid": 136000,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-23T00:00:00"
+  },
+  {
+    "name": "Estilo Coy",
+    "plan": "Plano Básico",
+    "paid": 136000,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-10T00:00:00"
+  },
+  {
+    "name": "Biotwo",
+    "plan": "Plano Básico",
+    "paid": 136000,
+    "pending": 68000,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-19T00:00:00"
+  },
+  {
+    "name": "Import Modas",
+    "plan": "Plano Básico",
+    "paid": 136000,
+    "pending": 68000,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-21T00:00:00"
+  },
+  {
+    "name": "Magda Moda Intima",
+    "plan": "Plano Básico",
+    "paid": 130000,
+    "pending": 65000,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Verona",
+    "plan": "Vesti Light",
+    "paid": 124500,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-10T00:00:00"
+  },
+  {
+    "name": "Sensual Fetiche",
+    "plan": "Plano Básico",
+    "paid": 120000,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-10T00:00:00"
+  },
+  {
+    "name": "Código Zero",
+    "plan": "Plano Avançado",
+    "paid": 118200,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Copine",
+    "plan": "Plano Avançado",
+    "paid": 118200,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Ambiguous | Grupo Vida Marinha",
+    "plan": "Plano Avançado",
+    "paid": 114000,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Lilian Plus",
+    "plan": "Plano Avançado",
+    "paid": 113500,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Wool Line",
+    "plan": "Plano Avançado",
+    "paid": 113500,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-11T00:00:00"
+  },
+  {
+    "name": "Miliore",
+    "plan": "Plano Avançado",
+    "paid": 112800,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Mireya",
+    "plan": "Plano Avançado",
+    "paid": 112500,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-12T00:00:00"
+  },
+  {
+    "name": "Capim Santo",
+    "plan": "Plano Básico",
+    "paid": 112000,
+    "pending": 56000,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-25T00:00:00"
+  },
+  {
+    "name": "Agarreuse",
+    "plan": "Plano Avançado",
+    "paid": 111714,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 6,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Lilazoo",
+    "plan": "Plano Varejo",
+    "paid": 107700,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-19T00:00:00"
+  },
+  {
+    "name": "Katharina Brasil",
+    "plan": "Plano Básico",
+    "paid": 100000,
+    "pending": 50000,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "WA Baby",
+    "plan": "Vesti Light",
+    "paid": 99600,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-03-29T00:00:00"
+  },
+  {
+    "name": "Yunico Modas",
+    "plan": "Plano Avançado",
+    "paid": 98400,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-22T00:00:00"
+  },
+  {
+    "name": "Pit Bull Jeans | GO",
+    "plan": "Plano Avançado",
+    "paid": 98006.04,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "PIKUXA",
+    "plan": "Plano Avançado",
+    "paid": 98000,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Modas Flores",
+    "plan": "Plano Avançado",
+    "paid": 98000,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-03-22T00:00:00"
+  },
+  {
+    "name": "Queens",
+    "plan": "Plano Profissional",
+    "paid": 98000,
+    "pending": 98000,
+    "expired": 0,
+    "invoices": 5,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Troya & Aero",
+    "plan": "Plano Básico",
+    "paid": 98000,
+    "pending": 98000,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-23T00:00:00"
+  },
+  {
+    "name": "Ana Gonçalves Tricot",
+    "plan": "Plano Avançado",
+    "paid": 96603.323,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 9,
+    "lastDue": "2024-04-22T00:00:00"
+  },
+  {
+    "name": "Beija Mor",
+    "plan": "Básico",
+    "paid": 94900,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-25T00:00:00"
+  },
+  {
+    "name": "Burg Company",
+    "plan": "Plano Básico",
+    "paid": 90000,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-19T00:00:00"
+  },
+  {
+    "name": "Sallpe",
+    "plan": "Básico",
+    "paid": 90000,
+    "pending": 92100,
+    "expired": 0,
+    "invoices": 5,
+    "lastDue": "2024-04-10T00:00:00"
+  },
+  {
+    "name": "BRITZ",
+    "plan": "Plano Avançado",
+    "paid": 85000,
+    "pending": 85000,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-23T00:00:00"
+  },
+  {
+    "name": "Elika Adama",
+    "plan": "Assitente do Vendedor",
+    "paid": 84000,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-04-14T00:00:00"
+  },
+  {
+    "name": "AMORE",
+    "plan": "Assitente do Vendedor",
+    "paid": 84000,
+    "pending": 84000,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-27T00:00:00"
+  },
+  {
+    "name": "Ellas Curves",
+    "plan": "Plano Avançado",
+    "paid": 82400,
+    "pending": 41200,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-24T00:00:00"
+  },
+  {
+    "name": "Doce Deleite",
+    "plan": "Plano Avançado",
+    "paid": 79000,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "K-Official Jeans",
+    "plan": "Plano Avançado",
+    "paid": 78800,
+    "pending": 39400,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-26T00:00:00"
+  },
+  {
+    "name": "Alella",
+    "plan": "Plano Avançado",
+    "paid": 78800,
+    "pending": 39400,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-23T00:00:00"
+  },
+  {
+    "name": "Guilhermina de Paula",
+    "plan": "Plano Avançado",
+    "paid": 78800,
+    "pending": 39400,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-24T00:00:00"
+  },
+  {
+    "name": "The Misse",
+    "plan": "Plano Varejo",
+    "paid": 77700,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Moá Plus Size",
+    "plan": "Plano Avançado",
+    "paid": 75200,
+    "pending": 37600,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Tallas Jeans",
+    "plan": "Plano Básico",
+    "paid": 75200,
+    "pending": 37600,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-22T00:00:00"
+  },
+  {
+    "name": "Repete Confecções Ltda. - Repete",
+    "plan": "Vesti Light",
+    "paid": 74700,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "CELIA BLASIO ATELIER - CELIA ALVES DE SOUZA BLASIO",
+    "plan": "Vesti Light",
+    "paid": 74700,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-12T00:00:00"
+  },
+  {
+    "name": "Kroft Oficial - Social: Kroft Confecções Ltda",
+    "plan": "Vesti Light",
+    "paid": 74700,
+    "pending": 24900,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-05-01T00:00:00"
+  },
+  {
+    "name": "Nadri - Nadri Confecções de Roupas LTDA",
+    "plan": "Vesti Light",
+    "paid": 74700,
+    "pending": 24900,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-29T00:00:00"
+  },
+  {
+    "name": "Donna Stella",
+    "plan": "Vesti Light",
+    "paid": 74700,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-03-24T00:00:00"
+  },
+  {
+    "name": "Bestie",
+    "plan": "Plano Avançado",
+    "paid": 73600,
+    "pending": 39900,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-12T00:00:00"
+  },
+  {
+    "name": "D'lions",
+    "plan": "Plano Essencial",
+    "paid": 73500,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-18T00:00:00"
+  },
+  {
+    "name": "AILE",
+    "plan": "Plano Avançado",
+    "paid": 71800,
+    "pending": 37600,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-26T00:00:00"
+  },
+  {
+    "name": "Olho D'Agua | Olifer",
+    "plan": "Plano Básico",
+    "paid": 71800,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-10T00:00:00"
+  },
+  {
+    "name": "Olho D Agua",
+    "plan": "Plano Básico",
+    "paid": 71800,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-10T00:00:00"
+  },
+  {
+    "name": "Olho D'Agua | Olifer Filial",
+    "plan": "Filial Atacado",
+    "paid": 71800,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-10T00:00:00"
+  },
+  {
+    "name": "Olho D Agua Filial",
+    "plan": "Filial Atacado",
+    "paid": 71800,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-10T00:00:00"
+  },
+  {
+    "name": "CALIFOR",
+    "plan": "Plano Básico",
+    "paid": 68002.68,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-23T00:00:00"
+  },
+  {
+    "name": "Auston",
+    "plan": "Plano Básico",
+    "paid": 68002,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "FRIDA",
+    "plan": "Plano Básico",
+    "paid": 68001.98,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-19T00:00:00"
+  },
+  {
+    "name": "Peran Jeans",
+    "plan": "Plano Básico",
+    "paid": 68000,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-04-19T00:00:00"
+  },
+  {
+    "name": "Lasala",
+    "plan": "Plano Básico",
+    "paid": 68000,
+    "pending": 68000,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Beige Store",
+    "plan": "Plano Básico",
+    "paid": 68000,
+    "pending": 68000,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-05-01T00:00:00"
+  },
+  {
+    "name": "Rocksham",
+    "plan": "Plano Básico",
+    "paid": 68000,
+    "pending": 68000,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-28T00:00:00"
+  },
+  {
+    "name": "Fast Glam",
+    "plan": "Plano Básico",
+    "paid": 59800,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-22T00:00:00"
+  },
+  {
+    "name": "Júlia Plus",
+    "plan": "Plano Essencial",
+    "paid": 55634,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 5,
+    "lastDue": "2024-04-21T00:00:00"
+  },
+  {
+    "name": "Valéria Alves",
+    "plan": "Plano Básico",
+    "paid": 55000,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Reverso Jeans - Confecções Absolut Eireli",
+    "plan": "Vesti Light",
+    "paid": 49800,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-19T00:00:00"
+  },
+  {
+    "name": "Balla Love",
+    "plan": "Vesti Light",
+    "paid": 49800,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-14T00:00:00"
+  },
+  {
+    "name": "Portullaca",
+    "plan": "Vesti Light",
+    "paid": 49800,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-12T00:00:00"
+  },
+  {
+    "name": "Fabio's Moda Intima - Fabio Bonfim",
+    "plan": "Vesti Light",
+    "paid": 49800,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-12T00:00:00"
+  },
+  {
+    "name": "S&V - V&S Comércio,Importação e Exportação Ltda",
+    "plan": "Vesti Light",
+    "paid": 49800,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-08T00:00:00"
+  },
+  {
+    "name": "Sawary Fashion",
+    "plan": "Vesti Light",
+    "paid": 49800,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "La Bella - Confecções de Roupas Dong IL",
+    "plan": "Vesti Light",
+    "paid": 49800,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-06T00:00:00"
+  },
+  {
+    "name": "Ateliê Maria Lingeries",
+    "plan": "Vesti Light",
+    "paid": 49800,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-05T00:00:00"
+  },
+  {
+    "name": "Andar 79 -  Indiane Mohr",
+    "plan": "Vesti Light",
+    "paid": 49800,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-04T00:00:00"
+  },
+  {
+    "name": "Monnika Marikinha Brand",
+    "plan": "Vesti Light",
+    "paid": 49800,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-01T00:00:00"
+  },
+  {
+    "name": "Red Rock - BRUNA APARECIDA SILVA MELO",
+    "plan": "Vesti Light",
+    "paid": 49800,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-01T00:00:00"
+  },
+  {
+    "name": "Kely Cristina Fernandes ME - Lanrô Brand",
+    "plan": "Vesti Light",
+    "paid": 49800,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-03-23T00:00:00"
+  },
+  {
+    "name": "Veronica Pinto Cancari - Divas Vero",
+    "plan": "Vesti Light",
+    "paid": 49800,
+    "pending": 24900,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Urian Jeans | Haymik",
+    "plan": "Vesti Light",
+    "paid": 49800,
+    "pending": 24900,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-07T00:00:00"
+  },
+  {
+    "name": "GO Padel",
+    "plan": "Vesti Light",
+    "paid": 49800,
+    "pending": 24900,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-05-01T00:00:00"
+  },
+  {
+    "name": "Jerdis Moda Intima -  Confecções Jerdi S LTDA",
+    "plan": "Vesti Light",
+    "paid": 49800,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-02-29T00:00:00"
+  },
+  {
+    "name": "Rubinella - RUBINELLA INDUSTRIA DE MODAS LTDA",
+    "plan": "Plano Avançado",
+    "paid": 35900,
+    "pending": 35900,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-04T00:00:00"
+  },
+  {
+    "name": "CALIFOR  Filial",
+    "plan": "Filial Atacado",
+    "paid": 35900,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-03-23T00:00:00"
+  },
+  {
+    "name": "Mais Moda Atacado",
+    "plan": "Plano Essencial",
+    "paid": 29900,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-04-19T00:00:00"
+  },
+  {
+    "name": "Mavolle",
+    "plan": "Plano Essencial",
+    "paid": 27500,
+    "pending": 27500,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-18T00:00:00"
+  },
+  {
+    "name": "Delia modas 90",
+    "plan": "Vesti Light",
+    "paid": 24900,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-04-18T00:00:00"
+  },
+  {
+    "name": "Flight Series",
+    "plan": "Vesti Light",
+    "paid": 24900,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-12T00:00:00"
+  },
+  {
+    "name": "Artmaia",
+    "plan": "Vesti Light",
+    "paid": 24900,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-04-12T00:00:00"
+  },
+  {
+    "name": "Renascer Tricot",
+    "plan": "Vesti Light",
+    "paid": 24900,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-04-11T00:00:00"
+  },
+  {
+    "name": "Aline Confecções",
+    "plan": "Vesti Light",
+    "paid": 24900,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-11T00:00:00"
+  },
+  {
+    "name": "Tricolã",
+    "plan": "Vesti Light",
+    "paid": 24900,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-04-10T00:00:00"
+  },
+  {
+    "name": "Let's Denim",
+    "plan": "Vesti Light",
+    "paid": 24900,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-04-09T00:00:00"
+  },
+  {
+    "name": "Império Benedita",
+    "plan": "Vesti Light",
+    "paid": 24900,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-04-08T00:00:00"
+  },
+  {
+    "name": "Julia Bijoux",
+    "plan": "Vesti Light",
+    "paid": 24900,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-04-05T00:00:00"
+  },
+  {
+    "name": "MINOLLI",
+    "plan": "Vesti Light",
+    "paid": 24900,
+    "pending": 24900,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-05-01T00:00:00"
+  },
+  {
+    "name": "BLOMMER",
+    "plan": "Vesti Light",
+    "paid": 24900,
+    "pending": 24900,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-05-01T00:00:00"
+  },
+  {
+    "name": "Larissa Lima",
+    "plan": "Vesti Light",
+    "paid": 24900,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-03-28T00:00:00"
+  },
+  {
+    "name": "Origens",
+    "plan": "Vesti Light",
+    "paid": 24900,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-03-26T00:00:00"
+  },
+  {
+    "name": "ZFL Brand -  S.B.S GOMES COMERCIO E SERVICOS",
+    "plan": "Vesti Light",
+    "paid": 24900,
+    "pending": 24900,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-12T00:00:00"
+  },
+  {
+    "name": "My Brand - LARISSA MESTRE DE SANTANA 10815069464",
+    "plan": "Vesti Light",
+    "paid": 24900,
+    "pending": 24900,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-12T00:00:00"
+  },
+  {
+    "name": "Felps Confecções",
+    "plan": "Vesti Light",
+    "paid": 24900,
+    "pending": 24900,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-03-28T00:00:00"
+  },
+  {
+    "name": "Stop Look Modas LTDA - Stop Look",
+    "plan": "Vesti Light",
+    "paid": 24900,
+    "pending": 0,
+    "expired": 24900,
+    "invoices": 2,
+    "lastDue": "2024-03-22T00:00:00"
+  },
+  {
+    "name": "Sol & Cia Lingerie - SOL E CIA MODA INTIMA E PRAIA LTDA",
+    "plan": "Vesti Light",
+    "paid": 24900,
+    "pending": 0,
+    "expired": 24900,
+    "invoices": 3,
+    "lastDue": "2024-03-19T00:00:00"
+  },
+  {
+    "name": "BAUARTE",
+    "plan": "Plano Avançado",
+    "paid": 8517,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Grupo Eixo",
+    "plan": "Plano Avançado",
+    "paid": 8508,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-10T00:00:00"
+  },
+  {
+    "name": "Reccorpus",
+    "plan": "Plano Avançado",
+    "paid": 7208,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "TRIMIX",
+    "plan": "Plano Profissional",
+    "paid": 5997,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "RERY",
+    "plan": "Plano Profissional",
+    "paid": 5847,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "AVERARA",
+    "plan": "Plano Profissional",
+    "paid": 4432,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "NANAMINZE",
+    "plan": "Plano Profissional",
+    "paid": 4224,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Luluzinha Kids",
+    "plan": "Plano Profissional",
+    "paid": 3552,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-10T00:00:00"
+  },
+  {
+    "name": "AMOFANY",
+    "plan": "Plano Profissional",
+    "paid": 3427,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 5,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Yzzy Store",
+    "plan": "Plano Avançado",
+    "paid": 3237,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-10T00:00:00"
+  },
+  {
+    "name": "VITRAL",
+    "plan": "Plano Profissional",
+    "paid": 3147,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Pistachio",
+    "plan": "Plano Profissional",
+    "paid": 3147,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Sexy Cookie",
+    "plan": "Plano Profissional",
+    "paid": 3147,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-11T00:00:00"
+  },
+  {
+    "name": "MOTTIVE",
+    "plan": "Plano Profissional",
+    "paid": 3147,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "GULE GULE",
+    "plan": "Plano Profissional",
+    "paid": 3147,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Coinage",
+    "plan": "Plano Profissional",
+    "paid": 3147,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "SHANES",
+    "plan": "Plano Profissional",
+    "paid": 3147,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "CROCKER",
+    "plan": "Plano Profissional",
+    "paid": 3147,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "SPLASH",
+    "plan": "Plano Profissional",
+    "paid": 3147,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "MX",
+    "plan": "Plano Profissional",
+    "paid": 3147,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Milvest",
+    "plan": "Plano Profissional",
+    "paid": 3147,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "SORI",
+    "plan": "Plano Profissional",
+    "paid": 3147,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "LEMISE",
+    "plan": "Plano Profissional",
+    "paid": 3147,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-11T00:00:00"
+  },
+  {
+    "name": "MANACA",
+    "plan": "Plano Profissional",
+    "paid": 3147,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "CHEERS",
+    "plan": "Plano Profissional",
+    "paid": 3147,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-11T00:00:00"
+  },
+  {
+    "name": "MARIA DE CHITA",
+    "plan": "Plano Profissional",
+    "paid": 3060,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 5,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Anderson Atacado",
+    "plan": "Plano Profissional",
+    "paid": 3060,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-11T00:00:00"
+  },
+  {
+    "name": "Morina",
+    "plan": "Plano Profissional",
+    "paid": 3036,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 5,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Hellen Carolina",
+    "plan": "Plano Avançado",
+    "paid": 3001.33,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "OPTIMIST JEANS",
+    "plan": "Plano Avançado",
+    "paid": 2940,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "ROSA FINA",
+    "plan": "Plano Profissional",
+    "paid": 2897,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "CASHIER",
+    "plan": "Plano Profissional",
+    "paid": 2709,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "BETSEY",
+    "plan": "Plano Profissional",
+    "paid": 2675,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Black Jeans - Arjes Confecções Ltda",
+    "plan": "Plano Avançado",
+    "paid": 2441,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "CODI CODI",
+    "plan": "Plano Profissional",
+    "paid": 2372,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Dona Lê",
+    "plan": "Plano Profissional",
+    "paid": 2370,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Coqueta",
+    "plan": "Plano Avançado",
+    "paid": 2275,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-11T00:00:00"
+  },
+  {
+    "name": "Rosa Chick - Rivanda Alves Fontes",
+    "plan": "Plano Avançado",
+    "paid": 2181,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Acqua",
+    "plan": "Plano Profissional",
+    "paid": 2040,
+    "pending": 1107,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "PIANETA",
+    "plan": "Plano Profissional",
+    "paid": 2030,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "IDRISSI DRESS",
+    "plan": "Plano Essencial",
+    "paid": 1806,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "PRS Jeans",
+    "plan": "Plano Avançado",
+    "paid": 1797,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-10T00:00:00"
+  },
+  {
+    "name": "IN LOVE",
+    "plan": "Plano Avançado",
+    "paid": 1797,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-11T00:00:00"
+  },
+  {
+    "name": "LESTO",
+    "plan": "Plano Essencial",
+    "paid": 1596,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Infini - Ind. e Com. de Roupas Infini Eireli",
+    "plan": "Plano Avançado",
+    "paid": 1493,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Le Ricard",
+    "plan": "Plano Essencial",
+    "paid": 1425,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "L2M",
+    "plan": "Plano Avançado",
+    "paid": 1398,
+    "pending": 1398,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Le Salis",
+    "plan": "Plano Avançado",
+    "paid": 1377,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 5,
+    "lastDue": "2024-04-10T00:00:00"
+  },
+  {
+    "name": "Doct Oficial - KAZZO CONFECCOES E COMERCIO DE ARTIGOS DO VESTUARIO LTDA",
+    "plan": "Plano Avançado",
+    "paid": 1336,
+    "pending": 668,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-25T00:00:00"
+  },
+  {
+    "name": "Jo Concept",
+    "plan": "Plano Avançado",
+    "paid": 1316,
+    "pending": 658,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-12T00:00:00"
+  },
+  {
+    "name": "LLC Filton",
+    "plan": "Plano Avançado",
+    "paid": 1219,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-11T00:00:00"
+  },
+  {
+    "name": "Braga Camisaria",
+    "plan": "Plano Avançado",
+    "paid": 1203,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Conkist T-Shirt",
+    "plan": "Plano Avançado",
+    "paid": 1200,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-11T00:00:00"
+  },
+  {
+    "name": "Angie Concept - Kelli dos Anjos Lima Confeccoes",
+    "plan": "Plano Avançado",
+    "paid": 1185,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Exinia",
+    "plan": "Plano Avançado",
+    "paid": 1185,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Stefani",
+    "plan": "Plano Avançado",
+    "paid": 1182,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Ney Fek",
+    "plan": "Plano Avançado",
+    "paid": 1182,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-12T00:00:00"
+  },
+  {
+    "name": "Fit Clothing Line",
+    "plan": "Plano Avançado",
+    "paid": 1182,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-19T00:00:00"
+  },
+  {
+    "name": "Jubora",
+    "plan": "Plano Avançado",
+    "paid": 1182,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Monclos",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-11T00:00:00"
+  },
+  {
+    "name": "LOV IT",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 5,
+    "lastDue": "2024-04-11T00:00:00"
+  },
+  {
+    "name": "Fits Gym",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-11T00:00:00"
+  },
+  {
+    "name": "ACQUA MARINE",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Sago Pargo",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Vittorina Modas",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Sheslaine Brand",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "RUBICON",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Pink Age",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Planchet",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Tomany",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "STE FASHION",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "PLUMP",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Lupim Camisaria",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Peri Plus Size",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Four One Jeans",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "LEMONCOLA",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "HIRUS",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "NAKEPE",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-22T00:00:00"
+  },
+  {
+    "name": "HANABEE",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "LICOMMO",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Melis",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Noir",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "CRIS FAEL",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "ELAE",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Ju Modas",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "CHAVILLE",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "ALICE",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Donna da Lua",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "CONY GREEN",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Clio",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Bary",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-12T00:00:00"
+  },
+  {
+    "name": "YEGRIN",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "AFETTO",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Denovo",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Namu",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "DUNAMIS",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "BEM ME QUER",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Carpiem",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Alpelo",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Doce Dança",
+    "plan": "Plano Avançado",
+    "paid": 1135,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Ricca Jeans",
+    "plan": "Plano Avançado",
+    "paid": 1121,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Izzat - Zitros indus e comer de confec ltda",
+    "plan": "Plano Avançado",
+    "paid": 1121,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-17T00:00:00"
+  },
+  {
+    "name": "Maclagen - Márcio José Ferreira de Jesus",
+    "plan": "Plano Avançado",
+    "paid": 1121,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "VN 11",
+    "plan": "Plano Avançado",
+    "paid": 1104,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-11T00:00:00"
+  },
+  {
+    "name": "Base Café Moda",
+    "plan": "Plano Avançado",
+    "paid": 1077,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Taju Atacado",
+    "plan": "Plano Avançado",
+    "paid": 1077,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Volar",
+    "plan": "Plano Avançado",
+    "paid": 1077,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-10T00:00:00"
+  },
+  {
+    "name": "Koum",
+    "plan": "Plano Avançado",
+    "paid": 1029,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-17T00:00:00"
+  },
+  {
+    "name": "BORISU",
+    "plan": "Plano Profissional",
+    "paid": 1021.107,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 6,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "LA QUALITE",
+    "plan": "Plano Profissional",
+    "paid": 1020,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-02-20T00:00:00"
+  },
+  {
+    "name": "Símbolo Fashion",
+    "plan": "Plano Avançado",
+    "paid": 987,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-12T00:00:00"
+  },
+  {
+    "name": "Yoo Moda Grande",
+    "plan": "Plano Essencial",
+    "paid": 825,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-18T00:00:00"
+  },
+  {
+    "name": "Esnouba",
+    "plan": "Plano Avançado",
+    "paid": 824,
+    "pending": 412,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-25T00:00:00"
+  },
+  {
+    "name": "BM Bolsas",
+    "plan": "Plano Essencial",
+    "paid": 822,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "INFLUENCITTA",
+    "plan": "Plano Avançado",
+    "paid": 806,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "LM Fashion",
+    "plan": "Plano Essencial",
+    "paid": 798,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-10T00:00:00"
+  },
+  {
+    "name": "Divina Mulher",
+    "plan": "Plano Essencial",
+    "paid": 789,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-11T00:00:00"
+  },
+  {
+    "name": "Shanti",
+    "plan": "Plano Essencial",
+    "paid": 789,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "BEMA CONFECCOES",
+    "plan": "Plano Essencial",
+    "paid": 789,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-10T00:00:00"
+  },
+  {
+    "name": "Be Case",
+    "plan": "Plano Essencial",
+    "paid": 789,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-10T00:00:00"
+  },
+  {
+    "name": "Lumini Jeans",
+    "plan": "Plano Avançado",
+    "paid": 788,
+    "pending": 394,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-28T00:00:00"
+  },
+  {
+    "name": "Roupa de Baixo",
+    "plan": "Plano Avançado",
+    "paid": 788,
+    "pending": 394,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-28T00:00:00"
+  },
+  {
+    "name": "Djiele Moda Bebe",
+    "plan": "Plano Avançado",
+    "paid": 788,
+    "pending": 394,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-12T00:00:00"
+  },
+  {
+    "name": "E YUNIRE",
+    "plan": "Plano Essencial",
+    "paid": 768,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Look Hill",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-11T00:00:00"
+  },
+  {
+    "name": "Villa Forte",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-11T00:00:00"
+  },
+  {
+    "name": "HEMIX",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "As Marias",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Gowara",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Black Pink",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "SALVA LOOK",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "JJ Fashion",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "SAPPHIRELLA",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "SEDANBI",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Ina Modas",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "VIDA BELA",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "PALOMA CONCEPT",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "RAFA BRASIL",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "FAMA FASHION",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "SUZAN ZHENG",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "BLUE BLOSSOM",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "BUCCANES",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "MODA INN",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Mariá/Aurora",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "SCERA",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Trindade",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "LILY DAISY",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "IT LOOK",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "MISS ALFA",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "GENESIS JEANS",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "ADIZZA",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "DELIGHT",
+    "plan": "Plano Essencial",
+    "paid": 756,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Valentina Sirrah",
+    "plan": "Plano Essencial",
+    "paid": 752,
+    "pending": 376,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-22T00:00:00"
+  },
+  {
+    "name": "Distinto",
+    "plan": "Plano Essencial",
+    "paid": 746,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Munnah",
+    "plan": "Plano Essencial",
+    "paid": 746,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Deeper",
+    "plan": "Plano Avançado",
+    "paid": 736,
+    "pending": 368,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-28T00:00:00"
+  },
+  {
+    "name": "Loja Emili",
+    "plan": "Plano Avançado",
+    "paid": 736,
+    "pending": 399,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "MANGA DOCE",
+    "plan": "Plano Avançado",
+    "paid": 736,
+    "pending": 385,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "EVIAN",
+    "plan": "Plano Avançado",
+    "paid": 736,
+    "pending": 385,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Passione",
+    "plan": "Plano Avançado",
+    "paid": 736,
+    "pending": 399,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Anahi",
+    "plan": "Plano Avançado",
+    "paid": 736,
+    "pending": 399,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "BOKEH",
+    "plan": "Plano Avançado",
+    "paid": 736,
+    "pending": 399,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Adoro",
+    "plan": "Plano Avançado",
+    "paid": 736,
+    "pending": 399,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "SURTY BRASIL",
+    "plan": "Plano Avançado",
+    "paid": 736,
+    "pending": 368,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Martina Franca",
+    "plan": "Plano Avançado",
+    "paid": 736,
+    "pending": 368,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-12T00:00:00"
+  },
+  {
+    "name": "QUEBELA",
+    "plan": "Plano Essencial",
+    "paid": 736,
+    "pending": 399,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "LIFER",
+    "plan": "Plano Avançado",
+    "paid": 735,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-12T00:00:00"
+  },
+  {
+    "name": "Duas Brand",
+    "plan": "Plano Essencial",
+    "paid": 735,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Belle Epoque",
+    "plan": "Plano Essencial",
+    "paid": 735,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-11T00:00:00"
+  },
+  {
+    "name": "DadriShop",
+    "plan": "Plano Essencial",
+    "paid": 735,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-22T00:00:00"
+  },
+  {
+    "name": "PATMOS",
+    "plan": "Plano Essencial",
+    "paid": 735,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Mosaique - Sang chul lee",
+    "plan": "Plano Essencial",
+    "paid": 735,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-17T00:00:00"
+  },
+  {
+    "name": "Cereja Body",
+    "plan": "Plano Avançado",
+    "paid": 718,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-03-26T00:00:00"
+  },
+  {
+    "name": "Magnólia Lingerie",
+    "plan": "Plano Avançado",
+    "paid": 718,
+    "pending": 359,
+    "expired": 0,
+    "invoices": 5,
+    "lastDue": "2024-04-25T00:00:00"
+  },
+  {
+    "name": "Kopen Denim",
+    "plan": "Plano Essencial",
+    "paid": 669,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "D'veras Moda",
+    "plan": "Plano Avançado",
+    "paid": 658,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-02-26T00:00:00"
+  },
+  {
+    "name": "Donna ka Jeans",
+    "plan": "Plano Avançado",
+    "paid": 657,
+    "pending": 0,
+    "expired": 657,
+    "invoices": 2,
+    "lastDue": "2024-03-19T00:00:00"
+  },
+  {
+    "name": "Oka",
+    "plan": "Plano Essencial",
+    "paid": 657,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "The Lion Confecções",
+    "plan": "Plano Essencial",
+    "paid": 548,
+    "pending": 274,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Vida Marinha",
+    "plan": "Plano Essencial",
+    "paid": 526,
+    "pending": 263,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-24T00:00:00"
+  },
+  {
+    "name": "DOTS",
+    "plan": "Plano Essencial",
+    "paid": 490,
+    "pending": 266,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-11T00:00:00"
+  },
+  {
+    "name": "INSTAR",
+    "plan": "Plano Essencial",
+    "paid": 490,
+    "pending": 266,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Casualli - ALAN RUIZ LABEGALINI",
+    "plan": "Plano Essencial",
+    "paid": 490,
+    "pending": 245,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-24T00:00:00"
+  },
+  {
+    "name": "GABIFIT - GABIFIT CONFECCOES - EIRELI",
+    "plan": "Plano Essencial",
+    "paid": 490,
+    "pending": 256,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-28T00:00:00"
+  },
+  {
+    "name": "V10 jeans & Peptuchy",
+    "plan": "Plano Essencial",
+    "paid": 478,
+    "pending": 239,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-25T00:00:00"
+  },
+  {
+    "name": "LAROSY",
+    "plan": "Plano Avançado",
+    "paid": 444,
+    "pending": 222,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-22T00:00:00"
+  },
+  {
+    "name": "Verbo Jeans",
+    "plan": "Plano Avançado",
+    "paid": 412,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-02-20T00:00:00"
+  },
+  {
+    "name": "Brazil Coastway",
+    "plan": "Plano Avançado",
+    "paid": 394,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-03-22T00:00:00"
+  },
+  {
+    "name": "100% Morena",
+    "plan": "Plano Essencial",
+    "paid": 245,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-02-16T00:00:00"
+  },
+  {
+    "name": "Brascol",
+    "plan": "Plano Avançado",
+    "paid": 7.4399999999999995,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-19T00:00:00"
+  },
+  {
+    "name": "GROOVY",
+    "plan": "Plano Profissional",
+    "paid": 7.26,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Skenn",
+    "plan": "Plano Avançado",
+    "paid": 4.788,
+    "pending": 2.394,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-28T00:00:00"
+  },
+  {
+    "name": "TRICOMIX",
+    "plan": "Plano Profissional",
+    "paid": 4.6739999999999995,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 5,
+    "lastDue": "2024-04-11T00:00:00"
+  },
+  {
+    "name": "Kauly",
+    "plan": "Plano Profissional",
+    "paid": 4.29565,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Luciana Paz",
+    "plan": "Plano Profissional",
+    "paid": 4.26678,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 5,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Elegance Moda Cristã",
+    "plan": "Plano Avançado",
+    "paid": 3.771,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "TNW JEANS",
+    "plan": "Plano Profissional",
+    "paid": 3.085,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-17T00:00:00"
+  },
+  {
+    "name": "Pura Essência",
+    "plan": "Plano Básico",
+    "paid": 3.0780000000000003,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Bella Donna",
+    "plan": "Plano Avançado",
+    "paid": 3.0749999999999997,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-10T00:00:00"
+  },
+  {
+    "name": "Jay Jones",
+    "plan": "Plano Profissional",
+    "paid": 2.96,
+    "pending": 1.48,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "JDL Modas",
+    "plan": "Plano Básico",
+    "paid": 2.72,
+    "pending": 1.36,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-22T00:00:00"
+  },
+  {
+    "name": "Marie Princess",
+    "plan": "Plano Básico",
+    "paid": 2.68,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-04-07T00:00:00"
+  },
+  {
+    "name": "Sigui",
+    "plan": "Plano Básico",
+    "paid": 2.68,
+    "pending": 2.68,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-21T00:00:00"
+  },
+  {
+    "name": "Mixxon",
+    "plan": "Plano Profissional",
+    "paid": 2.474,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Cool Hit",
+    "plan": "Plano Básico",
+    "paid": 2.359,
+    "pending": 35900,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-19T00:00:00"
+  },
+  {
+    "name": "Gabyanna",
+    "plan": "Plano Essencial",
+    "paid": 2.228,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-21T00:00:00"
+  },
+  {
+    "name": "My Life Brand",
+    "plan": "Plano Avançado",
+    "paid": 2.158,
+    "pending": 1.079,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-28T00:00:00"
+  },
+  {
+    "name": "Estação Fit Atacado -Estacao Fit Confecção de Moda Feminina Ltda Me",
+    "plan": "Plano Avançado",
+    "paid": 2.078,
+    "pending": 1.039,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-20T00:00:00"
+  },
+  {
+    "name": "Brytch Jeans - Kaio Diego Medeiros Leal",
+    "plan": "Plano Avançado",
+    "paid": 1.985,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "CHARME",
+    "plan": "Plano Básico",
+    "paid": 1.36,
+    "pending": 68000,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-25T00:00:00"
+  },
+  {
+    "name": "Delave Jeans",
+    "plan": "Plano Básico",
+    "paid": 1.2,
+    "pending": 1.2,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-28T00:00:00"
+  },
+  {
+    "name": "Ankor",
+    "plan": "Plano Básico",
+    "paid": 1.039,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-04-22T00:00:00"
+  },
+  {
+    "name": "Belmonth Clothing",
+    "plan": "Plano Básico",
+    "paid": 1.039,
+    "pending": 1.039,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-30T00:00:00"
+  },
+  {
+    "name": "Kalinka",
+    "plan": "Básico",
+    "paid": 0,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 4,
+    "lastDue": "2024-04-08T00:00:00"
+  },
+  {
+    "name": "Mais Pano",
+    "plan": "Plano Básico",
+    "paid": 0,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-04-25T00:00:00"
+  },
+  {
+    "name": "Lucky Jeans",
+    "plan": "Plano Profissional",
+    "paid": 0,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-03-28T00:00:00"
+  },
+  {
+    "name": "ANA GONCALVES TRICOT",
+    "plan": "Plano Profissional",
+    "paid": 0,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-03-15T00:00:00"
+  },
+  {
+    "name": "Groovy Forever",
+    "plan": "Assitente do Vendedor",
+    "paid": 0,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-03-20T00:00:00"
+  },
+  {
+    "name": "51.151.677 Cleia Rocha da Costa - Pholpe",
+    "plan": "Vesti Light",
+    "paid": 0,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-02-22T00:00:00"
+  },
+  {
+    "name": "Noura",
+    "plan": "Plano Básico",
+    "paid": 0,
+    "pending": 1.68,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-21T00:00:00"
+  },
+  {
+    "name": "Tiago - Teste",
+    "plan": "Vesti Light",
+    "paid": 0,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-02-02T00:00:00"
+  },
+  {
+    "name": "Mamá",
+    "plan": "Vesti Light",
+    "paid": 0,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-02-29T00:00:00"
+  },
+  {
+    "name": "Detrix",
+    "plan": "Plano Básico",
+    "paid": 0,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-02-29T00:00:00"
+  },
+  {
+    "name": "TUBA",
+    "plan": "Plano Profissional",
+    "paid": 0,
+    "pending": 394,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "LILITIKAS",
+    "plan": "Plano Profissional",
+    "paid": 0,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-02-28T00:00:00"
+  },
+  {
+    "name": "B. Rock Jeans",
+    "plan": "Assitente do Vendedor",
+    "paid": 0,
+    "pending": 76700,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Laras Moda Fitness",
+    "plan": "Plano Básico",
+    "paid": 0,
+    "pending": 68000,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-04-27T00:00:00"
+  },
+  {
+    "name": "Corpo Agil",
+    "plan": "Plano Básico",
+    "paid": 0,
+    "pending": 68000,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-04-26T00:00:00"
+  },
+  {
+    "name": "Marcelo Medeiros",
+    "plan": "Plano Básico",
+    "paid": 0,
+    "pending": 68000,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-04-06T00:00:00"
+  },
+  {
+    "name": "Favaros Collection",
+    "plan": "Vesti Light",
+    "paid": 0,
+    "pending": 24900,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-07T00:00:00"
+  },
+  {
+    "name": "Excelsior",
+    "plan": "Plano Avançado",
+    "paid": 0,
+    "pending": 39400,
+    "expired": 0,
+    "invoices": 3,
+    "lastDue": "2024-04-22T00:00:00"
+  },
+  {
+    "name": "Glingee",
+    "plan": "Plano Avançado",
+    "paid": 0,
+    "pending": 41300,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "Dreams Atacado",
+    "plan": "Plano Avançado",
+    "paid": 0,
+    "pending": 25900,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-04-15T00:00:00"
+  },
+  {
+    "name": "La Folie",
+    "plan": "Plano Avançado",
+    "paid": 0,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 1,
+    "lastDue": "2024-02-28T00:00:00"
+  },
+  {
+    "name": "Santa Looka",
+    "plan": "Plano Avançado",
+    "paid": 0,
+    "pending": 0,
+    "expired": 0,
+    "invoices": 2,
+    "lastDue": "2024-02-26T00:00:00"
+  }
+]

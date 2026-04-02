@@ -1,0 +1,21 @@
+# AIOX Project Configuration
+version: 2.1.0
+project:
+  name: Ideia-vesti
+  type: brownfield
+  created: 2026-03-27
+
+environment:
+  bootstrapped: true
+  bootstrap_date: 2026-03-27
+
+workflow:
+  current: brownfield-discovery
+  phase: 0-bootstrap-complete
+
+permissions:
+  mode: ask
+
+settings:
+  auto_update_status: true
+  quality_gates_enabled: true

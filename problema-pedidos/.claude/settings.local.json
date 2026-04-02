@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find C:/Users/maria/Projetos/Ideia-vesti -type f \\\\\\(-name *.js -o -name *.py -o -name *.sql -o -name *.json -o -name *.ts -o -name *.tsx \\\\\\))",
+      "Bash(find C:/Users/maria/Projetos/Ideia-vesti -type f -name *power* -o -name *fabric* -o -name *bi* -o -name *build*)",
+      "Bash(find C:/Users/maria/Projetos/Ideia-vesti -type f -name *.sql)",
+      "Bash(find C:/Users/maria/Projetos/Ideia-vesti -type f \\\\\\(-name *.json -o -name *.yaml -o -name *.yml \\\\\\))",
+      "Bash(grep -r \"agencias\\\\|workspace\" C:/Users/maria/Projetos/Ideia-vesti --include=*.js --include=*.json --include=*.py)",
+      "Bash(xargs grep:*)",
+      "Bash(find C:/Users/maria/Projetos/Ideia-vesti -type f \\\\\\(-name build*.py -o -name *.py \\\\\\))",
+      "Bash(grep -r \"agencias\\\\|agencia\" C:/Users/maria/Projetos/Ideia-vesti --include=*.js)"
+    ]
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "generated_at": "2026-03-27",
+  "project_name": "Ideia-vesti",
+  "project_type": "brownfield",
+  "system": {
+    "os": "Windows 10 Home 10.0.19045",
+    "architecture": "x86_64",
+    "shell": "bash (MINGW64)",
+    "package_manager": "winget"
+  },
+  "cli_tools": {
+    "git": {
+      "installed": true,
+      "version": "2.53.0",
+      "status": "OK"
+    },
+    "gh": {
+      "installed": true,
+      "version": "2.88.0",
+      "authenticated": true,
+      "account": "marialauramarqui",
+      "status": "OK"
+    },
+    "node": {
+      "installed": true,
+      "version": "24.14.0",
+      "status": "OK"
+    },
+    "npm": {
+      "installed": true,
+      "version": "11.9.0",
+      "status": "OK"
+    },
+    "docker": {
+      "installed": false,
+      "status": "MISSING"
+    },
+    "supabase": {
+      "installed": false,
+      "status": "MISSING"
+    },
+    "railway": {
+      "installed": false,
+      "status": "MISSING"
+    },
+    "coderabbit": {
+      "installed": false,
+      "status": "WSL_NOT_AVAILABLE",
+      "note": "WSL has no distributions installed"
+    },
+    "pnpm": {
+      "installed": false,
+      "status": "MISSING"
+    },
+    "bun": {
+      "installed": false,
+      "status": "MISSING"
+    }
+  },
+  "repository": {
+    "initialized": true,
+    "remote_url": "https://github.com/marialauramarqui/Ideia-vesti.git",
+    "branch": "main"
+  },
+  "user_profile": {
+    "mode": "bob",
+    "label": "Modo Assistido",
+    "config_path": "~/.aiox/user-config.yaml"
+  },
+  "validation": {
+    "essential_complete": true,
+    "recommended_complete": false,
+    "ready_for_development": true
+  }
+}
