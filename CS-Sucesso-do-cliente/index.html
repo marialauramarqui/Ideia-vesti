@@ -684,10 +684,9 @@ function updateEmpresaPanel(){
             const faturasMes=show.faturamento.faturas.filter(f=>f.mes===ufMes&&f.status!=='canceled');
             const ufTotal=faturasMes.reduce((s,f)=>s+f.total,0);
             const ufStatus=faturasMes.reduce((worst,f)=>(statusPrio[f.status]||99)<(statusPrio[worst]||99)?f.status:worst,faturasMes[0].status);
-            const totalCobrado=show.planoTotalCobrado||0;
-            ufEl.innerHTML='<span style="color:'+(colorMap[ufStatus]||'var(--text-primary)')+';font-weight:700;">'+(statusMap[ufStatus]||ufStatus)+'</span> — '+fmtCFull(ufTotal)+' <span style="color:var(--text-muted);font-size:11px;">('+ufMes+')</span>'+(totalCobrado>0?' <span style="color:var(--primary);font-weight:600;font-size:11px;margin-left:6px;">Total Cobrado: '+fmtCFull(totalCobrado)+'</span>':'');
+            ufEl.innerHTML='<span style="color:'+(colorMap[ufStatus]||'var(--text-primary)')+';font-weight:700;">'+(statusMap[ufStatus]||ufStatus)+'</span> — '+fmtCFull(ufTotal)+' <span style="color:var(--text-muted);font-size:11px;">('+ufMes+')</span>'+(ufTotal>0?' <span style="color:var(--primary);font-weight:600;font-size:11px;margin-left:6px;">Total Cobrado: '+fmtCFull(ufTotal)+'</span>':'');
         } else if(show.planoTotalCobrado>0){
-            ufEl.innerHTML='<span style="color:var(--text-muted);">Sem fatura</span> <span style="color:var(--primary);font-weight:600;font-size:11px;margin-left:6px;">Total Cobrado: '+fmtCFull(show.planoTotalCobrado)+'</span>';
+            ufEl.innerHTML='<span style="color:var(--text-muted);">Sem fatura</span> <span style="color:var(--primary);font-weight:600;font-size:11px;margin-left:6px;">Plano: '+fmtCFull(show.planoTotalCobrado)+'</span>';
         } else {
             ufEl.textContent='-';
         }
