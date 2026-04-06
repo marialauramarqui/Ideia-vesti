@@ -40,11 +40,14 @@ jobs:
           cd ideia-vesti/CS-Sucesso-do-cliente
           node build-cloud.js
 
+      - name: Instalar openpyxl
+        run: pip install openpyxl
+
       - name: Copiar dados.js e gerar dashboard
         run: |
           cp ideia-vesti/CS-Sucesso-do-cliente/dados.js cs-dados.js
           python3 << 'PYEOF'
-          import sys, json, os
+          import sys, json, os, re
 
           # Read dados.js
           with open('cs-dados.js', 'r', encoding='utf-8') as f:
@@ -53,12 +56,13 @@ jobs:
           data = json.loads(json_str)
           empresas = data['empresas']
 
-          # Read NPS from Excel
+          # Read NPS from Excel if available
+          nps = []
+          nps_xlsx = 'ideia-vesti/PainelCSGerencial/Pesquisa NPS.xlsx'
           try:
               import openpyxl
-              wb = openpyxl.load_workbook('Pesquisa NPS.xlsx', data_only=True)
+              wb = openpyxl.load_workbook(nps_xlsx, data_only=True)
               ws = wb['Nota NPS']
-              nps = []
               # Build anjo short->full map
               anjo_map = {}
               for e in empresas:
@@ -73,8 +77,21 @@ jobs:
                       if anjo_clean and anjo_clean in anjo_map:
                           anjo_clean = anjo_map[anjo_clean]
                       nps.append({'empresa':str(empresa),'nota':float(nota),'data':str(d)[:10],'anjo':anjo_clean,'comentario':str(com) if com and str(com)!='None' else None,'dominio':int(dom) if dom else None})
-          except:
-              nps = []
+              print(f'NPS from Excel: {len(nps)} records')
+          except Exception as exc:
+              print(f'WARN: Excel NPS failed ({exc}), trying fallback...')
+              # Fallback: read NPS from existing dashboard_full_data.js in repo
+              fallback_path = 'ideia-vesti/PainelCSGerencial/dashboard_full_data.js'
+              if os.path.exists(fallback_path):
+                  with open(fallback_path, 'r', encoding='utf-8') as fb:
+                      for line in fb:
+                          if line.startswith('const NPS_DATA = '):
+                              json_str = line[len('const NPS_DATA = '):].rstrip().rstrip(';')
+                              nps = json.loads(json_str)
+                              break
+                  print(f'NPS from fallback: {len(nps)} records')
+              else:
+                  print('ERROR: No fallback file found, NPS will be empty')
 
           # CSAT (hardcoded for now)
           csat = [
