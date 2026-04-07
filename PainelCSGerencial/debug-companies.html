@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug - Companies Data</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1e1e1e; color: #fff; }
+        .result { background: #2d2d2d; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .ok { color: #4EC9B0; }
+        .error { color: #F48771; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug - Companies Data</h1>
+    <div id="results"></div>
+
+    <script>
+        const results = document.getElementById('results');
+
+        function log(msg, status = 'info') {
+            const div = document.createElement('div');
+            div.className = 'result';
+            const color = status === 'ok' ? 'ok' : status === 'error' ? 'error' : 'inherit';
+            div.innerHTML = `<span style="color: ${color}">${msg}</span>`;
+            results.appendChild(div);
+            console.log(msg);
+        }
+
+        // Teste 1: Verificar COMPANIES_DATA global
+        log('=== TESTE 1: COMPANIES_DATA Global ===', 'info');
+        if (typeof COMPANIES_DATA !== 'undefined') {
+            log(`✓ COMPANIES_DATA existe`, 'ok');
+            log(`✓ Quantidade: ${COMPANIES_DATA.length} empresas`, 'ok');
+            if (COMPANIES_DATA.length > 0) {
+                log(`✓ Primeira empresa: "${COMPANIES_DATA[0].name}"`, 'ok');
+            }
+        } else {
+            log(`✗ COMPANIES_DATA NÃO DEFINIDA!`, 'error');
+        }
+
+        // Teste 2: Verificar NPS_DATA global
+        log('=== TESTE 2: NPS_DATA Global ===', 'info');
+        if (typeof NPS_DATA !== 'undefined') {
+            log(`✓ NPS_DATA existe`, 'ok');
+            log(`✓ Quantidade: ${NPS_DATA.length} registros`, 'ok');
+        } else {
+            log(`✗ NPS_DATA NÃO DEFINIDA!`, 'error');
+        }
+
+        // Teste 3: Tentar carregar companies_data.json
+        log('=== TESTE 3: Carregando companies_data.json ===', 'info');
+        fetch('companies_data.json')
+            .then(r => r.json())
+            .then(data => {
+                log(`✓ Arquivo carregado: ${data.length} empresas`, 'ok');
+            })
+            .catch(e => {
+                log(`✗ Erro ao carregar JSON: ${e.message}`, 'error');
+            });
+
+        // Teste 4: Filtro no innerHTML
+        log('=== TESTE 4: Verificando renderização ===', 'info');
+        const filterElements = document.querySelectorAll('[id*="compan"], [class*="compan"]');
+        log(`✓ Elementos com "companies" encontrados: ${filterElements.length}`, filterElements.length > 0 ? 'ok' : 'error');
+    </script>
+</body>
+</html>
