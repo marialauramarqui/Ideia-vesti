@@ -20,7 +20,7 @@ const DIR = __dirname;
 
 // ===================== CONSTANTS =====================
 const WORKSPACE_ID = 'aced753a-0f0e-4bcf-9264-72f6496cf2cf';
-const DATASET_ID = 'e6c74524-e355-4447-9eb4-baae76b84dc4';
+const DATASET_ID = 'b3377e38-83ae-4ea2-a4fd-6d7a496f3a93'; // CS - Sucesso do Cliente 2024 (2025 live connection quebrada)
 const DAX_ENDPOINT = `/v1.0/myorg/groups/${WORKSPACE_ID}/datasets/${DATASET_ID}/executeQueries`;
 
 // VestiPago workspace + dataset (para lista de empresas com VestiPago)
