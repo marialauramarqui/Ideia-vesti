@@ -27,7 +27,9 @@ const SQL_DATABASE = 'VestiHouse';
 
 // ===================== CONSTANTS =====================
 const WORKSPACE_ID = 'aced753a-0f0e-4bcf-9264-72f6496cf2cf';
-const DATASET_ID = 'b3377e38-83ae-4ea2-a4fd-6d7a496f3a93'; // CS - Sucesso do Cliente 2024 (2025 live connection quebrada)
+const DATASET_ID = 'b3377e38-83ae-4ea2-a4fd-6d7a496f3a93'; // CS - Sucesso do Cliente 2024 (legacy — Cadastros/Marcas)
+// CS 2025 (2): dataset com Product/Rankings frescos (Rankings ate 2026-03-23)
+const LINKS_DATASET_ID = 'c5c35166-68b7-4861-a035-71f7b800b08f';
 const DAX_ENDPOINT = `/v1.0/myorg/groups/${WORKSPACE_ID}/datasets/${DATASET_ID}/executeQueries`;
 
 // VestiPago workspace + dataset (para lista de empresas com VestiPago)
@@ -314,6 +316,91 @@ async function fetchLakehouseEmpresas(sqlToken) {
         ' (' + matrizes + ' matrizes + ' + filiais + ' filiais, ' +
         empresas.filter(e => e.statusEmpresa === 'Ativa').length + ' Ativa)');
     return empresas;
+}
+
+// ===================== LAKEHOUSE: pedidos/GMV via MongoDB_Pedidos_Geral =====================
+// Substitui o DAX 'Merged Pedidos' (CS 2024 desatualizado, dados ate 2025-01) pelo
+// MongoDB_Pedidos_Geral do lakehouse — fresco ate hoje. Filtra outliers (summary_total
+// > R$50k esta acima do p99.9 e em sua maioria sao bugs/digitos errados de R$ 139 bilhoes).
+async function fetchPedidosFromMongo(sqlToken) {
+    const MAX_PEDIDO = 50000;
+    // Agrega por (domainId, mes) — uma linha por combinacao
+    const q = `
+        SELECT
+            domainId,
+            FORMAT(settings_createdAt_TIMESTAMP, 'yyyy-MM') AS mes,
+            COUNT(*) AS qtd,
+            SUM(CASE WHEN payment_isPaid = 1 THEN 1 ELSE 0 END) AS pagos,
+            SUM(CASE WHEN status_consolidatedOrderStatus = 'CANCELED' THEN 1 ELSE 0 END) AS cancelados,
+            SUM(CASE WHEN payment_isPaid = 0
+                          AND (status_consolidatedOrderStatus IS NULL
+                               OR status_consolidatedOrderStatus NOT IN ('CANCELED', 'PAID'))
+                     THEN 1 ELSE 0 END) AS pendentes,
+            SUM(summary_total) AS valTotal,
+            SUM(CASE WHEN payment_isPaid = 1 THEN summary_total ELSE 0 END) AS valPagos,
+            SUM(CASE WHEN status_consolidatedOrderStatus = 'CANCELED' THEN summary_total ELSE 0 END) AS valCancelados
+        FROM dbo.MongoDB_Pedidos_Geral
+        WHERE domainId IS NOT NULL
+          AND TRY_CAST(domainId AS BIGINT) IS NOT NULL
+          AND summary_total IS NOT NULL
+          AND summary_total > 0
+          AND summary_total < ${MAX_PEDIDO}
+          AND settings_createdAt_TIMESTAMP IS NOT NULL
+        GROUP BY domainId, FORMAT(settings_createdAt_TIMESTAMP, 'yyyy-MM')
+    `;
+    const rows = await runSqlQuery(sqlToken, q, 'MongoDB_Pedidos_Geral (pedidos/GMV)');
+
+    // Indexar por dominioId (Number)
+    const porDominio = new Map(); // dominioId -> { totals, mensal: [{mes, ...}] }
+    for (const r of rows) {
+        const dom = Number(r.domainId);
+        if (!Number.isFinite(dom)) continue;
+        if (!porDominio.has(dom)) {
+            porDominio.set(dom, {
+                pedidos: 0, pagos: 0, cancelados: 0, pendentes: 0,
+                valTotal: 0, valPagos: 0, valCancelados: 0,
+                mensal: [],
+            });
+        }
+        const d = porDominio.get(dom);
+        const qtd = Number(r.qtd) || 0;
+        const pagos = Number(r.pagos) || 0;
+        const cancelados = Number(r.cancelados) || 0;
+        const pendentes = Number(r.pendentes) || 0;
+        const valTotal = Number(r.valTotal) || 0;
+        const valPagos = Number(r.valPagos) || 0;
+        const valCancelados = Number(r.valCancelados) || 0;
+        d.pedidos += qtd;
+        d.pagos += pagos;
+        d.cancelados += cancelados;
+        d.pendentes += pendentes;
+        d.valTotal += valTotal;
+        d.valPagos += valPagos;
+        d.valCancelados += valCancelados;
+        d.mensal.push({
+            mes: r.mes,
+            qtd, pagos, cancelados, pendentes,
+            valTotal, valPagos, valCancelados,
+        });
+    }
+    // Agregado mensal global
+    const mensalGlobalMap = new Map();
+    for (const d of porDominio.values()) {
+        for (const m of d.mensal) {
+            const cur = mensalGlobalMap.get(m.mes) || { qtd: 0, pagos: 0, cancelados: 0, pendentes: 0, valTotal: 0, valPagos: 0, valCancelados: 0 };
+            cur.qtd += m.qtd; cur.pagos += m.pagos; cur.cancelados += m.cancelados; cur.pendentes += m.pendentes;
+            cur.valTotal += m.valTotal; cur.valPagos += m.valPagos; cur.valCancelados += m.valCancelados;
+            mensalGlobalMap.set(m.mes, cur);
+        }
+    }
+    const mensalGlobal = [...mensalGlobalMap.entries()].map(([mes, v]) => ({ mes, ...v })).sort((a, b) => a.mes.localeCompare(b.mes));
+
+    let totalQtd = 0, totalVal = 0;
+    for (const d of porDominio.values()) { totalQtd += d.pedidos; totalVal += d.valTotal; }
+    console.log('  MongoDB pedidos: ' + totalQtd.toLocaleString('pt-BR') +
+        ' pedidos / R$ ' + totalVal.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) +
+        ' / ' + porDominio.size + ' dominios');
+    return { porDominio, mensalGlobal };
 }
 
 // ===================== LAKEHOUSE: validacao cruzada via MongoDB_Pedidos_Geral =====================
@@ -613,32 +700,64 @@ async function fetchOraculoPainelStats(accessToken) {
                 const pRows = (pRes.statusCode === 200 ? JSON.parse(pRes.body).results?.[0]?.tables?.[0]?.rows : null) || [];
                 const iRows = (iRes.statusCode === 200 ? JSON.parse(iRes.body).results?.[0]?.tables?.[0]?.rows : null) || [];
 
-                // Aggregate by month
+                // Aggregate por mes (pedidos+vendas) e semana ISO
                 const monthly = {};
+                const weeklyVendas = {};   // weekKey -> { vDireta, label, sortKey }
+                const weeklyInter = {};    // weekKey -> { ia, human, label, sortKey }
                 let totalPedidos = 0, totalVendas = 0, totalInteracoes = 0, totalIA = 0;
+
+                function isoWeek(dt) {
+                    const d = new Date(dt);
+                    if (isNaN(d)) return null;
+                    const target = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+                    const dayNr = (target.getUTCDay() + 6) % 7;
+                    target.setUTCDate(target.getUTCDate() - dayNr + 3);
+                    const firstThursday = target.getTime();
+                    target.setUTCMonth(0, 1);
+                    if (target.getUTCDay() !== 4) target.setUTCMonth(0, 1 + ((4 - target.getUTCDay()) + 7) % 7);
+                    const weekNo = 1 + Math.ceil((firstThursday - target.getTime()) / 604800000);
+                    const yr = new Date(dt).getUTCFullYear();
+                    return { key: yr + '-W' + String(weekNo).padStart(2, '0'), label: 'S' + weekNo + '/' + String(yr).slice(2), sortKey: yr * 100 + weekNo };
+                }
+
                 pRows.forEach(r => {
                     const dt = r["f_Pedidos Oraculo[settings_createdAt_TIMESTAMP]"] || '';
+                    if (!dt) return;
                     const mes = dt.substring(0, 7);
-                    if (!mes) return;
                     const ped = r['[pedidos]'] || 0;
                     const ven = r['[vendas]'] || 0;
-                    if (!monthly[mes]) monthly[mes] = { pedidos: 0, vendas: 0, interacoes: 0, ia: 0 };
-                    monthly[mes].pedidos += ped;
-                    monthly[mes].vendas += ven;
+                    if (mes) {
+                        if (!monthly[mes]) monthly[mes] = { pedidos: 0, vendas: 0, interacoes: 0, ia: 0 };
+                        monthly[mes].pedidos += ped;
+                        monthly[mes].vendas += ven;
+                    }
                     totalPedidos += ped;
                     totalVendas += ven;
+                    const w = isoWeek(dt);
+                    if (w) {
+                        if (!weeklyVendas[w.key]) weeklyVendas[w.key] = { vDireta: 0, vInfluenciada: 0, vOutros: 0, label: w.label, sortKey: w.sortKey, sem: w.key.split('W')[1] };
+                        weeklyVendas[w.key].vDireta += ven;
+                    }
                 });
                 iRows.forEach(r => {
                     const dt = r["f_Interacoes Oraculo Semanal[DataReferencia]"] || '';
+                    if (!dt) return;
                     const mes = dt.substring(0, 7);
-                    if (!mes) return;
                     const inter = r['[interacoes]'] || 0;
                     const ia = r['[ia]'] || 0;
-                    if (!monthly[mes]) monthly[mes] = { pedidos: 0, vendas: 0, interacoes: 0, ia: 0 };
-                    monthly[mes].interacoes += inter;
-                    monthly[mes].ia += ia;
+                    if (mes) {
+                        if (!monthly[mes]) monthly[mes] = { pedidos: 0, vendas: 0, interacoes: 0, ia: 0 };
+                        monthly[mes].interacoes += inter;
+                        monthly[mes].ia += ia;
+                    }
                     totalInteracoes += inter;
                     totalIA += ia;
+                    const w = isoWeek(dt);
+                    if (w) {
+                        if (!weeklyInter[w.key]) weeklyInter[w.key] = { ia: 0, human: 0, label: w.label, sortKey: w.sortKey, sem: w.key.split('W')[1] };
+                        weeklyInter[w.key].ia += ia;
+                        weeklyInter[w.key].human += Math.max(0, inter - ia);
+                    }
                 });
 
                 const atendimentos = totalInteracoes; // unique customers approximated by total interactions
@@ -650,6 +769,18 @@ async function fetchOraculoPainelStats(accessToken) {
                     .sort((a, b) => b.mes.localeCompare(a.mes))
                     .slice(0, 12);
 
+                // Objects {mes: valor} consumidos pelo front (KPI block espera essa shape)
+                const vendasMensal = {};
+                const pedidosMensal = {};
+                Object.entries(monthly).forEach(([mes, d]) => {
+                    vendasMensal[mes] = Math.round(d.vendas * 100) / 100;
+                    pedidosMensal[mes] = d.pedidos;
+                });
+
+                // Arrays semanais ordenados ascending (chart vai usar slice(-16))
+                const vendasSemanal = Object.values(weeklyVendas).sort((a, b) => a.sortKey - b.sortKey);
+                const interacoesSemanal = Object.values(weeklyInter).sort((a, b) => a.sortKey - b.sortKey);
+
                 if (totalPedidos > 0 || totalInteracoes > 0) {
                     map.set(name.toLowerCase(), {
                         name,
@@ -659,6 +790,10 @@ async function fetchOraculoPainelStats(accessToken) {
                         pctIAOraculo: pctIA,
                         vendasOraculo: Math.round(totalVendas * 100) / 100,
                         mensal: mensalArr,
+                        vendasMensal,
+                        pedidosMensal,
+                        vendasSemanal,
+                        interacoesSemanal,
                     });
                     ok++;
                 } else { fail++; }
@@ -844,31 +979,37 @@ async function main() {
     // Status Empresa + Controle de Estoque - from Confeccao Métricas 2025
     const daxMetricas = `EVALUATE SELECTCOLUMNS(Query1, "id", Query1[Id Empresa], "status", Query1[Status Empresa 2], "estoque", Query1[Controle de Estoque], "cs", Query1[Anjo])`;
 
-    // Frete fonte 1: Relatorio Confeccoes - Agencia (match por nome)
+    // Frete fonte 1: Relatorio Confeccoes - Agencia (match por nome) — legacy, mantido como fallback
     const daxFrete = `EVALUATE FILTER(SUMMARIZECOLUMNS(Merged[Companies.company_name], Merged[Recebido].[Year], Merged[Recebido].[MonthNo], "TotalFrete", SUM(Merged[Valor Frete])), [TotalFrete] > 0)`;
-    // Frete fonte 2: Painel Frete -> OnLog - Fechamento (match por idDominio)
-    const daxFrete2 = `EVALUATE FILTER(SUMMARIZECOLUMNS('OnLog - Fechamento'[Dominio], 'OnLog - Fechamento'[Data].[Year], 'OnLog - Fechamento'[Data].[MonthNo], "TotalFrete", SUM('OnLog - Fechamento'[ValorPostagem])), [TotalFrete] > 0)`;
+    // Frete fonte 2: Painel Frete -> OnLog - Descritivo[delivery_provider_value] (match por domainId)
+    // Substitui ValorPostagem (cobranca onlog) por delivery_provider_value (cotacao Bia mostrada no painel)
+    const daxFrete2 = `EVALUATE FILTER(SUMMARIZECOLUMNS('OnLog - Descritivo'[domainId], 'OnLog - Descritivo'[settings_createdAt].[Year], 'OnLog - Descritivo'[settings_createdAt].[MonthNo], "TotalFrete", SUM('OnLog - Descritivo'[delivery_provider_value])), [TotalFrete] > 0)`;
 
-    // Run all queries in parallel (including VestiPago companies from separate dataset)
-    const [cadastrosRows, configRows, marcasRows, productRows, rankingsRows, pedidosCompanyRows, pedidosMonthlyRows, pedidosCompanyMonthlyRows, vestiPagoRows, linksMonthlyRows, cliquesMonthlyRows, linksCompanyMonthlyRows, cliquesCompanyMonthlyRows, invoiceRows, metricasRows, freteRows, frete2Rows] = await Promise.all([
+    // Run all queries in parallel.
+    // Pedidos/GMV: AGORA via SQL no MongoDB_Pedidos_Geral (lakehouse), nao mais via DAX Merged Pedidos.
+    // Product/Rankings (links/cliques): trocados pro dataset CS 2025 (LINKS_DATASET_ID),
+    //   o dataset 2024 que estavamos usando estava com dados ate 2025-01.
+    const [cadastrosRows, configRows, marcasRows, productRows, rankingsRows, vestiPagoRows, linksMonthlyRows, cliquesMonthlyRows, linksCompanyMonthlyRows, cliquesCompanyMonthlyRows, invoiceRows, metricasRows, freteRows, frete2Rows, mongoPedidos] = await Promise.all([
         executeDaxQuery(accessToken, daxCadastros, 'Cadastros Empresas'),
         executeDaxQuery(accessToken, daxConfig, 'Config Empresas'),
         executeDaxQuery(accessToken, daxMarcas, 'Marcas e Planos'),
-        executeDaxQuery(accessToken, daxProduct, 'Product (links)'),
-        executeDaxQuery(accessToken, daxRankings, 'Rankings (cliques)'),
-        executeDaxQuery(accessToken, daxPedidosPerCompany, 'Pedidos per Company'),
-        executeDaxQuery(accessToken, daxPedidosMonthly, 'Pedidos Monthly'),
-        executeDaxQuery(accessToken, daxPedidosCompanyMonthly, 'Pedidos Company Monthly'),
+        executeDaxQueryOn(accessToken, WORKSPACE_ID, LINKS_DATASET_ID, daxProduct, 'Product (links) [CS 2025]'),
+        executeDaxQueryOn(accessToken, WORKSPACE_ID, LINKS_DATASET_ID, daxRankings, 'Rankings (cliques) [CS 2025]'),
         executeDaxQueryOn(accessToken, VP_WORKSPACE_ID, VP_DATASET_ID, `EVALUATE SELECTCOLUMNS(Companies, "companyId", Companies[data.companyId])`, 'VestiPago Companies'),
-        executeDaxQuery(accessToken, daxLinksMonthly, 'Links Monthly'),
-        executeDaxQuery(accessToken, daxCliquesMonthly, 'Cliques Monthly'),
-        executeDaxQuery(accessToken, daxLinksCompanyMonthly, 'Links Company Monthly'),
-        executeDaxQuery(accessToken, daxCliquesCompanyMonthly, 'Cliques Company Monthly'),
+        executeDaxQueryOn(accessToken, WORKSPACE_ID, LINKS_DATASET_ID, daxLinksMonthly, 'Links Monthly [CS 2025]'),
+        executeDaxQueryOn(accessToken, WORKSPACE_ID, LINKS_DATASET_ID, daxCliquesMonthly, 'Cliques Monthly [CS 2025]'),
+        executeDaxQueryOn(accessToken, WORKSPACE_ID, LINKS_DATASET_ID, daxLinksCompanyMonthly, 'Links Company Monthly [CS 2025]'),
+        executeDaxQueryOn(accessToken, WORKSPACE_ID, LINKS_DATASET_ID, daxCliquesCompanyMonthly, 'Cliques Company Monthly [CS 2025]'),
         executeDaxQueryOn(accessToken, INV_WORKSPACE_ID, INV_DATASET_ID, daxInvoices, 'Invoices Iugu'),
         executeDaxQueryOn(accessToken, METRICAS_WORKSPACE_ID, METRICAS_DATASET_ID, daxMetricas, 'Métricas (Status/Estoque)'),
         executeDaxQueryOn(accessToken, FRETE_WORKSPACE_ID, FRETE_DATASET_ID, daxFrete, 'Frete (Relatorio Confeccoes)'),
-        executeDaxQueryOn(accessToken, FRETE2_WORKSPACE_ID, FRETE2_DATASET_ID, daxFrete2, 'Frete (Painel Frete - OnLog)'),
+        executeDaxQueryOn(accessToken, FRETE2_WORKSPACE_ID, FRETE2_DATASET_ID, daxFrete2, 'Frete (Painel Frete - OnLog Descritivo)'),
+        fetchPedidosFromMongo(sqlToken),
     ]);
+    // Empty stubs (DAX queries removidas mas codigo abaixo ainda referencia)
+    const pedidosCompanyRows = [];
+    const pedidosMonthlyRows = [];
+    const pedidosCompanyMonthlyRows = [];
 
     // Build VestiPago set
     const vestiPagoSet = new Set();
@@ -938,11 +1079,11 @@ async function main() {
     console.log('  Frete (Relatorio Confeccoes / nome): ' + Object.keys(freteByCompany).length + ' empresas, R$ ' +
         Object.values(freteByCompany).reduce((s, c) => s + c.total, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
 
-    // Fonte 2: Painel Frete -> OnLog - Fechamento, mapeada por idDominio.
+    // Fonte 2: Painel Frete -> OnLog - Descritivo[delivery_provider_value], mapeada por domainId.
     const freteByDominio = {};
     (frete2Rows || []).forEach(r => {
         const keys = Object.keys(r);
-        const dominioKey = keys.find(k => k.includes('Dominio'));
+        const dominioKey = keys.find(k => /domainId|Dominio/i.test(k));
         const yearKey = keys.find(k => k.includes('Year'));
         const monthKey = keys.find(k => k.includes('MonthNo'));
         const dominio = dominioKey ? r[dominioKey] : null;
@@ -1133,36 +1274,57 @@ async function main() {
         }
     }
 
-    // 5c. Pedidos per company (from DAX aggregated query)
-    // Cap: ticket médio máximo razoável = R$ 500.000 por pedido (acima disso é dado corrompido)
-    const MAX_TICKET = 50000;
-    for (const row of pedidosCompanyRows) {
-        const empresaId = row['ID Empresa'];
-        const emp = empresasMap[empresaId];
-        if (!emp) continue;
-
-        emp.pedidos = parseInt(row['TotalPedidos']) || 0;
-        emp.pedidosPagos = parseInt(row['TotalPagos']) || 0;
-        emp.pedidosCancelados = parseInt(row['TotalCancelados']) || 0;
-        emp.pedidosPendentes = parseInt(row['TotalPendentes']) || 0;
-        emp.valTotal = parseFloat(row['ValTotal']) || 0;
-        emp.valPedidosPagos = parseFloat(row['ValPagos']) || 0;
-        emp.valPedidosCancelados = parseFloat(row['ValCancelados']) || 0;
-
-        // Filtrar outliers: se ticket médio > MAX_TICKET, zerar valores (dado corrompido)
-        if (emp.pedidos > 0 && emp.valTotal / emp.pedidos > MAX_TICKET) {
-            console.log('  WARN: Outlier detectado - ' + (emp.nomeFantasia || emp.nomeDominio) + ' (ticket médio R$ ' + Math.round(emp.valTotal / emp.pedidos) + ')');
-            emp.valTotal = 0;
-            emp.valPedidosPagos = 0;
-            emp.valPedidosCancelados = 0;
+    // 5c. Pedidos per company - AGORA via MongoDB_Pedidos_Geral (lakehouse, fresh)
+    // Mongo eh agregado por domainId. Atribuimos os pedidos do dominio APENAS a matriz
+    // (rn=1 do lakehouse) — filiais do mesmo dominio ficam com 0 pra evitar dupla
+    // contagem nos KPIs globais.
+    //
+    // IMPORTANTE: pra matrizes que ainda nao estao em empresasMap (porque vieram do
+    // lakehouse mas nao do Cadastros DAX), criamos stubs temporarios aqui. O loop
+    // empresasAtivas mais adiante (secao 8) vai enriquecer esses stubs.
+    const matrizPorDominio = new Map();
+    for (const lh of lakehouseEmpresas) {
+        if (lh.isMatriz && !matrizPorDominio.has(lh.dominioId)) {
+            matrizPorDominio.set(lh.dominioId, lh);
         }
-        emp.transCartao = parseInt(row['TransCartao']) || 0;
-        emp.transPix = parseInt(row['TransPix']) || 0;
-        emp.transTotal = emp.pedidos;
-        emp.valCartao = parseFloat(row['ValCartao']) || 0;
-        emp.valPix = parseFloat(row['ValPix']) || 0;
-        emp.valPedidosPendentes = emp.valTotal - emp.valPedidosPagos - emp.valPedidosCancelados;
     }
+    function ensureStub(lh) {
+        if (empresasMap[lh.id]) return empresasMap[lh.id];
+        const stub = {
+            id: lh.id, cnpj: lh.cnpj, anjo: lh.anjo, integracao: lh.integracao, tags: lh.tags,
+            temIntegracao: lh.integracao ? 'Sim' : '', idDominio: lh.dominioId,
+            nomeDominio: lh.nomeDominio, nomeFantasia: lh.nomeFantasia, razaoSocial: lh.razaoSocial,
+            canal: lh.canal, modulo: lh.modulos, tipoAtacado: lh.tipoAtacado, criacao: lh.criacao,
+            tipoIntegracao: '', dataPrimeiroPedido: '', valorPlano: 0,
+            statusEmpresa: lh.statusEmpresa || '',
+            transCartao: 0, transPix: 0, transTotal: 0, valCartao: 0, valPix: 0, valTotal: 0,
+            pedidos: 0, pedidosPagos: 0, pedidosCancelados: 0, pedidosPendentes: 0,
+            valPedidosPagos: 0, valPedidosCancelados: 0, valPedidosPendentes: 0,
+            linksEnviados: 0, cliques: 0, cartaoImpl: false, pixImpl: false,
+            _stubFromLakehouse: true,
+        };
+        empresasMap[lh.id] = stub;
+        return stub;
+    }
+    let mongoMatched = 0, mongoMissingDom = 0;
+    for (const [dominioId, totals] of mongoPedidos.porDominio) {
+        const matrizLh = matrizPorDominio.get(dominioId);
+        if (!matrizLh) { mongoMissingDom++; continue; }
+        const emp = ensureStub(matrizLh);
+        emp.pedidos = totals.pedidos;
+        emp.pedidosPagos = totals.pagos;
+        emp.pedidosCancelados = totals.cancelados;
+        emp.pedidosPendentes = totals.pendentes;
+        emp.valTotal = totals.valTotal;
+        emp.valPedidosPagos = totals.valPagos;
+        emp.valPedidosCancelados = totals.valCancelados;
+        emp.valPedidosPendentes = totals.valTotal - totals.valPagos - totals.valCancelados;
+        emp.transTotal = totals.pedidos;
+        emp.transCartao = 0; emp.transPix = 0; emp.valCartao = 0; emp.valPix = 0;
+        emp._mongoMensal = totals.mensal.sort((a, b) => a.mes.localeCompare(b.mes));
+        mongoMatched++;
+    }
+    console.log('  Mongo pedidos aplicados: ' + mongoMatched + ' matrizes, ' + mongoMissingDom + ' dominios sem matriz no lakehouse (descartados)');
 
     // 5d. Product - links per company
     for (const row of productRows) {
@@ -1272,34 +1434,28 @@ async function main() {
         console.log('  Marcas e Planos (PowerBI): ' + Object.keys(marcasMap).length + ' CNPJs');
     }
 
-    // 5g. Pedidos per company per month
+    // 5g. Pedidos per company per month - AGORA construido a partir de mongoPedidos
+    // (que tem mensal por dominio). Atribuimos os meses do dominio a matriz, mesma
+    // logica do agregado total acima.
     const pedidosCompanyMonth = {};
-    for (const row of pedidosCompanyMonthlyRows) {
-        const empId = row['ID Empresa'];
-        const year = row['Year'];
-        const month = row['MonthNo'];
-        if (!empId || !year || !month) continue;
-        const mesKey = String(year) + '-' + String(month).padStart(2, '0');
+    for (const [dominioId, totals] of mongoPedidos.porDominio) {
+        const matrizLh = matrizPorDominio.get(dominioId);
+        if (!matrizLh) continue;
+        const empId = matrizLh.id;
         if (!pedidosCompanyMonth[empId]) pedidosCompanyMonth[empId] = {};
-        const qtd = parseInt(row['Qtd']) || 0;
-        const val = parseFloat(row['Val']) || 0;
-        // Filtrar outliers mensais
-        const valFinal = (qtd > 0 && val / qtd > MAX_TICKET) ? 0 : val;
-        const valPagos = (qtd > 0 && val / qtd > MAX_TICKET) ? 0 : (parseFloat(row['ValPagos']) || 0);
-        pedidosCompanyMonth[empId][mesKey] = {
-            qtd,
-            pagos: parseInt(row['Pagos']) || 0,
-            cancelados: parseInt(row['Cancelados']) || 0,
-            pendentes: parseInt(row['Pendentes']) || 0,
-            val: valFinal,
-            valPagos,
-            tc: parseInt(row['TC']) || 0,
-            tp: parseInt(row['TP']) || 0,
-            vc: (qtd > 0 && val / qtd > MAX_TICKET) ? 0 : (parseFloat(row['VC']) || 0),
-            vp: (qtd > 0 && val / qtd > MAX_TICKET) ? 0 : (parseFloat(row['VP']) || 0),
-        };
+        for (const m of totals.mensal) {
+            pedidosCompanyMonth[empId][m.mes] = {
+                qtd: m.qtd,
+                pagos: m.pagos,
+                cancelados: m.cancelados,
+                pendentes: m.pendentes,
+                val: m.valTotal,
+                valPagos: m.valPagos,
+                tc: 0, tp: 0, vc: 0, vp: 0,  // breakdown cartao/pix nao disponivel
+            };
+        }
     }
-    console.log('  Company monthly data: ' + Object.keys(pedidosCompanyMonth).length + ' companies');
+    console.log('  Company monthly data (mongo): ' + Object.keys(pedidosCompanyMonth).length + ' companies');
 
     // Links per company per month
     const linksCompanyMonth = {};
@@ -1343,25 +1499,19 @@ async function main() {
     }
     console.log('  Oráculo matched: ' + oraculoMatched + '/' + oraculoTickets.length + ' (' + oraculoUnmatched + ' unmatched)');
 
-    // ---------- 7. Build monthly global data from DAX ----------
-    console.log('\nBuilding monthly data...');
+    // ---------- 7. Build monthly global data from MongoDB_Pedidos_Geral ----------
+    console.log('\nBuilding monthly data (mongo)...');
     const pedidosMensais = {};
-    for (const row of pedidosMonthlyRows) {
-        const year = row['Year'];
-        const month = row['MonthNo'];
-        if (!year || !month) continue;
-        const mesKey = String(year) + '-' + String(month).padStart(2, '0');
-        pedidosMensais[mesKey] = {
-            cartao: parseInt(row['Cartao']) || 0,
-            pix: parseInt(row['Pix']) || 0,
-            total: parseInt(row['TotalPedidos']) || 0,
-            valCartao: parseFloat(row['ValCartao']) || 0,
-            valPix: parseFloat(row['ValPix']) || 0,
-            valTotal: parseFloat(row['ValTotal']) || 0,
-            pagos: parseInt(row['Pagos']) || 0,
-            cancelados: parseInt(row['Cancelados']) || 0,
-            pendentes: parseInt(row['Pendentes']) || 0,
-            valPagos: parseFloat(row['ValPagos']) || 0,
+    for (const m of mongoPedidos.mensalGlobal) {
+        pedidosMensais[m.mes] = {
+            cartao: 0, pix: 0,  // breakdown cartao/pix nao disponivel direto do mongo
+            total: m.qtd,
+            valCartao: 0, valPix: 0,
+            valTotal: m.valTotal,
+            pagos: m.pagos,
+            cancelados: m.cancelados,
+            pendentes: m.pendentes,
+            valPagos: m.valPagos,
         };
     }
 
@@ -1721,6 +1871,11 @@ async function main() {
                     pctIAOraculo: oraculoStats ? oraculoStats.pctIAOraculo : 0,
                     vendasOraculo: oraculoStats ? oraculoStats.vendasOraculo : 0,
                     mensal: oraculoStats ? oraculoStats.mensal : undefined,
+                    // Campos consumidos pelos charts/KPIs do tabOraculo no front
+                    vendasMensal: oraculoStats ? oraculoStats.vendasMensal : undefined,
+                    pedidosMensal: oraculoStats ? oraculoStats.pedidosMensal : undefined,
+                    vendasSemanal: oraculoStats ? oraculoStats.vendasSemanal : undefined,
+                    interacoesSemanal: oraculoStats ? oraculoStats.interacoesSemanal : undefined,
                 } : undefined,
                 usuario: ctrl ? ctrl.usuario : '',
                 senha: ctrl ? ctrl.senha : '',
