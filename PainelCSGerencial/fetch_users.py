@@ -4,11 +4,14 @@ com o telefone normalizado pra permitir join com as respostas do NPS.
 """
 
 import json
+import os
 import re
 import struct
 import subprocess
 import sys
 import io
+import urllib.parse
+import urllib.request
 from pathlib import Path
 
 import pyodbc
@@ -23,15 +26,49 @@ CONFIG = json.loads((ROOT / "fabric_config.json").read_text(encoding="utf-8"))
 DRIVER = "{ODBC Driver 18 for SQL Server}"
 
 
+def _refresh_token_access() -> str | None:
+    refresh = os.environ.get("FABRIC_REFRESH_TOKEN", "").strip()
+    tenant = os.environ.get("FABRIC_TENANT_ID", "").strip()
+    client = os.environ.get("FABRIC_CLIENT_ID", "").strip() or "04b07795-8ddb-461a-bbee-02f9e1bf7b46"
+    if not refresh or not tenant:
+        return None
+    url = f"https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"
+    body = urllib.parse.urlencode({
+        "client_id": client,
+        "scope": "https://database.windows.net/.default offline_access",
+        "grant_type": "refresh_token",
+        "refresh_token": refresh,
+    }).encode("utf-8")
+    req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/x-www-form-urlencoded"})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            return json.loads(resp.read().decode("utf-8")).get("access_token")
+    except Exception as e:
+        print(f"[auth] refresh token flow falhou: {e}", file=sys.stderr)
+        return None
+
+
 def _token() -> bytes:
-    is_windows = sys.platform.startswith("win")
-    out = subprocess.run(
-        ["az", "account", "get-access-token",
-         "--resource", "https://database.windows.net/",
-         "--query", "accessToken", "-o", "tsv"],
-        capture_output=True, text=True, check=True, shell=is_windows,
-    )
-    enc = out.stdout.strip().encode("utf-16-le")
+    # 1) az CLI
+    try:
+        is_windows = sys.platform.startswith("win")
+        out = subprocess.run(
+            ["az", "account", "get-access-token",
+             "--resource", "https://database.windows.net/",
+             "--query", "accessToken", "-o", "tsv"],
+            capture_output=True, text=True, check=True, shell=is_windows,
+        )
+        raw = out.stdout.strip()
+        if raw:
+            enc = raw.encode("utf-16-le")
+            return struct.pack("=i", len(enc)) + enc
+    except Exception:
+        pass
+    # 2) refresh token flow (CI)
+    raw = _refresh_token_access()
+    if not raw:
+        raise RuntimeError("Nao consegui obter access token (nem az CLI nem FABRIC_REFRESH_TOKEN).")
+    enc = raw.encode("utf-16-le")
     return struct.pack("=i", len(enc)) + enc
 
 

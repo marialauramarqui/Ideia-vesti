@@ -18,11 +18,14 @@ Rodar:
 """
 
 import json
+import os
 import re
 import struct
 import subprocess
 import sys
 import io
+import urllib.parse
+import urllib.request
 from pathlib import Path
 
 try:
@@ -32,6 +35,36 @@ except ImportError:
     sys.exit(1)
 
 SQL_COPT_SS_ACCESS_TOKEN = 1256
+
+
+def get_refresh_token_access() -> str | None:
+    """Troca FABRIC_REFRESH_TOKEN por access token. Usado em CI sem az CLI."""
+    refresh = os.environ.get("FABRIC_REFRESH_TOKEN", "").strip()
+    tenant = os.environ.get("FABRIC_TENANT_ID", "").strip()
+    client = os.environ.get("FABRIC_CLIENT_ID", "").strip() or "04b07795-8ddb-461a-bbee-02f9e1bf7b46"
+    if not refresh or not tenant:
+        return None
+    url = f"https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"
+    body = urllib.parse.urlencode({
+        "client_id": client,
+        "scope": "https://database.windows.net/.default offline_access",
+        "grant_type": "refresh_token",
+        "refresh_token": refresh,
+    }).encode("utf-8")
+    req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/x-www-form-urlencoded"})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except Exception as e:
+        print(f"[auth] refresh token flow falhou: {e}", file=sys.stderr)
+        return None
+    new_refresh = data.get("refresh_token")
+    if new_refresh:
+        try:
+            (Path(__file__).parent / ".new_refresh_token").write_text(new_refresh, encoding="utf-8")
+        except Exception:
+            pass
+    return data.get("access_token")
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
@@ -71,22 +104,27 @@ def get_az_token() -> bytes | None:
 
 def connect(cfg: dict) -> "pyodbc.Connection":
     print(f"[fabric] conectando em {cfg['sql_endpoint']} / {cfg['database']} ...")
+    base_conn = (
+        f"Driver={DRIVER};"
+        f"Server={cfg['sql_endpoint']},1433;"
+        f"Database={cfg['database']};"
+        f"Encrypt=yes;TrustServerCertificate=no;"
+    )
+    # 1) az CLI (local)
     token_struct = get_az_token()
     if token_struct:
-        conn_str = (
-            f"Driver={DRIVER};"
-            f"Server={cfg['sql_endpoint']},1433;"
-            f"Database={cfg['database']};"
-            f"Encrypt=yes;TrustServerCertificate=no;"
-        )
         print("[auth] usando access token do az CLI")
-        return pyodbc.connect(conn_str, attrs_before={SQL_COPT_SS_ACCESS_TOKEN: token_struct})
-    conn_str = (
-        f"Driver={DRIVER};Server={cfg['sql_endpoint']},1433;Database={cfg['database']};"
-        f"Encrypt=yes;TrustServerCertificate=no;Authentication=ActiveDirectoryInteractive;"
-    )
+        return pyodbc.connect(base_conn, attrs_before={SQL_COPT_SS_ACCESS_TOKEN: token_struct})
+    # 2) refresh token flow (CI)
+    raw = get_refresh_token_access()
+    if raw:
+        print("[auth] usando FABRIC_REFRESH_TOKEN")
+        enc = raw.encode("utf-16-le")
+        ts = struct.pack("=i", len(enc)) + enc
+        return pyodbc.connect(base_conn, attrs_before={SQL_COPT_SS_ACCESS_TOKEN: ts})
+    # 3) interativo
     print("[auth] usando ActiveDirectoryInteractive")
-    return pyodbc.connect(conn_str)
+    return pyodbc.connect(base_conn + "Authentication=ActiveDirectoryInteractive;")
 
 
 SQL = """

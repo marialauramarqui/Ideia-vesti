@@ -1,8 +1,8 @@
-name: Atualizar Dashboard Diariamente
+name: Atualizar PainelCSGerencial diariamente
 
 on:
   schedule:
-    - cron: '30 7 * * *'  # 4:30am BRT (UTC-3 = 7:30 UTC)
+    - cron: '0 8 * * *'  # 5:00 BRT (8:00 UTC) - stagger apos update-dashboard.yml (7:30)
   workflow_dispatch:
 
 jobs:
@@ -29,28 +29,30 @@ jobs:
         run: pip install pyodbc openpyxl google-auth
 
       - name: Preparar secrets
+        working-directory: PainelCSGerencial
         env:
           GOOGLE_SA_JSON: ${{ secrets.GOOGLE_SA_JSON }}
           HUBSPOT_TOKEN: ${{ secrets.HUBSPOT_TOKEN }}
-          FABRIC_SQL_ENDPOINT: ${{ secrets.FABRIC_SQL_ENDPOINT }}
-          FABRIC_DATABASE: ${{ secrets.FABRIC_DATABASE }}
         run: |
+          if [ -z "$GOOGLE_SA_JSON" ]; then
+            echo "ERRO: secret GOOGLE_SA_JSON nao configurado"
+            exit 1
+          fi
           echo "$GOOGLE_SA_JSON" > google_sa.json
           echo "HUBSPOT_TOKEN=$HUBSPOT_TOKEN" > .env.local
-          cat > fabric_config.json <<EOF
+          cat > fabric_config.json <<'EOF'
           {
-            "sql_endpoint": "${FABRIC_SQL_ENDPOINT:-7sowj2vsfd6efgf3phzgjfmvaq-nrdsskmspnteherwztit766zc4.datawarehouse.fabric.microsoft.com}",
-            "database": "${FABRIC_DATABASE:-VestiHouse}"
+            "sql_endpoint": "7sowj2vsfd6efgf3phzgjfmvaq-nrdsskmspnteherwztit766zc4.datawarehouse.fabric.microsoft.com",
+            "database": "VestiHouse"
           }
           EOF
 
-      - name: Login Azure (service principal)
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
       - name: Rodar pipeline
-        continue-on-error: false
+        working-directory: PainelCSGerencial
+        env:
+          FABRIC_REFRESH_TOKEN: ${{ secrets.FABRIC_REFRESH_TOKEN }}
+          FABRIC_TENANT_ID: ${{ secrets.FABRIC_TENANT_ID }}
+          FABRIC_CLIENT_ID: ${{ secrets.FABRIC_CLIENT_ID }}
         run: |
           python fetch_fabric.py || echo "WARN: fetch_fabric falhou"
           python fetch_sheets.py || echo "WARN: fetch_sheets falhou"
@@ -61,12 +63,13 @@ jobs:
 
       - name: Limpar secrets do filesystem
         if: always()
+        working-directory: PainelCSGerencial
         run: rm -f google_sa.json .env.local fabric_config.json
 
       - name: Commit e push se houver mudancas
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add index.html dashboard_full_data.js 2>/dev/null || true
-          git diff --cached --quiet || git commit -m "Atualizacao automatica $(date +'%d/%m/%Y %H:%M')"
+          git add PainelCSGerencial/index.html PainelCSGerencial/dashboard_full_data.js 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "Atualizacao PainelCS $(date +'%d/%m/%Y %H:%M')"
           git push
