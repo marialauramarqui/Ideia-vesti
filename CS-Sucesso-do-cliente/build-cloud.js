@@ -230,9 +230,19 @@ function runSqlQuery(token, query, label, timeoutMs) {
 // GUID, CNPJ, Status, Anjo, Canal, etc.) e fallback em ODBC_Companies (para os dominios que
 // ainda nao foram ingeridos no Query1).
 async function fetchLakehouseEmpresas(sqlToken) {
+    // Exclui partners de Trial e Treino, e dominios com 'teste' no nome (testes internos).
+    // partner_id NULL eh aceito (clientes sem partner). LIKE ja eh case-insensitive na
+    // collation default, mas mantemos as duas variantes pra ficar explicito.
     const q = `
         WITH vendas AS (
-            SELECT DISTINCT id AS dominio_id FROM dbo.ODBC_Domains WHERE modulos LIKE '%vendas%'
+            SELECT DISTINCT id AS dominio_id FROM dbo.ODBC_Domains
+            WHERE modulos LIKE '%vendas%'
+              AND (partner_id IS NULL OR partner_id NOT IN (
+                  'ff66c2f1-1f9f-456c-9308-028e48c89582',
+                  '25fec57c-620c-4ecd-ae7d-cd4fee27b158'
+              ))
+              AND name NOT LIKE '%teste%'
+              AND name NOT LIKE '%Teste%'
         )
         SELECT
             v.dominio_id,
