@@ -11,7 +11,8 @@
 :root{--p:#6C5CE7;--pl:rgba(108,92,231,.15);--s:#00B894;--w:#F39C12;--d:#E17055;--dk:#2D3436;--g:#636E72;--lg:#DFE6E9;--bg:#F8F9FA;--card:#FFF;--sh:0 2px 10px rgba(0,0,0,.07);--r:14px}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--dk);overflow-x:hidden}
-.top-bar{background:linear-gradient(135deg,#6C5CE7,#8B7BF7);color:#fff;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(108,92,231,.3)}
+.top-bar{background:linear-gradient(135deg,#6C5CE7,#8B7BF7);color:#fff;padding:16px 24px;display:flex;justify-content:center;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(108,92,231,.3);position:relative}
+.top-bar .info{position:absolute;right:24px;top:50%;transform:translateY(-50%)}
 .top-bar .logo{font-size:22px;font-weight:800;letter-spacing:-.5px}
 .top-bar .info{font-size:11px;color:rgba(255,255,255,.6)}
 .container{max-width:1400px;margin:0 auto;padding:16px 20px}
@@ -59,13 +60,32 @@ table.dt tr:hover td{background:#FAFAFA}
 .badge{display:inline-block;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:600}
 .badge.pr{background:#E8F5E9;color:#00B894}.badge.pa{background:#FFF3E0;color:#F39C12}.badge.de{background:#FDEAEA;color:#E17055}.badge.sm{background:#F0F0F0;color:#999}.badge.ok{background:#E8F5E9;color:#00B894}.badge.fi{background:#E8EAF6;color:#5C6BC0}
 .click{cursor:pointer}.click:hover{color:var(--p);text-decoration:underline}
+.tabs{display:flex;gap:4px;background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:6px;margin-bottom:16px}
+.tab-btn{flex:1;padding:12px 20px;border:none;background:transparent;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:var(--g);transition:all .2s}
+.tab-btn.active{background:var(--p);color:#fff;box-shadow:0 2px 8px rgba(108,92,231,.35)}
+.tab-btn:hover:not(.active){background:#F0EFFF;color:var(--p)}
+.sub-tabs{display:inline-flex;gap:4px;background:#F0EFFF;border-radius:10px;padding:4px;margin-bottom:16px}
+.sub-tab-btn{padding:8px 18px;border:none;background:transparent;border-radius:7px;cursor:pointer;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--p)}
+.sub-tab-btn.active{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.csat-panel{display:none}.csat-panel.active{display:block}
+.empty{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:40px;text-align:center;color:var(--g);font-size:14px}
+.highlight-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.hl-card{border-radius:var(--r);padding:20px 22px;box-shadow:var(--sh);color:#fff;position:relative;overflow:hidden}
+.hl-card.top{background:linear-gradient(135deg,#00B894,#00D4A0)}
+.hl-card.bot{background:linear-gradient(135deg,#E17055,#FF8863)}
+.hl-card .hl-icon{font-size:28px;position:absolute;top:16px;right:20px;opacity:.35}
+.hl-card .hl-label{font-size:11px;text-transform:uppercase;letter-spacing:.8px;opacity:.85;font-weight:600}
+.hl-card .hl-cargo{font-size:22px;font-weight:700;margin:4px 0 2px}
+.hl-card .hl-score{font-size:36px;font-weight:800;line-height:1}
+.hl-card .hl-meta{font-size:11px;opacity:.85;margin-top:6px}
+@media(max-width:700px){.highlight-row{grid-template-columns:1fr}}
 @media(max-width:900px){.kpi-row{grid-template-columns:1fr 1fr}.chart-row{grid-template-columns:1fr}}
 @media(max-width:600px){.kpi-row{grid-template-columns:1fr}.filters{flex-direction:column;align-items:stretch}}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#ccc;border-radius:3px}
 </style>
 </head>
 <body>
-<!-- LOGIN SCREEN -->
 <div id="loginScreen" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#2D3436,#636E72)">
     <div style="background:#fff;border-radius:16px;padding:40px;width:360px;box-shadow:0 8px 32px rgba(0,0,0,.2);text-align:center">
         <div style="font-size:28px;font-weight:700;color:#2D3436;margin-bottom:4px">CS Gerencial</div>
@@ -75,10 +95,10 @@ table.dt tr:hover td{background:#FAFAFA}
         <button onclick="doLogin()" style="width:100%;padding:12px;background:#6C5CE7;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">Entrar</button>
     </div>
 </div>
-<!-- DASHBOARD (hidden until login) -->
 <div id="dashContent" style="display:none">
-<div class="top-bar"><div><span class="logo">CS Gerencial</span><span style="font-size:12px;opacity:.6;margin-left:8px;">Painel de Customer Success</span></div><div class="info">NPS: Fev-Nov/2025 | CSAT: Jan-Mar/2026</div></div>
+<div class="top-bar"><div style="text-align:center"><div class="logo">CS Gerencial</div><div style="font-size:12px;opacity:.7;margin-top:2px">Painel de Customer Success</div></div><div class="info" id="info-dates">Fontes: Fabric + Sheets + HubSpot</div></div>
 <div class="container">
+<!-- GLOBAL FILTERS -->
 <div class="filters">
     <div class="filter-group"><label>Empresa:</label><div class="filter-container"><input type="text" class="f-input" id="fEmpresa" placeholder="Buscar por nome ou CNPJ..." autocomplete="off"><div class="f-dropdown" id="fDropdown"></div></div><span id="fTag" style="display:none" class="f-tag"><span id="fTagName"></span><span class="x" onclick="clearEmpresa()">&times;</span></span></div>
     <div class="filter-group"><label>CS:</label><select class="f-select" id="fCS" onchange="updateAll()"><option value="">Todos</option></select></div>
@@ -89,45 +109,85 @@ table.dt tr:hover td{background:#FAFAFA}
     <span>Filtro do grafico:</span> <b id="chartFilterLabel"></b>
     <button onclick="clearChartFilter()" style="margin-left:auto;padding:4px 12px;background:var(--p);color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;font-size:11px">Limpar filtro do grafico</button>
 </div>
-<div class="co-detail" id="coDetail"><h3 id="cd-t"></h3><div class="d-grid"><div class="d-item"><div class="dl">Nome Fantasia</div><div class="dv" id="cd-nf">-</div></div><div class="d-item"><div class="dl">CNPJ</div><div class="dv" id="cd-cnpj">-</div></div><div class="d-item"><div class="dl">Razao Social</div><div class="dv" id="cd-rs">-</div></div><div class="d-item"><div class="dl">Anjo (CS)</div><div class="dv" id="cd-anjo">-</div></div><div class="d-item"><div class="dl">Canal</div><div class="dv" id="cd-canal">-</div></div><div class="d-item"><div class="dl">Integracao</div><div class="dv" id="cd-int">-</div></div><div class="d-item"><div class="dl">Tipo</div><div class="dv" id="cd-tipo">-</div></div></div></div>
-<div class="kpi-row">
+<div class="co-detail" id="coDetail"><h3 id="cd-t"></h3><div class="d-grid"><div class="d-item"><div class="dl">Nome Fantasia</div><div class="dv" id="cd-nf">-</div></div><div class="d-item"><div class="dl">Dominio</div><div class="dv" id="cd-dom">-</div></div><div class="d-item"><div class="dl">CNPJ</div><div class="dv" id="cd-cnpj">-</div></div><div class="d-item"><div class="dl">Razao Social</div><div class="dv" id="cd-rs">-</div></div><div class="d-item"><div class="dl">Anjo (CS)</div><div class="dv" id="cd-anjo">-</div></div><div class="d-item"><div class="dl">Canal</div><div class="dv" id="cd-canal">-</div></div><div class="d-item"><div class="dl">Integracao</div><div class="dv" id="cd-int">-</div></div><div class="d-item"><div class="dl">Plano</div><div class="dv" id="cd-plano">-</div></div><div class="d-item"><div class="dl">Valor mensal</div><div class="dv" id="cd-valor">-</div></div><div class="d-item"><div class="dl">Tipo</div><div class="dv" id="cd-tipo">-</div></div></div></div>
+<!-- GLOBAL KPI ROW: contagem de empresas (escondido quando empresa especifica filtrada) -->
+<div class="kpi-row" id="globalKpiRow">
     <div class="kpi"><div class="ki" style="background:#F0EFFF">&#127970;</div><div class="kl">Total Empresas</div><div class="kv" style="color:var(--p)" id="k-total">--</div></div>
     <div class="kpi"><div class="ki" style="background:#E0F7F0">&#127970;</div><div class="kl">Empresas (Matriz)</div><div class="kv" style="color:var(--s)" id="k-emp">--</div></div>
     <div class="kpi"><div class="ki" style="background:#FFF3E0">&#127970;</div><div class="kl">Filiais</div><div class="kv" style="color:var(--w)" id="k-fil">--</div></div>
     <div class="kpi"><div class="ki" style="background:#FDEAEA">&#127970;</div><div class="kl">Sem NPS e sem CSAT</div><div class="kv" style="color:var(--d)" id="k-sem">--</div></div>
 </div>
-<div class="kpi-row" id="kpiNormal">
-    <div class="kpi" id="kpi-nps-card"><div class="ki" style="background:#F0EFFF">&#11088;</div><div class="kl">NPS Score</div><div class="kv" style="color:var(--p)" id="k-nps">--</div><div class="ks" id="k-nps-s"></div></div>
-    <div class="kpi"><div class="ki" style="background:#E0F7F0">&#9989;</div><div class="kl">CSAT Medio</div><div class="kv" style="color:var(--s)" id="k-csat">--</div><div class="ks" id="k-csat-s"></div><div class="kt" id="k-csat-t"></div></div>
-    <div class="kpi" id="kpi-resp-card"><div class="ki" style="background:#FFF3E0">&#128172;</div><div class="kl">Respostas NPS</div><div class="kv" style="color:var(--d)" id="k-resp">--</div><div class="ks" id="k-resp-s"></div></div>
-    <div class="kpi"><div class="ki" style="background:#E8F5E9">&#128202;</div><div class="kl">Empresas com pesquisa</div><div class="ks" style="margin-top:8px;font-size:12px" id="k-pesq"></div></div>
+<!-- TAB NAV -->
+<div class="tabs">
+    <button class="tab-btn active" id="tb-csat" onclick="switchTab('csat')">CSAT</button>
+    <button class="tab-btn" id="tb-nps" onclick="switchTab('nps')">NPS</button>
 </div>
-<!-- KPI unica resposta NPS (substitui NPS Score + Respostas quando empresa tem 1 NPS) -->
-<div class="kpi-row" id="kpiUnica" style="display:none">
-    <div class="kpi"><div class="ki" style="background:#F0EFFF">&#11088;</div><div class="kl">Nota NPS</div><div class="kv" style="color:var(--p)" id="ku-nota">--</div><div class="ks" id="ku-data"></div></div>
-    <div class="kpi"><div class="kl">Resposta e Classificacao</div><div class="kv" style="font-size:16px" id="ku-class">--</div><div class="ks" id="ku-resp-info"></div></div>
-    <div class="kpi" style="grid-column:span 2"><div class="kl">Comentario</div><div class="ks" style="margin-top:6px;font-size:13px;line-height:1.5;color:var(--dk)" id="ku-com">-</div></div>
+<!-- ============ NPS TAB ============ -->
+<div class="tab-panel" id="tab-nps">
+    <div class="kpi-row" id="npsKpiNormal">
+        <div class="kpi"><div class="ki" style="background:#F0EFFF">&#11088;</div><div class="kl">NPS Score</div><div class="kv" style="color:var(--p)" id="k-nps">--</div><div class="ks" id="k-nps-s"></div></div>
+        <div class="kpi"><div class="ki" style="background:#FFF3E0">&#128172;</div><div class="kl">Respostas</div><div class="kv" style="color:var(--d)" id="k-resp">--</div><div class="ks" id="k-resp-s"></div></div>
+        <div class="kpi"><div class="ki" style="background:#E0F7F0">&#128100;</div><div class="kl">Usuarios Avaliadores</div><div class="kv" style="color:var(--s)" id="k-users">--</div><div class="ks" id="k-users-s"></div></div>
+        <div class="kpi"><div class="ki" style="background:#E8EAF6">&#127942;</div><div class="kl">Cargo Mais Respondedor</div><div class="kv" style="color:var(--p)" id="k-top-nps">--</div><div class="ks" id="k-top-cargo">--</div></div>
+    </div>
+    <!-- KPI unica resposta NPS (quando 1 NPS) -->
+    <div class="kpi-row" id="npsKpiUnica" style="display:none">
+        <div class="kpi"><div class="ki" style="background:#F0EFFF">&#11088;</div><div class="kl">Nota NPS</div><div class="kv" style="color:var(--p)" id="ku-nota">--</div><div class="ks" id="ku-data"></div></div>
+        <div class="kpi"><div class="kl">Classificacao</div><div class="kv" style="font-size:16px" id="ku-class">--</div><div class="ks" id="ku-resp-info"></div></div>
+        <div class="kpi" style="grid-column:span 2"><div class="kl">Comentario</div><div class="ks" style="margin-top:6px;font-size:13px;line-height:1.5;color:var(--dk)" id="ku-com">-</div></div>
+    </div>
+    <div class="chart-row full"><div class="ch"><h4>NPS Score - Evolucao Mensal</h4><div class="cw tall"><canvas id="c1"></canvas></div></div></div>
+    <div class="chart-row"><div class="ch"><h4>Distribuicao NPS</h4><div class="cw"><canvas id="c2"></canvas></div></div><div class="ch"><h4>Respostas por Mes</h4><div class="cw"><canvas id="c3"></canvas></div></div></div>
+    <!-- Destaques: cargo mais satisfeito e menos satisfeito -->
+    <div class="highlight-row" id="npsHighlights" style="display:none">
+        <div class="hl-card top"><div class="hl-icon">&#11088;</div><div class="hl-label">Cargo Mais Satisfeito</div><div class="hl-cargo" id="hl-top-cargo">--</div><div class="hl-score" id="hl-top-score">--</div><div class="hl-meta" id="hl-top-meta"></div></div>
+        <div class="hl-card bot"><div class="hl-icon">&#9888;</div><div class="hl-label">Cargo Menos Satisfeito</div><div class="hl-cargo" id="hl-bot-cargo">--</div><div class="hl-score" id="hl-bot-score">--</div><div class="hl-meta" id="hl-bot-meta"></div></div>
+    </div>
+    <div class="chart-row full"><div class="ch"><h4>NPS Score por Cargo</h4><div class="cw tall"><canvas id="c5"></canvas></div></div></div>
+    <div class="chart-row"><div class="ch"><h4>Volume de Respostas por Cargo</h4><div class="cw"><canvas id="c6"></canvas></div></div><div class="ch"><h4>Classificacao por Cargo</h4><div class="cw"><canvas id="c7"></canvas></div></div></div>
+    <!-- Tabela de usuarios avaliadores (so aparece quando empresa filtrada) -->
+    <div class="tbl-card" id="tUsersCard" style="display:none"><h4>Usuarios que avaliaram esta empresa</h4><div style="max-height:400px;overflow-y:auto"><table class="dt" id="tUsers"><thead><tr><th>Nome</th><th>Telefone</th><th>Cargo</th><th>Nota</th><th>Data</th><th>Comentario</th></tr></thead><tbody></tbody></table></div></div>
+    <div class="tbl-card"><h4>Ultimas Respostas NPS</h4><div style="max-height:350px;overflow-y:auto"><table class="dt" id="tNps"><thead><tr><th>Data</th><th>Empresa</th><th>Usuario</th><th>Cargo</th><th>Nota</th><th>Tipo</th><th>Comentario</th></tr></thead><tbody></tbody></table></div></div>
 </div>
-<div class="section"><div class="section-title">NPS - Net Promoter Score</div></div>
-<div class="chart-row full"><div class="ch"><h4>NPS Score - Evolucao Mensal</h4><div class="cw tall"><canvas id="c1"></canvas></div></div></div>
-<div class="chart-row"><div class="ch"><h4>Distribuicao NPS</h4><div class="cw"><canvas id="c2"></canvas></div></div><div class="ch"><h4>Respostas por Mes</h4><div class="cw"><canvas id="c3"></canvas></div></div></div>
-<div class="section"><div class="section-title">CSAT - Customer Satisfaction</div></div>
-<div id="csatNoData" style="display:none;background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:24px;margin-bottom:16px;text-align:center;color:var(--g);font-size:14px"></div>
-<div id="csatContent">
-<div class="kpi-row">
-    <div class="kpi"><div class="kl">CSAT Medio Geral</div><div class="kv" style="color:var(--s)" id="k2-csat">--</div></div>
-    <div class="kpi"><div class="kl">Melhor Mes</div><div class="kv" style="color:var(--s)" id="k2-best">--</div><div class="ks" id="k2-best-m"></div></div>
-    <div class="kpi"><div class="kl">Pior Mes</div><div class="kv" style="color:var(--d)" id="k2-worst">--</div><div class="ks" id="k2-worst-m"></div></div>
-    <div class="kpi"><div class="kl">Total Avaliacoes</div><div class="kv" style="color:var(--d)" id="k2-total">--</div></div>
+<!-- ============ CSAT TAB ============ -->
+<div class="tab-panel active" id="tab-csat">
+    <div class="sub-tabs">
+        <button class="sub-tab-btn active" id="stb-oraculo" onclick="switchCsat('oraculo')">Oraculo</button>
+        <button class="sub-tab-btn" id="stb-plataforma" onclick="switchCsat('plataforma')">Plataforma</button>
+    </div>
+    <!-- CSAT ORACULO -->
+    <div class="csat-panel active" id="csat-oraculo">
+        <div class="kpi-row">
+            <div class="kpi"><div class="ki" style="background:#E0F7F0">&#9989;</div><div class="kl">CSAT Medio</div><div class="kv" style="color:var(--s)" id="ko-csat">--</div><div class="ks" id="ko-csat-s"></div></div>
+            <div class="kpi"><div class="kl">Melhor Mes</div><div class="kv" style="color:var(--s)" id="ko-best">--</div><div class="ks" id="ko-best-m"></div></div>
+            <div class="kpi"><div class="kl">Pior Mes</div><div class="kv" style="color:var(--d)" id="ko-worst">--</div><div class="ks" id="ko-worst-m"></div></div>
+            <div class="kpi"><div class="kl">Total Notas</div><div class="kv" id="ko-total">--</div></div>
+        </div>
+        <div class="chart-row full"><div class="ch"><h4>CSAT Oraculo - Evolucao Mensal</h4><div class="cw tall"><canvas id="co1"></canvas></div></div></div>
+        <div class="chart-row"><div class="ch"><h4>Distribuicao de Notas</h4><div class="cw"><canvas id="co2"></canvas></div></div><div class="ch"><h4>Top 10 Empresas Mais Satisfeitas</h4><div class="cw tall"><canvas id="co3"></canvas></div></div></div>
+        <div class="tbl-card"><h4>Detalhamento CSAT Oraculo</h4><div style="max-height:400px;overflow-y:auto"><table class="dt" id="tCsatOra"><thead><tr><th>Mes</th><th>Empresa</th><th>Nota</th><th>Observacao</th></tr></thead><tbody></tbody></table></div></div>
+    </div>
+    <!-- CSAT PLATAFORMA -->
+    <div class="csat-panel" id="csat-plataforma">
+        <div class="kpi-row">
+            <div class="kpi"><div class="ki" style="background:#E0F7F0">&#9989;</div><div class="kl">CSAT Medio</div><div class="kv" style="color:var(--s)" id="kp-csat">--</div><div class="ks" id="kp-csat-s"></div></div>
+            <div class="kpi"><div class="kl">Melhor Mes</div><div class="kv" style="color:var(--s)" id="kp-best">--</div><div class="ks" id="kp-best-m"></div></div>
+            <div class="kpi"><div class="kl">Pior Mes</div><div class="kv" style="color:var(--d)" id="kp-worst">--</div><div class="ks" id="kp-worst-m"></div></div>
+            <div class="kpi"><div class="kl">Total Respostas</div><div class="kv" id="kp-total">--</div></div>
+        </div>
+        <div id="csatPlataformaEmpty" class="empty" style="display:none">
+            <p style="font-size:15px;font-weight:600;margin-bottom:6px">Nenhuma resposta disponivel</p>
+            <p>O Private App do HubSpot precisa do scope <code>forms</code> para que fetch_hubspot.py possa baixar as submissions do form <code>9ec20b97-836d-4afc-acf3-8b80f6c65bd0</code>.</p>
+        </div>
+        <div id="csatPlataformaContent" style="display:none">
+            <div class="chart-row full"><div class="ch"><h4>CSAT Plataforma - Evolucao Mensal</h4><div class="cw tall"><canvas id="cp1"></canvas></div></div></div>
+            <div class="chart-row"><div class="ch"><h4>Distribuicao de Notas</h4><div class="cw"><canvas id="cp2"></canvas></div></div><div class="ch"><h4>CSAT por Implementador</h4><div class="cw tall"><canvas id="cp3"></canvas></div></div></div>
+            <div class="tbl-card"><h4>Respostas CSAT Plataforma</h4><div style="max-height:400px;overflow-y:auto"><table class="dt" id="tCsatPlat"><thead><tr><th>Data</th><th>Empresa</th><th>Nota</th><th>Comentario</th></tr></thead><tbody></tbody></table></div></div>
+        </div>
+    </div>
 </div>
-<div class="chart-row full"><div class="ch"><h4>CSAT - Evolucao Mensal</h4><div class="cw"><canvas id="c4"></canvas></div></div></div>
-<div class="tbl-card"><h4>Detalhamento CSAT</h4><div style="max-height:300px;overflow-y:auto"><table class="dt" id="tCsat"><thead><tr><th>Mes</th><th>Empresa</th><th>Nota</th><th>Observacao</th></tr></thead><tbody></tbody></table></div></div>
 </div>
-<div class="section"><div class="section-title">NPS por CS</div></div>
-<div class="chart-row full"><div class="ch"><h4>NPS Score por CS</h4><div class="cw tall"><canvas id="c5"></canvas></div></div></div>
-<div class="tbl-card"><h4>Ultimas Respostas NPS</h4><div style="max-height:350px;overflow-y:auto"><table class="dt" id="tNps"><thead><tr><th>Data</th><th>Empresa</th><th>Nota</th><th>Tipo</th><th>Anjo</th><th>Comentario</th></tr></thead><tbody></tbody></table></div></div>
 </div>
-</div><!-- end dashContent -->
 <script>
 function doLogin(){
     var pass=document.getElementById('loginPass').value;
@@ -141,7 +201,6 @@ function doLogin(){
         document.getElementById('loginPass').style.borderColor='#E17055';
     }
 }
-// Auto-login if already authenticated in this session
 if(sessionStorage.getItem('cs_auth')==='1'){
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('dashContent').style.display='block';
@@ -150,74 +209,216 @@ if(sessionStorage.getItem('cs_auth')==='1'){
 <script>/*INLINE_DATA*/</script>
 <script>
 function initDashboard(){
+// === LOOKUPS ===
 var coMap={};COMPANIES_DATA.forEach(function(c){coMap[c.name]=c;if(c.domain_id)coMap['_d_'+c.domain_id]=c});
-// Build empresa->CS lookup from COMPANIES_DATA (the real CS assignment)
 var empresaToCS={};COMPANIES_DATA.forEach(function(c){if(c.anjo)empresaToCS[c.name]=c.anjo});
-var npsPerCo={},csatPerCo={};
+// phone (last 10 digits) -> list of users (pode ter varios por domain)
+var phoneToUsers={};
+(typeof USERS_DATA!=='undefined'?USERS_DATA:[]).forEach(function(u){
+    var k=(u.telefone_last10||'').slice(-10);if(!k)return;
+    if(!phoneToUsers[k])phoneToUsers[k]=[];phoneToUsers[k].push(u);
+});
+// Resolve cargo de um registro NPS usando telefone + dominio
+function resolveUser(rec){
+    var k=(rec.telefone_norm||'').slice(-10);if(!k||!phoneToUsers[k])return null;
+    var cand=phoneToUsers[k];
+    // se o nps tem dominio, preferir o user do mesmo domain
+    if(rec.dominio){
+        var d=String(rec.dominio);
+        var m=cand.filter(function(u){return u.domain_id===d});
+        if(m.length)return m[0];
+    }
+    return cand[0];
+}
+// Enriquece NPS_DATA com cargo/nome_user (faz 1 vez)
+NPS_DATA.forEach(function(r){var u=resolveUser(r);r._user=u;r._cargo=u?u.cargo:'Sem cargo'});
+
+// NPS por empresa (para o list/activeList)
+// Defensive aliases pra nao quebrar se alguma const estiver ausente (workflow antigo)
+if(typeof CSAT_ORACULO_DATA==='undefined')window.CSAT_ORACULO_DATA=(typeof CSAT_DATA!=='undefined'?CSAT_DATA:[]);
+if(typeof CSAT_PLATAFORMA_DATA==='undefined')window.CSAT_PLATAFORMA_DATA=[];
+if(typeof USERS_DATA==='undefined')window.USERS_DATA=[];
+var npsPerCo={},csatOraPerCo={},csatPlatPerCo={};
 NPS_DATA.forEach(function(r){if(!npsPerCo[r.empresa])npsPerCo[r.empresa]=[];npsPerCo[r.empresa].push(r.nota)});
-CSAT_DATA.forEach(function(r){if(!csatPerCo[r.empresa])csatPerCo[r.empresa]=[];csatPerCo[r.empresa].push(r.nota)});
+CSAT_ORACULO_DATA.forEach(function(r){if(!csatOraPerCo[r.empresa])csatOraPerCo[r.empresa]=[];csatOraPerCo[r.empresa].push(r.nota)});
+(typeof CSAT_PLATAFORMA_DATA!=='undefined'?CSAT_PLATAFORMA_DATA:[]).forEach(function(r){if(r.nota!=null&&r.empresa){if(!csatPlatPerCo[r.empresa])csatPlatPerCo[r.empresa]=[];csatPlatPerCo[r.empresa].push(r.nota)}});
+
 var activeList=[];
-COMPANIES_DATA.filter(function(c){return c.status==='Ativa'}).forEach(function(c){var nps=npsPerCo[c.name]||[],csat=csatPerCo[c.name]||[];activeList.push(Object.assign({},c,{npsN:nps,csatN:csat,npsAvg:nps.length?(nps.reduce(function(a,b){return a+b},0)/nps.length):null,csatAvg:csat.length?(csat.reduce(function(a,b){return a+b},0)/csat.length):null,hasNps:nps.length>0,hasCsat:csat.length>0}))});
+COMPANIES_DATA.filter(function(c){return c.status==='Ativa'}).forEach(function(c){
+    var nps=npsPerCo[c.name]||[],co=csatOraPerCo[c.name]||[],cp=csatPlatPerCo[c.name]||[];
+    activeList.push(Object.assign({},c,{
+        npsN:nps,csatN:co.concat(cp),
+        hasNps:nps.length>0,
+        hasCsat:(co.length+cp.length)>0
+    }));
+});
 activeList.sort(function(a,b){return a.name.localeCompare(b.name)});
+
+// Popular CS dropdown
 var fCS=document.getElementById('fCS');CS_NAMES.forEach(function(n){var o=document.createElement('option');o.value=n;o.textContent=n;fCS.appendChild(o)});
-var selCo=null,charts={},chartFilter=null,fEmpresa=document.getElementById('fEmpresa'),fDropdown=document.getElementById('fDropdown');
-// chartFilter = {type:'nps_month',value:'2025-02',label:'NPS Fev/25'} etc
+
+// === STATE ===
+var selCo=null,charts={},chartFilter=null,currentTab='csat',currentCsat='oraculo';
+var fEmpresa=document.getElementById('fEmpresa'),fDropdown=document.getElementById('fDropdown');
+
 function setChartFilter(type,value,label){if(chartFilter&&chartFilter.type===type&&chartFilter.value===value){clearChartFilter();return}chartFilter={type:type,value:value,label:label};document.getElementById('chartFilterBar').style.display='flex';document.getElementById('chartFilterLabel').textContent=label;updateAll()}
 function clearChartFilter(){chartFilter=null;document.getElementById('chartFilterBar').style.display='none';updateAll()}
+
 function getFilteredList(){var list=activeList,cs=fCS.value,tipo=document.getElementById('fTipo').value;if(cs)list=list.filter(function(c){return c.anjo===cs});if(tipo==='nps')list=list.filter(function(c){return c.hasNps});else if(tipo==='csat')list=list.filter(function(c){return c.hasCsat});else if(tipo==='both')list=list.filter(function(c){return c.hasNps&&c.hasCsat});return list}
+
 function renderDropdown(q){q=(q||'').toLowerCase();var list=getFilteredList(),f=list.filter(function(c){return c.name.toLowerCase().indexOf(q)>=0||(c.cnpj&&c.cnpj.indexOf(q)>=0)||(c.nome_fantasia&&c.nome_fantasia.toLowerCase().indexOf(q)>=0)});fDropdown.innerHTML='';if(!f.length)fDropdown.innerHTML='<div class="f-opt" style="color:#999">Nenhuma encontrada</div>';else f.slice(0,200).forEach(function(c){var div=document.createElement('div');div.className='f-opt';var meta='Anjo: '+(c.anjo||'-')+' | Canal: '+(c.canal||'-');if(c.is_filial)meta='<span class="badge fi">Filial de '+(c.matriz_name||'?')+'</span> '+meta;div.innerHTML='<div class="fn">'+c.name+'</div><div class="fm">'+meta+'</div>';div.onclick=function(){selectCo(c.name)};fDropdown.appendChild(div)});fDropdown.classList.add('show')}
-fEmpresa.addEventListener('focus',function(){renderDropdown(fEmpresa.value)});fEmpresa.addEventListener('input',function(){renderDropdown(fEmpresa.value)});
+fEmpresa.addEventListener('focus',function(){renderDropdown(fEmpresa.value)});
+fEmpresa.addEventListener('input',function(){renderDropdown(fEmpresa.value)});
 document.addEventListener('click',function(e){if(!e.target.closest('.filter-container'))fDropdown.classList.remove('show')});
-function selectCo(name){selCo=name;fEmpresa.style.display='none';document.getElementById('fTag').style.display='inline-flex';document.getElementById('fTagName').textContent=name;document.getElementById('fClear').style.display='inline-block';fDropdown.classList.remove('show');var c=coMap[name];if(c){document.getElementById('cd-t').textContent=name;document.getElementById('cd-nf').textContent=c.nome_fantasia||'-';document.getElementById('cd-cnpj').textContent=c.cnpj||'-';document.getElementById('cd-rs').textContent=c.razao_social||'-';document.getElementById('cd-anjo').textContent=c.anjo||'-';document.getElementById('cd-canal').textContent=c.canal||'-';document.getElementById('cd-int').textContent=c.integracao||'-';document.getElementById('cd-tipo').textContent=c.is_filial?'Filial de '+(c.matriz_name||'?'):'Empresa (Matriz)';document.getElementById('coDetail').classList.add('show')}updateAll()}
+
+function selectCo(name){selCo=name;fEmpresa.style.display='none';document.getElementById('fTag').style.display='inline-flex';document.getElementById('fTagName').textContent=name;document.getElementById('fClear').style.display='inline-block';fDropdown.classList.remove('show');var c=coMap[name];if(c){document.getElementById('cd-t').textContent=name;document.getElementById('cd-nf').textContent=c.nome_fantasia||'-';document.getElementById('cd-dom').textContent=c.domain_id||'-';document.getElementById('cd-cnpj').textContent=c.cnpj||'-';document.getElementById('cd-rs').textContent=c.razao_social||'-';document.getElementById('cd-anjo').textContent=c.anjo||'-';document.getElementById('cd-canal').textContent=c.canal||'-';document.getElementById('cd-int').textContent=c.integracao||'-';document.getElementById('cd-plano').textContent=c.plano||'-';document.getElementById('cd-valor').textContent=c.valor_mensal?('R$ '+Number(c.valor_mensal).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})):'-';document.getElementById('cd-tipo').textContent=c.is_filial?'Filial de '+(c.matriz_name||'?'):'Empresa (Matriz)';document.getElementById('coDetail').classList.add('show')}updateAll()}
 function clearEmpresa(){selCo=null;fEmpresa.value='';fEmpresa.style.display='block';document.getElementById('fTag').style.display='none';document.getElementById('coDetail').classList.remove('show');updateAll()}
 function clearAll(){clearEmpresa();fCS.value='';document.getElementById('fTipo').value='';chartFilter=null;document.getElementById('chartFilterBar').style.display='none';document.getElementById('fClear').style.display='none';updateAll()}
-function getfNps(){var d=NPS_DATA;if(selCo)d=d.filter(function(r){return r.empresa===selCo});var cs=fCS.value;if(cs)d=d.filter(function(r){return empresaToCS[r.empresa]===cs});if(chartFilter){var cf=chartFilter;if(cf.type==='nps_month')d=d.filter(function(r){return r.data.substring(0,7)===cf.value});if(cf.type==='nps_class'){if(cf.value==='promoter')d=d.filter(function(r){return r.nota>=9});if(cf.value==='passive')d=d.filter(function(r){return r.nota>=7&&r.nota<=8});if(cf.value==='detractor')d=d.filter(function(r){return r.nota<=6});}if(cf.type==='nps_cs'){var csName=cf.value;d=d.filter(function(r){return empresaToCS[r.empresa]===csName||(!empresaToCS[r.empresa]&&csName==='Outros/Sem CS')})}}return d}
-function getfCsat(){var d=CSAT_DATA;if(selCo)d=d.filter(function(r){return r.empresa===selCo});var cs=fCS.value;if(cs)d=d.filter(function(r){return empresaToCS[r.empresa]===cs});if(chartFilter){var cf=chartFilter;if(cf.type==='csat_month')d=d.filter(function(r){return r.mes===cf.value})}return d}
+
+// === FILTERS PER DATA SOURCE ===
+function getfNps(){var d=NPS_DATA;if(selCo)d=d.filter(function(r){return r.empresa===selCo});var cs=fCS.value;if(cs)d=d.filter(function(r){return empresaToCS[r.empresa]===cs});if(chartFilter){var cf=chartFilter;if(cf.type==='nps_month')d=d.filter(function(r){return (r.data||'').substring(0,7)===cf.value});if(cf.type==='nps_class'){if(cf.value==='promoter')d=d.filter(function(r){return r.nota>=9});if(cf.value==='passive')d=d.filter(function(r){return r.nota>=7&&r.nota<=8});if(cf.value==='detractor')d=d.filter(function(r){return r.nota<=6})}if(cf.type==='nps_cargo')d=d.filter(function(r){return (r._cargo||'Sem cargo')===cf.value})}return d}
+function getfCsatOra(){var d=CSAT_ORACULO_DATA;if(selCo)d=d.filter(function(r){return r.empresa===selCo});var cs=fCS.value;if(cs)d=d.filter(function(r){return empresaToCS[r.empresa]===cs});if(chartFilter&&chartFilter.type==='csat_ora_month')d=d.filter(function(r){return r.mes===chartFilter.value});return d}
+function getfCsatPlat(){var d=typeof CSAT_PLATAFORMA_DATA!=='undefined'?CSAT_PLATAFORMA_DATA:[];if(selCo)d=d.filter(function(r){return r.empresa===selCo});var cs=fCS.value;if(cs)d=d.filter(function(r){return empresaToCS[r.empresa]===cs});return d.filter(function(r){return r.nota!=null})}
+
 function calcNps(recs){if(!recs.length)return null;var p=recs.filter(function(r){return r.nota>=9}).length,d=recs.filter(function(r){return r.nota<=6}).length;return Math.round((p-d)/recs.length*100)}
-function npsM(recs){var m={};recs.forEach(function(r){var k=r.data.substring(0,7);if(!m[k])m[k]=[];m[k].push(r.nota)});return Object.keys(m).sort().map(function(k){return{lb:fmtM(k),sc:calcNps(m[k].map(function(n){return{nota:n}})),avg:m[k].reduce(function(a,b){return a+b},0)/m[k].length,ct:m[k].length,pr:m[k].filter(function(n){return n>=9}).length,ne:m[k].filter(function(n){return n>=7&&n<=8}).length,de:m[k].filter(function(n){return n<=6}).length}})}
-function csatM(recs){var m={};recs.forEach(function(r){if(!m[r.mes])m[r.mes]=[];m[r.mes].push(r.nota)});return Object.keys(m).sort().map(function(k){return{lb:fmtM(k),avg:m[k].reduce(function(a,b){return a+b},0)/m[k].length,ct:m[k].length}})}
-function fmtM(m){var n=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];return n[parseInt(m.split('-')[1])-1]+'/'+m.substring(2,4)}
+function npsM(recs){var m={};recs.forEach(function(r){var k=(r.data||'').substring(0,7);if(!k)return;if(!m[k])m[k]=[];m[k].push(r.nota)});return Object.keys(m).sort().map(function(k){return{lb:fmtM(k),mkey:k,sc:calcNps(m[k].map(function(n){return{nota:n}})),avg:m[k].reduce(function(a,b){return a+b},0)/m[k].length,ct:m[k].length,pr:m[k].filter(function(n){return n>=9}).length,ne:m[k].filter(function(n){return n>=7&&n<=8}).length,de:m[k].filter(function(n){return n<=6}).length}})}
+function csatM(recs){var m={};recs.forEach(function(r){if(!r.mes)return;if(!m[r.mes])m[r.mes]=[];m[r.mes].push(r.nota)});return Object.keys(m).sort().map(function(k){return{lb:fmtM(k),mkey:k,avg:m[k].reduce(function(a,b){return a+b},0)/m[k].length,ct:m[k].length}})}
+function fmtM(m){if(!m||!m.split)return m;var p=m.split('-');if(p.length<2)return m;var n=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];var mi=parseInt(p[1])-1;return (n[mi]||p[1])+'/'+p[0].substring(2,4)}
 function kill(id){if(charts[id]){charts[id].destroy();delete charts[id]}}
-function updateAll(){
-    var nps=getfNps(),csat=getfCsat(),nm=npsM(nps),cm=csatM(csat),score=calcNps(nps),list=getFilteredList();
+
+// === TAB SWITCHING ===
+function switchTab(t){currentTab=t;document.getElementById('tb-nps').classList.toggle('active',t==='nps');document.getElementById('tb-csat').classList.toggle('active',t==='csat');document.getElementById('tab-nps').classList.toggle('active',t==='nps');document.getElementById('tab-csat').classList.toggle('active',t==='csat');chartFilter=null;document.getElementById('chartFilterBar').style.display='none';updateAll()}
+function switchCsat(s){currentCsat=s;document.getElementById('stb-oraculo').classList.toggle('active',s==='oraculo');document.getElementById('stb-plataforma').classList.toggle('active',s==='plataforma');document.getElementById('csat-oraculo').classList.toggle('active',s==='oraculo');document.getElementById('csat-plataforma').classList.toggle('active',s==='plataforma');chartFilter=null;document.getElementById('chartFilterBar').style.display='none';updateAll()}
+
+// === UPDATE: GLOBAL KPIs (sempre) ===
+function updateGlobalKpis(){
+    var list=getFilteredList();
     if(selCo||fCS.value||document.getElementById('fTipo').value)document.getElementById('fClear').style.display='inline-block';
-    var nEmp=list.filter(function(c){return c.isMatriz||!c.is_filial}).length,nFil=list.filter(function(c){return c.is_filial&&!c.isMatriz}).length;
-    document.getElementById('k-total').textContent=list.length;document.getElementById('k-emp').textContent=nEmp;document.getElementById('k-fil').textContent=nFil;document.getElementById('k-sem').textContent=list.filter(function(c){return!c.hasNps&&!c.hasCsat}).length;
-    document.getElementById('k-nps').textContent=score!==null?score:'--';document.getElementById('k-nps-s').textContent=nps.length?nps.length+' respostas de '+new Set(nps.map(function(r){return r.empresa})).size+' empresas':'Sem dados';
-    var ca=csat.length?(csat.reduce(function(a,b){return a+b.nota},0)/csat.length).toFixed(1):'--';
-    document.getElementById('k-csat').textContent=ca;document.getElementById('k-csat-s').textContent=csat.length?csat.length+' avaliacoes de '+new Set(csat.map(function(r){return r.empresa})).size+' empresas':'Sem dados';
-    if(cm.length>=2){var df=(cm[cm.length-1].avg-cm[cm.length-2].avg).toFixed(1);var el=document.getElementById('k-csat-t');el.textContent=(df>=0?'+':'')+df+' vs mes anterior';el.className='kt '+(df>0?'up':df<0?'down':'')}else document.getElementById('k-csat-t').textContent='';
+    // Esconde os KPIs globais quando ha empresa especifica selecionada
+    document.getElementById('globalKpiRow').style.display=selCo?'none':'grid';
+    if(selCo)return;
+    var nEmp=list.filter(function(c){return c.isMatriz||!c.is_filial}).length;
+    var nFil=list.filter(function(c){return c.is_filial&&!c.isMatriz}).length;
+    document.getElementById('k-total').textContent=list.length;
+    document.getElementById('k-emp').textContent=nEmp;
+    document.getElementById('k-fil').textContent=nFil;
+    document.getElementById('k-sem').textContent=list.filter(function(c){return!c.hasNps&&!c.hasCsat}).length;
+}
+
+// === UPDATE: NPS TAB ===
+function updateNps(){
+    var nps=getfNps(),nm=npsM(nps),score=calcNps(nps);
+    document.getElementById('k-nps').textContent=score!==null?score:'--';
+    document.getElementById('k-nps-s').textContent=nps.length?nps.length+' respostas de '+new Set(nps.map(function(r){return r.empresa})).size+' empresas':'Sem dados';
     document.getElementById('k-resp').textContent=nps.length;
-    var cNps=list.filter(function(c){return c.hasNps}).length;
-    var cCsat=list.filter(function(c){return c.hasCsat}).length;
-    var cBoth=list.filter(function(c){return c.hasNps&&c.hasCsat}).length;
-    document.getElementById('k-pesq').innerHTML='<b style="color:var(--p)">'+cNps+'</b> com NPS &nbsp;|&nbsp; <b style="color:var(--s)">'+cCsat+'</b> com CSAT &nbsp;|&nbsp; <b style="color:var(--dk)">'+cBoth+'</b> com ambos';
-    // KPI unica resposta NPS
-    var kuEl=document.getElementById('kpiUnica'),normEl=document.getElementById('kpiNormal');if(nps.length===1){var r=nps[0];kuEl.style.display='grid';normEl.style.display='none';document.getElementById('ku-nota').textContent=r.nota;document.getElementById('ku-data').textContent=r.data;var cls=r.nota>=9?'Promotor':r.nota>=7?'Neutro':'Detrator';var clr=r.nota>=9?'#00B894':r.nota>=7?'#F39C12':'#E17055';document.getElementById('ku-class').innerHTML='<span style="color:'+clr+'">'+cls+'</span>';document.getElementById('ku-resp-info').textContent='1 resposta em '+r.data;document.getElementById('ku-com').textContent=r.comentario||'Sem comentario'}else{kuEl.style.display='none';normEl.style.display='grid'}
     document.getElementById('k-resp-s').textContent=nps.length?'De '+new Set(nps.map(function(r){return r.empresa})).size+' empresas':'';
-    // c1: NPS Trend - click filters by month
-    kill('c1');if(nm.length){var _nm=nm;charts['c1']=new Chart(document.getElementById('c1'),{type:'line',data:{labels:nm.map(function(m){return m.lb}),datasets:[{label:'NPS Score',data:nm.map(function(m){return m.sc}),borderColor:'#6C5CE7',backgroundColor:'rgba(108,92,231,.15)',fill:true,tension:.4,pointRadius:5,pointBackgroundColor:'#6C5CE7',borderWidth:3},{label:'Media Nota',data:nm.map(function(m){return+m.avg.toFixed(1)}),borderColor:'#00B894',borderDash:[5,5],tension:.4,pointRadius:3,borderWidth:2,yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},onClick:function(e,els){if(els.length){var idx=els[0].index;var mo=Object.keys(function(){var m={};getfNps().forEach(function(r){var k=r.data.substring(0,7);m[k]=1});return m}()).sort()[idx];if(mo)setChartFilter('nps_month',mo,'NPS '+_nm[idx].lb)}},plugins:{legend:{position:'top'}},scales:{y:{title:{display:true,text:'NPS Score'},min:-100,max:100},y1:{position:'right',title:{display:true,text:'Media'},min:0,max:10,grid:{drawOnChartArea:false}}}}});}
-    // c2: NPS Distribution - click filters by class
-    kill('c2');if(nps.length){var pr=nps.filter(function(r){return r.nota>=9}).length,pa=nps.filter(function(r){return r.nota>=7&&r.nota<=8}).length,de=nps.filter(function(r){return r.nota<=6}).length;charts['c2']=new Chart(document.getElementById('c2'),{type:'doughnut',data:{labels:['Promotores (9-10)','Neutros (7-8)','Detratores (0-6)'],datasets:[{data:[pr,pa,de],backgroundColor:['#00B894','#F39C12','#E17055'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',onClick:function(e,els){if(els.length){var idx=els[0].index;var cls=['promoter','passive','detractor'][idx];var lbl=['Promotores (9-10)','Neutros (7-8)','Detratores (0-6)'][idx];setChartFilter('nps_class',cls,lbl)}},plugins:{legend:{position:'bottom',labels:{padding:12}},datalabels:{display:true,color:'#fff',font:{weight:'bold',size:12},formatter:function(v,ctx){var t=ctx.chart.data.datasets[0].data.reduce(function(a,b){return a+b},0);return t?Math.round(v/t*100)+'%':''}}}},plugins:[ChartDataLabels]})}
-    // c3: Responses by month - click filters by month
-    kill('c3');if(nm.length){var _nm3=nm;charts['c3']=new Chart(document.getElementById('c3'),{type:'bar',data:{labels:nm.map(function(m){return m.lb}),datasets:[{label:'Promotores',data:nm.map(function(m){return m.pr}),backgroundColor:'#00B894',borderRadius:3},{label:'Neutros',data:nm.map(function(m){return m.ne}),backgroundColor:'#F39C12',borderRadius:3},{label:'Detratores',data:nm.map(function(m){return m.de}),backgroundColor:'#E17055',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,onClick:function(e,els){if(els.length){var idx=els[0].index;var mo=Object.keys(function(){var m={};getfNps().forEach(function(r){var k=r.data.substring(0,7);m[k]=1});return m}()).sort()[idx];if(mo)setChartFilter('nps_month',mo,'NPS '+_nm3[idx].lb)}},plugins:{legend:{position:'top'},datalabels:{display:false}},scales:{x:{stacked:true},y:{stacked:true}}},plugins:[ChartDataLabels]});}
-    var csatNoData=document.getElementById('csatNoData'),csatContent=document.getElementById('csatContent');
-    var csHasFilter=fCS.value||selCo;
-    if(!csat.length&&csHasFilter){var who=selCo||fCS.value;csatNoData.style.display='block';csatNoData.textContent=selCo?'Essa empresa nao possui CSAT registrado':'Essa CS nao possui empresas com CSAT registrado';csatContent.style.display='none'}
-    else{csatNoData.style.display='none';csatContent.style.display='block';
-    if(csat.length&&cm.length){document.getElementById('k2-csat').textContent=ca;document.getElementById('k2-total').textContent=csat.length;var best=cm.reduce(function(a,b){return a.avg>b.avg?a:b}),worst=cm.reduce(function(a,b){return a.avg<b.avg?a:b});document.getElementById('k2-best').textContent=best.avg.toFixed(1);document.getElementById('k2-best-m').textContent=best.lb;document.getElementById('k2-worst').textContent=worst.avg.toFixed(1);document.getElementById('k2-worst-m').textContent=worst.lb}else{document.getElementById('k2-csat').textContent='--';document.getElementById('k2-total').textContent='0';document.getElementById('k2-best').textContent='--';document.getElementById('k2-best-m').textContent='';document.getElementById('k2-worst').textContent='--';document.getElementById('k2-worst-m').textContent=''}}
-    // c4: CSAT monthly - click filters by month
-    kill('c4');if(cm.length){var _cm4=cm;charts['c4']=new Chart(document.getElementById('c4'),{type:'bar',data:{labels:cm.map(function(m){return m.lb}),datasets:[{label:'CSAT',data:cm.map(function(m){return+m.avg.toFixed(2)}),backgroundColor:['#00B894','#F39C12','#6C5CE7'],borderRadius:8,barPercentage:.5}]},options:{responsive:true,maintainAspectRatio:false,onClick:function(e,els){if(els.length){var idx=els[0].index;var months=Object.keys(function(){var m={};getfCsat().forEach(function(r){m[r.mes]=1});return m}()).sort();if(months[idx])setChartFilter('csat_month',months[idx],'CSAT '+_cm4[idx].lb)}},plugins:{legend:{display:false},datalabels:{display:true,anchor:'end',align:'top',font:{weight:'bold',size:13},color:'#2D3436'}},scales:{y:{min:0,max:5}}},plugins:[ChartDataLabels]});}
-    var ctb=document.querySelector('#tCsat tbody');ctb.innerHTML='';csat.slice().sort(function(a,b){return b.mes.localeCompare(a.mes)}).forEach(function(r){ctb.innerHTML+='<tr><td>'+fmtM(r.mes)+'</td><td>'+r.empresa+'</td><td><b>'+r.nota+'</b></td><td>'+(r.observacao||'-')+'</td></tr>'});
-    kill('c5');if(!selCo){var m={},outros=[];NPS_DATA.forEach(function(r){var a=empresaToCS[r.empresa];if(!a||CS_NAMES.indexOf(a)<0){outros.push(r.nota);return}if(!m[a])m[a]=[];m[a].push(r.nota)});var csF=fCS.value,anjos;if(csF)anjos=[csF].filter(function(a){return m[a]});else anjos=CS_NAMES.filter(function(a){return m[a]});var ba=anjos.map(function(a){return{anjo:a,score:calcNps(m[a].map(function(n){return{nota:n}})),ct:m[a].length}});if(!csF&&outros.length)ba.push({anjo:'Outros/Sem CS',score:calcNps(outros.map(function(n){return{nota:n}})),ct:outros.length});if(ba.length){var _ba5=ba;charts['c5']=new Chart(document.getElementById('c5'),{type:'bar',data:{labels:ba.map(function(a){return a.anjo+' ('+a.ct+')'}),datasets:[{label:'NPS',data:ba.map(function(a){return a.score}),backgroundColor:ba.map(function(a){return a.score>=50?'#00B894':a.score>=0?'#F39C12':'#E17055'}),borderRadius:8,barPercentage:.5}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',onClick:function(e,els){if(els.length){var idx=els[0].index;var csName=_ba5[idx].anjo;setChartFilter('nps_cs',csName,'NPS de '+csName)}},plugins:{legend:{display:false},datalabels:{display:true,anchor:'end',align:'right',font:{weight:'bold'}}},scales:{x:{min:-100,max:100}}},plugins:[ChartDataLabels]})}}
-    var ntb=document.querySelector('#tNps tbody');var nhtml=[];nps.slice().sort(function(a,b){return b.data.localeCompare(a.data)}).forEach(function(r){var cls=r.nota>=9?'pr':r.nota>=7?'pa':'de',lbl=r.nota>=9?'Promotor':r.nota>=7?'Neutro':'Detrator',esc=r.empresa.replace(/'/g,"\\'");nhtml.push('<tr><td>'+r.data+'</td><td class="click" onclick="selectCo(\''+esc+'\')">'+r.empresa+'</td><td><b>'+r.nota+'</b></td><td><span class="badge '+cls+'">'+lbl+'</span></td><td>'+(r.anjo||'-')+'</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(r.comentario||'').replace(/"/g,'&quot;')+'">'+(r.comentario||'-')+'</td></tr>')});ntb.innerHTML=nhtml.join('');
-    }
-// Expose functions globally for onclick handlers
-window.selectCo=selectCo;window.clearEmpresa=clearEmpresa;window.clearAll=clearAll;window.updateAll=updateAll;window.clearChartFilter=clearChartFilter;window.setChartFilter=setChartFilter;
+    var users=new Set(nps.filter(function(r){return r._user}).map(function(r){return r._user.id}));
+    document.getElementById('k-users').textContent=users.size;
+    var semCargo=nps.filter(function(r){return !r._user}).length;
+    document.getElementById('k-users-s').textContent=semCargo?(semCargo+' sem vinculo'):'todos vinculados';
+    // Cargo mais respondedor (calculado aqui antes do chart c5)
+    var cc={};nps.forEach(function(r){var c=r._cargo||'Sem cargo';if(!cc[c])cc[c]=[];cc[c].push(r.nota)});
+    var ccList=Object.keys(cc).map(function(c){return{cargo:c,ct:cc[c].length,score:calcNps(cc[c].map(function(n){return{nota:n}}))}}).sort(function(a,b){return b.ct-a.ct});
+    if(ccList.length){var top=ccList[0];document.getElementById('k-top-nps').textContent='NPS '+(top.score!==null?top.score:'--');document.getElementById('k-top-cargo').textContent=top.cargo+' ('+top.ct+' respostas)'}
+    else{document.getElementById('k-top-nps').textContent='--';document.getElementById('k-top-cargo').textContent='--'}
+
+    // KPI unica quando 1 resposta
+    var kuEl=document.getElementById('npsKpiUnica'),normEl=document.getElementById('npsKpiNormal');
+    if(nps.length===1){var r=nps[0];kuEl.style.display='grid';normEl.style.display='none';document.getElementById('ku-nota').textContent=r.nota;document.getElementById('ku-data').textContent=r.data;var cls=r.nota>=9?'Promotor':r.nota>=7?'Neutro':'Detrator';var clr=r.nota>=9?'#00B894':r.nota>=7?'#F39C12':'#E17055';document.getElementById('ku-class').innerHTML='<span style="color:'+clr+'">'+cls+'</span>';document.getElementById('ku-resp-info').textContent=(r.nome||'')+' ('+(r._cargo||'Sem cargo')+')';document.getElementById('ku-com').textContent=r.comentario||'Sem comentario'}
+    else{kuEl.style.display='none';normEl.style.display='grid'}
+
+    // c1: NPS trend
+    kill('c1');if(nm.length){var _nm=nm;charts['c1']=new Chart(document.getElementById('c1'),{type:'line',data:{labels:nm.map(function(m){return m.lb}),datasets:[{label:'NPS Score',data:nm.map(function(m){return m.sc}),borderColor:'#6C5CE7',backgroundColor:'rgba(108,92,231,.15)',fill:true,tension:.4,pointRadius:5,pointBackgroundColor:'#6C5CE7',borderWidth:3},{label:'Media Nota',data:nm.map(function(m){return+m.avg.toFixed(1)}),borderColor:'#00B894',borderDash:[5,5],tension:.4,pointRadius:3,borderWidth:2,yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},onClick:function(e,els){if(els.length){var idx=els[0].index;if(_nm[idx])setChartFilter('nps_month',_nm[idx].mkey,'NPS '+_nm[idx].lb)}},plugins:{legend:{position:'top'}},scales:{y:{title:{display:true,text:'NPS Score'},min:-100,max:100},y1:{position:'right',title:{display:true,text:'Media'},min:0,max:10,grid:{drawOnChartArea:false}}}}})}
+
+    // c2: distribuicao
+    kill('c2');if(nps.length){var pr=nps.filter(function(r){return r.nota>=9}).length,pa=nps.filter(function(r){return r.nota>=7&&r.nota<=8}).length,de=nps.filter(function(r){return r.nota<=6}).length;charts['c2']=new Chart(document.getElementById('c2'),{type:'doughnut',data:{labels:['Promotores (9-10)','Neutros (7-8)','Detratores (0-6)'],datasets:[{data:[pr,pa,de],backgroundColor:['#00B894','#F39C12','#E17055'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',onClick:function(e,els){if(els.length){var idx=els[0].index;setChartFilter('nps_class',['promoter','passive','detractor'][idx],['Promotores (9-10)','Neutros (7-8)','Detratores (0-6)'][idx])}},plugins:{legend:{position:'bottom',labels:{padding:12}},datalabels:{display:true,color:'#fff',font:{weight:'bold',size:12},formatter:function(v,ctx){var t=ctx.chart.data.datasets[0].data.reduce(function(a,b){return a+b},0);return t?Math.round(v/t*100)+'%':''}}}},plugins:[ChartDataLabels]})}
+
+    // c3: respostas por mes
+    kill('c3');if(nm.length){var _nm3=nm;charts['c3']=new Chart(document.getElementById('c3'),{type:'bar',data:{labels:nm.map(function(m){return m.lb}),datasets:[{label:'Promotores',data:nm.map(function(m){return m.pr}),backgroundColor:'#00B894',borderRadius:3},{label:'Neutros',data:nm.map(function(m){return m.ne}),backgroundColor:'#F39C12',borderRadius:3},{label:'Detratores',data:nm.map(function(m){return m.de}),backgroundColor:'#E17055',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,onClick:function(e,els){if(els.length){var idx=els[0].index;if(_nm3[idx])setChartFilter('nps_month',_nm3[idx].mkey,'NPS '+_nm3[idx].lb)}},plugins:{legend:{position:'top'},datalabels:{display:false}},scales:{x:{stacked:true},y:{stacked:true}}},plugins:[ChartDataLabels]})}
+
+    // c5: NPS por CARGO (substitui NPS por CS)
+    kill('c5');var byCargo={};nps.forEach(function(r){var c=r._cargo||'Sem cargo';if(!byCargo[c])byCargo[c]=[];byCargo[c].push(r.nota)});
+    // Para os charts por cargo: filtra cargos com pelo menos 2 respostas pra reduzir ruido
+    var cargoList=Object.keys(byCargo).map(function(c){return{cargo:c,score:calcNps(byCargo[c].map(function(n){return{nota:n}})),ct:byCargo[c].length,notas:byCargo[c]}}).sort(function(a,b){return b.ct-a.ct});
+    if(cargoList.length){var _cl=cargoList;charts['c5']=new Chart(document.getElementById('c5'),{type:'bar',data:{labels:cargoList.map(function(a){return a.cargo+' ('+a.ct+')'}),datasets:[{label:'NPS',data:cargoList.map(function(a){return a.score}),backgroundColor:cargoList.map(function(a){return a.score>=50?'#00B894':a.score>=0?'#F39C12':'#E17055'}),borderRadius:8,barPercentage:.6}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',onClick:function(e,els){if(els.length){var idx=els[0].index;setChartFilter('nps_cargo',_cl[idx].cargo,'Cargo: '+_cl[idx].cargo)}},plugins:{legend:{display:false},datalabels:{display:true,anchor:'end',align:'right',font:{weight:'bold'}}},scales:{x:{min:-100,max:100}}},plugins:[ChartDataLabels]})}
+
+    // HIGHLIGHTS: cargo mais/menos satisfeito (so com >=3 respostas pra evitar ruido)
+    var hlEl=document.getElementById('npsHighlights');
+    var sig=cargoList.filter(function(c){return c.ct>=3&&c.cargo!=='Sem cargo'});
+    if(sig.length>=2){
+        var sorted=sig.slice().sort(function(a,b){return b.score-a.score});
+        var top=sorted[0],bot=sorted[sorted.length-1];
+        document.getElementById('hl-top-cargo').textContent=top.cargo;
+        document.getElementById('hl-top-score').textContent='NPS '+top.score;
+        document.getElementById('hl-top-meta').textContent=top.ct+' respostas | media '+(top.notas.reduce(function(a,b){return a+b},0)/top.ct).toFixed(1);
+        document.getElementById('hl-bot-cargo').textContent=bot.cargo;
+        document.getElementById('hl-bot-score').textContent='NPS '+bot.score;
+        document.getElementById('hl-bot-meta').textContent=bot.ct+' respostas | media '+(bot.notas.reduce(function(a,b){return a+b},0)/bot.ct).toFixed(1);
+        hlEl.style.display='grid';
+    }else{hlEl.style.display='none'}
+
+    // c6: Volume de Respostas por Cargo (donut)
+    kill('c6');if(cargoList.length){var _cl6=cargoList;var cargoPal=['#6C5CE7','#00B894','#F39C12','#E17055','#8B7BF7','#00D4A0','#FDCB6E','#FF7675','#6C5CE7','#55EFC4','#FAB1A0','#A29BFE','#74B9FF','#81ECEC','#FFEAA7','#FD79A8'];charts['c6']=new Chart(document.getElementById('c6'),{type:'doughnut',data:{labels:cargoList.map(function(a){return a.cargo}),datasets:[{data:cargoList.map(function(a){return a.ct}),backgroundColor:cargoList.map(function(a,i){return cargoPal[i%cargoPal.length]}),borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'58%',onClick:function(e,els){if(els.length){var idx=els[0].index;setChartFilter('nps_cargo',_cl6[idx].cargo,'Cargo: '+_cl6[idx].cargo)}},plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:10,padding:6}},datalabels:{display:function(ctx){return ctx.dataset.data[ctx.dataIndex]/ctx.dataset.data.reduce(function(a,b){return a+b},0)>=.05},color:'#fff',font:{weight:'bold',size:11},formatter:function(v){return v}}}},plugins:[ChartDataLabels]})}
+
+    // c7: Classificacao (Promotor/Neutro/Detrator) por Cargo (stacked horizontal)
+    kill('c7');if(cargoList.length){var c7Data=cargoList.map(function(a){var pr=a.notas.filter(function(n){return n>=9}).length;var ne=a.notas.filter(function(n){return n>=7&&n<=8}).length;var de=a.notas.filter(function(n){return n<=6}).length;return{cargo:a.cargo,ct:a.ct,pr:pr,ne:ne,de:de,prP:Math.round(pr/a.ct*100),neP:Math.round(ne/a.ct*100),deP:Math.round(de/a.ct*100)}});var _c7=c7Data;charts['c7']=new Chart(document.getElementById('c7'),{type:'bar',data:{labels:c7Data.map(function(a){return a.cargo+' ('+a.ct+')'}),datasets:[{label:'Promotores',data:c7Data.map(function(a){return a.prP}),backgroundColor:'#00B894'},{label:'Neutros',data:c7Data.map(function(a){return a.neP}),backgroundColor:'#F39C12'},{label:'Detratores',data:c7Data.map(function(a){return a.deP}),backgroundColor:'#E17055'}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',onClick:function(e,els){if(els.length){var idx=els[0].index;setChartFilter('nps_cargo',_c7[idx].cargo,'Cargo: '+_c7[idx].cargo)}},plugins:{legend:{position:'top',labels:{boxWidth:12,padding:8,font:{size:10}}},datalabels:{display:function(ctx){return ctx.dataset.data[ctx.dataIndex]>=10},color:'#fff',font:{weight:'bold',size:10},formatter:function(v){return v+'%'}},tooltip:{callbacks:{label:function(ctx){var r=_c7[ctx.dataIndex];var keys=['pr','ne','de'];var k=keys[ctx.datasetIndex];return ctx.dataset.label+': '+r[k]+' ('+ctx.parsed.x+'%)'}}}},scales:{x:{stacked:true,min:0,max:100,ticks:{callback:function(v){return v+'%'}}},y:{stacked:true}}},plugins:[ChartDataLabels]})}
+
+    // Tabela usuarios avaliadores (so quando empresa filtrada)
+    var uCard=document.getElementById('tUsersCard');
+    if(selCo){uCard.style.display='block';var utb=document.querySelector('#tUsers tbody'),uhtml=[];nps.slice().sort(function(a,b){return (b.data||'').localeCompare(a.data||'')}).forEach(function(r){var cls=r.nota>=9?'pr':r.nota>=7?'pa':'de';uhtml.push('<tr><td><b>'+(r.nome||'-')+'</b></td><td>'+(r.telefone||'-')+'</td><td>'+(r._cargo||'-')+'</td><td><span class="badge '+cls+'">'+r.nota+'</span></td><td>'+(r.data||'-')+'</td><td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(r.comentario||'').replace(/"/g,'&quot;')+'">'+(r.comentario||'-')+'</td></tr>')});utb.innerHTML=uhtml.join('')||'<tr><td colspan="6" style="text-align:center;color:#999;padding:16px">Nenhuma resposta</td></tr>'}
+    else uCard.style.display='none';
+
+    // Tabela ultimas respostas
+    var ntb=document.querySelector('#tNps tbody');var nhtml=[];nps.slice().sort(function(a,b){return (b.data||'').localeCompare(a.data||'')}).slice(0,200).forEach(function(r){var cls=r.nota>=9?'pr':r.nota>=7?'pa':'de',lbl=r.nota>=9?'Promotor':r.nota>=7?'Neutro':'Detrator',esc=(r.empresa||'').replace(/'/g,"\\'");nhtml.push('<tr><td>'+(r.data||'-')+'</td><td class="click" onclick="selectCo(\''+esc+'\')">'+(r.empresa||'-')+'</td><td>'+(r.nome||'-')+'</td><td>'+(r._cargo||'-')+'</td><td><b>'+r.nota+'</b></td><td><span class="badge '+cls+'">'+lbl+'</span></td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(r.comentario||'').replace(/"/g,'&quot;')+'">'+(r.comentario||'-')+'</td></tr>')});ntb.innerHTML=nhtml.join('')}
+
+// === UPDATE: CSAT ORACULO ===
+function updateCsatOraculo(){
+    var d=getfCsatOra(),cm=csatM(d);
+    var avg=d.length?(d.reduce(function(a,b){return a+b.nota},0)/d.length).toFixed(2):'--';
+    document.getElementById('ko-csat').textContent=avg;
+    document.getElementById('ko-csat-s').textContent=d.length?d.length+' notas':'Sem dados';
+    document.getElementById('ko-total').textContent=d.length;
+    if(cm.length){var best=cm.reduce(function(a,b){return a.avg>b.avg?a:b}),worst=cm.reduce(function(a,b){return a.avg<b.avg?a:b});document.getElementById('ko-best').textContent=best.avg.toFixed(2);document.getElementById('ko-best-m').textContent=best.lb;document.getElementById('ko-worst').textContent=worst.avg.toFixed(2);document.getElementById('ko-worst-m').textContent=worst.lb}else{document.getElementById('ko-best').textContent='--';document.getElementById('ko-best-m').textContent='';document.getElementById('ko-worst').textContent='--';document.getElementById('ko-worst-m').textContent=''}
+    kill('co1');if(cm.length){var _cm=cm;charts['co1']=new Chart(document.getElementById('co1'),{type:'bar',data:{labels:cm.map(function(m){return m.lb}),datasets:[{label:'CSAT',data:cm.map(function(m){return+m.avg.toFixed(2)}),backgroundColor:'#6C5CE7',borderRadius:8,barPercentage:.5}]},options:{responsive:true,maintainAspectRatio:false,onClick:function(e,els){if(els.length){var idx=els[0].index;if(_cm[idx])setChartFilter('csat_ora_month',_cm[idx].mkey,'CSAT Oraculo '+_cm[idx].lb)}},plugins:{legend:{display:false},datalabels:{display:true,anchor:'end',align:'top',font:{weight:'bold',size:13},color:'#2D3436'}},scales:{y:{min:0,max:5}}},plugins:[ChartDataLabels]})}
+
+    // co2: Distribuicao de notas (1-5)
+    kill('co2');if(d.length){var buckets={1:0,2:0,3:0,4:0,5:0};d.forEach(function(r){var n=Math.round(r.nota);if(buckets[n]!=null)buckets[n]++});var bColors={1:'#E17055',2:'#FF8863',3:'#F39C12',4:'#55EFC4',5:'#00B894'};charts['co2']=new Chart(document.getElementById('co2'),{type:'doughnut',data:{labels:['Nota 1','Nota 2','Nota 3','Nota 4','Nota 5'],datasets:[{data:[buckets[1],buckets[2],buckets[3],buckets[4],buckets[5]],backgroundColor:[bColors[1],bColors[2],bColors[3],bColors[4],bColors[5]],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'right',labels:{boxWidth:12,padding:8,font:{size:11}}},datalabels:{display:function(ctx){return ctx.dataset.data[ctx.dataIndex]>0},color:'#fff',font:{weight:'bold',size:13},formatter:function(v){return v}}}},plugins:[ChartDataLabels]})}
+
+    // co3: Top 10 empresas mais satisfeitas (media CSAT)
+    kill('co3');if(d.length){var byEmp={};d.forEach(function(r){if(!byEmp[r.empresa])byEmp[r.empresa]=[];byEmp[r.empresa].push(r.nota)});var empList=Object.keys(byEmp).map(function(e){var ns=byEmp[e];return{empresa:e,avg:ns.reduce(function(a,b){return a+b},0)/ns.length,ct:ns.length}}).sort(function(a,b){return b.avg-a.avg||b.ct-a.ct}).slice(0,10);if(empList.length){var _el=empList;charts['co3']=new Chart(document.getElementById('co3'),{type:'bar',data:{labels:empList.map(function(e){return e.empresa+(e.ct>1?' ('+e.ct+')':'')}),datasets:[{label:'CSAT',data:empList.map(function(e){return+e.avg.toFixed(2)}),backgroundColor:empList.map(function(e){return e.avg>=4.5?'#00B894':e.avg>=3.5?'#F39C12':'#E17055'}),borderRadius:6,barPercentage:.7}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',onClick:function(e,els){if(els.length){selectCo(_el[els[0].index].empresa)}},plugins:{legend:{display:false},datalabels:{display:true,anchor:'end',align:'right',font:{weight:'bold',size:11}}},scales:{x:{min:0,max:5}}},plugins:[ChartDataLabels]})}}
+    var tb=document.querySelector('#tCsatOra tbody'),h=[];d.slice().sort(function(a,b){return (b.mes||'').localeCompare(a.mes||'')}).forEach(function(r){h.push('<tr><td>'+fmtM(r.mes||'')+'</td><td class="click" onclick="selectCo(\''+(r.empresa||'').replace(/'/g,"\\'")+'\')">'+(r.empresa||'-')+'</td><td><b>'+r.nota+'</b></td><td>'+(r.observacao||'-')+'</td></tr>')});tb.innerHTML=h.join('')||'<tr><td colspan="4" style="text-align:center;color:#999;padding:16px">Sem dados</td></tr>'}
+
+// === UPDATE: CSAT PLATAFORMA ===
+function updateCsatPlataforma(){
+    var d=getfCsatPlat();
+    var empty=document.getElementById('csatPlataformaEmpty'),content=document.getElementById('csatPlataformaContent');
+    if(!d.length){empty.style.display='block';content.style.display='none';document.getElementById('kp-csat').textContent='--';document.getElementById('kp-total').textContent='0';document.getElementById('kp-best').textContent='--';document.getElementById('kp-worst').textContent='--';return}
+    empty.style.display='none';content.style.display='block';
+    var avg=(d.reduce(function(a,b){return a+b.nota},0)/d.length).toFixed(2);
+    document.getElementById('kp-csat').textContent=avg;
+    document.getElementById('kp-csat-s').textContent=d.length+' respostas';
+    document.getElementById('kp-total').textContent=d.length;
+    var byM={};d.forEach(function(r){var k=(r.data||'').substring(0,7);if(!k)return;if(!byM[k])byM[k]=[];byM[k].push(r.nota)});
+    var cm=Object.keys(byM).sort().map(function(k){return{lb:fmtM(k),mkey:k,avg:byM[k].reduce(function(a,b){return a+b},0)/byM[k].length,ct:byM[k].length}});
+    if(cm.length){var best=cm.reduce(function(a,b){return a.avg>b.avg?a:b}),worst=cm.reduce(function(a,b){return a.avg<b.avg?a:b});document.getElementById('kp-best').textContent=best.avg.toFixed(2);document.getElementById('kp-best-m').textContent=best.lb;document.getElementById('kp-worst').textContent=worst.avg.toFixed(2);document.getElementById('kp-worst-m').textContent=worst.lb}
+    kill('cp1');if(cm.length){charts['cp1']=new Chart(document.getElementById('cp1'),{type:'bar',data:{labels:cm.map(function(m){return m.lb}),datasets:[{label:'CSAT',data:cm.map(function(m){return+m.avg.toFixed(2)}),backgroundColor:'#00B894',borderRadius:8,barPercentage:.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{display:true,anchor:'end',align:'top',font:{weight:'bold'}}},scales:{y:{min:0,max:5}}},plugins:[ChartDataLabels]})}
+
+    // cp2: Distribuicao de notas (1-5)
+    kill('cp2');var pBuckets={1:0,2:0,3:0,4:0,5:0};d.forEach(function(r){var n=Math.round(r.nota);if(pBuckets[n]!=null)pBuckets[n]++});var pColors={1:'#E17055',2:'#FF8863',3:'#F39C12',4:'#55EFC4',5:'#00B894'};charts['cp2']=new Chart(document.getElementById('cp2'),{type:'doughnut',data:{labels:['Nota 1','Nota 2','Nota 3','Nota 4','Nota 5'],datasets:[{data:[pBuckets[1],pBuckets[2],pBuckets[3],pBuckets[4],pBuckets[5]],backgroundColor:[pColors[1],pColors[2],pColors[3],pColors[4],pColors[5]],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'right',labels:{boxWidth:12,padding:8,font:{size:11}}},datalabels:{display:function(ctx){return ctx.dataset.data[ctx.dataIndex]>0},color:'#fff',font:{weight:'bold',size:13},formatter:function(v){return v}}}},plugins:[ChartDataLabels]});
+
+    // cp3: CSAT por implementador
+    kill('cp3');var byImpl={};d.forEach(function(r){var i=(r.implementador||'Sem implementador').trim();if(!i)i='Sem implementador';if(!byImpl[i])byImpl[i]=[];byImpl[i].push(r.nota)});var implList=Object.keys(byImpl).map(function(i){var ns=byImpl[i];return{impl:i,avg:ns.reduce(function(a,b){return a+b},0)/ns.length,ct:ns.length}}).sort(function(a,b){return b.ct-a.ct});if(implList.length){charts['cp3']=new Chart(document.getElementById('cp3'),{type:'bar',data:{labels:implList.map(function(x){return x.impl+' ('+x.ct+')'}),datasets:[{label:'CSAT',data:implList.map(function(x){return+x.avg.toFixed(2)}),backgroundColor:implList.map(function(x){return x.avg>=4.5?'#00B894':x.avg>=3.5?'#F39C12':'#E17055'}),borderRadius:6,barPercentage:.6}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},datalabels:{display:true,anchor:'end',align:'right',font:{weight:'bold',size:11}}},scales:{x:{min:0,max:5}}},plugins:[ChartDataLabels]})}
+    var tb=document.querySelector('#tCsatPlat tbody'),h=[];d.slice().sort(function(a,b){return (b.data||'').localeCompare(a.data||'')}).forEach(function(r){h.push('<tr><td>'+(r.data||'-')+'</td><td>'+(r.empresa||'-')+'</td><td><b>'+r.nota+'</b></td><td>'+(r.comentario||'-')+'</td></tr>')});tb.innerHTML=h.join('')}
+
+function updateAll(){
+    updateGlobalKpis();
+    if(currentTab==='nps')updateNps();
+    else if(currentTab==='csat'){if(currentCsat==='oraculo')updateCsatOraculo();else updateCsatPlataforma()}
+}
+window.selectCo=selectCo;window.clearEmpresa=clearEmpresa;window.clearAll=clearAll;window.updateAll=updateAll;window.clearChartFilter=clearChartFilter;window.setChartFilter=setChartFilter;window.switchTab=switchTab;window.switchCsat=switchCsat;
 updateAll();
-} // end initDashboard
-// Auto-init if already authenticated
-if(sessionStorage.getItem('cs_auth')==='1') initDashboard();
+}
+if(sessionStorage.getItem('cs_auth')==='1')initDashboard();
 </script>
 </body>
 </html>

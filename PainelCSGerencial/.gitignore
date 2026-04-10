@@ -3,3 +3,14 @@ companies_data.json
 *.xlsx
 *.parquet
 __pycache__/
+
+# secrets
+google_sa.json
+.env.local
+fabric_config.json
+
+# dados intermediarios dos fetchers (index.html e dashboard_full_data.js
+# ficam TRACKED pro GitHub Pages/Actions publicar)
+sheets_data.json
+users_data.json
+hubspot_data.json
