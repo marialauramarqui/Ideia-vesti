@@ -118,4 +118,11 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add CS-Sucesso-do-cliente/dados.js Pedidos-por-Marca/dados.js Pedidos-por-Marca/chunks.js Pedidos-por-Marca/data/
           git commit -m "Atualizacao automatica completa $(date +'%d/%m/%Y %H:%M')"
-          git push
+          # Retry com rebase em caso de race condition (alguem pushou durante o run)
+          for i in 1 2 3; do
+            if git push; then
+              break
+            fi
+            echo "Push falhou (tentativa $i), fazendo pull --rebase..."
+            git pull --rebase origin main || { echo "Rebase falhou, abortando"; exit 1; }
+          done
