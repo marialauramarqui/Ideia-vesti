@@ -7,7 +7,9 @@ const fs = require('fs');
 const path = require('path');
 
 const TENANT_ID = 'ea649dfc-28b2-42fc-98bb-79f264959504';
-const CLIENT_ID = '14d82eec-204b-4c2f-b7e8-296a70dab67e'; // Microsoft Graph PowerShell (public)
+// Azure CLI public client - tem permissoes amplas pre-registradas (Graph, PBI, SQL, Fabric).
+// Microsoft Graph Command Line Tools (14d82eec-...) nao tem SQL na lista de resources.
+const CLIENT_ID = '04b07795-8ddb-461a-bbee-02f9e1bf7b46';
 const SCOPE = 'https://database.windows.net//.default offline_access';
 
 function post(hostname, path, body) {

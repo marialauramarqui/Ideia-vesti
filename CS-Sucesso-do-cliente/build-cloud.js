@@ -15,8 +15,15 @@ const path = require('path');
 const https = require('https');
 const readline = require('readline');
 const querystring = require('querystring');
+const { Connection, Request } = require('tedious');
 
 const DIR = __dirname;
+
+// ===================== LAKEHOUSE (Fabric SQL endpoint) =====================
+// VestiHouse lakehouse - workspace 2929476c-... / lakehouse 21b85aa7-...
+// Descoberto via: GET /v1.0/myorg/groups/{ws}/datasets/{ds}/datasources (Painel CS)
+const SQL_SERVER = '7sowj2vsfd6efgf3phzgjfmvaq-nrdsskmspnteherwztit766zc4.datawarehouse.fabric.microsoft.com';
+const SQL_DATABASE = 'VestiHouse';
 
 // ===================== CONSTANTS =====================
 const WORKSPACE_ID = 'aced753a-0f0e-4bcf-9264-72f6496cf2cf';
@@ -100,7 +107,7 @@ async function getAccessToken() {
     }
 
     const postBody = querystring.stringify({
-        client_id: _localEnv.FABRIC_CLIENT_ID || '14d82eec-204b-4c2f-b7e8-296a70dab67e',
+        client_id: process.env.FABRIC_CLIENT_ID || _localEnv.FABRIC_CLIENT_ID || '04b07795-8ddb-461a-bbee-02f9e1bf7b46',
         grant_type: 'refresh_token',
         refresh_token: FABRIC_REFRESH_TOKEN,
         scope: 'https://analysis.windows.net/powerbi/api/.default offline_access',
@@ -139,6 +146,229 @@ async function getAccessToken() {
     }
 
     return data.access_token;
+}
+
+// ===================== AUTH: SQL SCOPE TOKEN =====================
+// Fabric SQL endpoint usa audience database.windows.net (dupla barra eh quirk do AAD).
+// O refresh token precisa vir de um client_id que tenha database.windows.net nas permissoes —
+// Azure CLI (04b07795-8ddb-461a-bbee-02f9e1bf7b46) funciona; Graph CLI (14d82eec-...) NAO.
+async function getSqlAccessToken() {
+    console.log('Authenticating SQL (Fabric lakehouse)...');
+    const postBody = querystring.stringify({
+        client_id: _localEnv.FABRIC_CLIENT_ID || process.env.FABRIC_CLIENT_ID || '04b07795-8ddb-461a-bbee-02f9e1bf7b46',
+        grant_type: 'refresh_token',
+        refresh_token: FABRIC_REFRESH_TOKEN,
+        scope: 'https://database.windows.net//.default offline_access',
+    });
+    const res = await httpsRequest({
+        hostname: 'login.microsoftonline.com',
+        path: `/${FABRIC_TENANT_ID}/oauth2/v2.0/token`,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Length': Buffer.byteLength(postBody),
+        },
+    }, postBody);
+    const data = JSON.parse(res.body);
+    if (!data.access_token) {
+        console.error('SQL token response:', res.body.substring(0, 500));
+        throw new Error('Failed to get SQL access token: ' + (data.error_description || data.error || 'unknown'));
+    }
+    console.log('  SQL token obtained.');
+    // Rotaciona o refresh token (mesmo padrao do getAccessToken)
+    if (data.refresh_token) {
+        fs.writeFileSync(path.join(DIR, '.new_refresh_token'), data.refresh_token, 'utf-8');
+        if (fs.existsSync(_envPath)) {
+            let env = fs.readFileSync(_envPath, 'utf-8');
+            env = env.replace(/^FABRIC_REFRESH_TOKEN=.*$/m, 'FABRIC_REFRESH_TOKEN=' + data.refresh_token);
+            fs.writeFileSync(_envPath, env, 'utf-8');
+        }
+    }
+    return data.access_token;
+}
+
+// ===================== SQL QUERY (tedious) =====================
+function runSqlQuery(token, query, label, timeoutMs) {
+    return new Promise((resolve, reject) => {
+        console.log(`  SQL: ${label}...`);
+        const conn = new Connection({
+            server: SQL_SERVER,
+            authentication: { type: 'azure-active-directory-access-token', options: { token } },
+            options: {
+                database: SQL_DATABASE,
+                encrypt: true,
+                port: 1433,
+                requestTimeout: timeoutMs || 180000,
+                connectTimeout: 30000,
+            },
+        });
+        const rows = [];
+        let done = false;
+        conn.on('connect', err => {
+            if (err) { done = true; reject(err); return; }
+            const request = new Request(query, (err2) => {
+                if (err2 && !done) { done = true; reject(err2); }
+                conn.close();
+            });
+            request.on('row', columns => {
+                const row = {};
+                columns.forEach(col => { row[col.metadata.colName] = col.value; });
+                rows.push(row);
+            });
+            request.on('requestCompleted', () => {
+                if (!done) { done = true; console.log(`  ${label}: ${rows.length} rows`); resolve(rows); }
+            });
+            conn.execSql(request);
+        });
+        conn.connect();
+    });
+}
+
+// ===================== LAKEHOUSE FETCH: empresas ativas via ODBC_Domains =====================
+// Fonte de verdade: ODBC_Domains WHERE modulos LIKE '%vendas%' — todas as marcas com modulo
+// Vendas habilitado sao consideradas ativas. Enriquecemos com Confeccao2025_Query1 (Id Empresa
+// GUID, CNPJ, Status, Anjo, Canal, etc.) e fallback em ODBC_Companies (para os dominios que
+// ainda nao foram ingeridos no Query1).
+async function fetchLakehouseEmpresas(sqlToken) {
+    const q = `
+        WITH vendas AS (
+            SELECT DISTINCT id AS dominio_id FROM dbo.ODBC_Domains WHERE modulos LIKE '%vendas%'
+        )
+        SELECT
+            v.dominio_id,
+            q.[Id Empresa]        AS q_id_empresa,
+            q.CNPJ                AS q_cnpj,
+            q.[Nome Fantasia]     AS q_nome_fantasia,
+            q.[Nome do Dominio]   AS q_nome_dominio,
+            q.[Razão Social]      AS q_razao_social,
+            q.[Canal de Vendas]   AS q_canal,
+            q.Anjo                AS q_anjo,
+            q.Integracao          AS q_integracao,
+            q.[Status Empresa]    AS q_status,
+            q.Email               AS q_email,
+            q.[Tipo _Atacado | Varejo_] AS q_tipo,
+            q.Tags                AS q_tags,
+            q.[Modulos 2]         AS q_modulos,
+            c.id                  AS c_empresa_id,
+            c.tax_document        AS c_cnpj,
+            c.company_name        AS c_nome_fantasia,
+            c.social_name         AS c_razao_social,
+            c.scheme_url          AS c_scheme,
+            c.created_at          AS c_created_at,
+            c.status              AS c_status
+        FROM vendas v
+        LEFT JOIN dbo.Confeccao2025_Query1 q ON v.dominio_id = q.[Id Dominio]
+        OUTER APPLY (
+            SELECT TOP 1 id, tax_document, company_name, social_name, scheme_url, created_at, status
+            FROM dbo.ODBC_Companies
+            WHERE domain_id = v.dominio_id
+            ORDER BY created_at DESC
+        ) c
+    `;
+    const rows = await runSqlQuery(sqlToken, q, 'Lakehouse empresas (vendas)');
+    // Consolida: pode ter multiplas linhas Q1 por dominio (varias empresas no mesmo dominio).
+    // Preferimos a linha com Id Empresa preenchido e Status = 1 (Ativa).
+    const byDominio = new Map();
+    for (const r of rows) {
+        const dominioId = r.dominio_id;
+        if (dominioId == null) continue;
+        const existing = byDominio.get(dominioId);
+        const hasId = !!r.q_id_empresa;
+        const isAtiva = r.q_status === 1;
+        if (!existing) { byDominio.set(dominioId, r); continue; }
+        // Prefer existing if it already has id+ativa
+        const exHasId = !!existing.q_id_empresa;
+        const exIsAtiva = existing.q_status === 1;
+        if (exHasId && exIsAtiva) continue;
+        if (hasId && isAtiva) { byDominio.set(dominioId, r); continue; }
+        if (hasId && !exHasId) { byDominio.set(dominioId, r); continue; }
+    }
+    // Normaliza pro formato que build usa
+    const empresas = [];
+    for (const [dominioId, r] of byDominio) {
+        const statusText = r.q_status === 1 ? 'Ativa' : r.q_status === 2 ? 'Desativada' : '';
+        empresas.push({
+            dominioId,
+            id: r.q_id_empresa || r.c_empresa_id || '',
+            cnpj: r.q_cnpj || r.c_cnpj || '',
+            nomeFantasia: r.q_nome_fantasia || r.c_nome_fantasia || '',
+            nomeDominio: r.q_nome_dominio || r.c_scheme || '',
+            razaoSocial: r.q_razao_social || r.c_razao_social || '',
+            canal: r.q_canal || '',
+            anjo: r.q_anjo || '',
+            integracao: r.q_integracao || '',
+            statusEmpresa: statusText,
+            email: r.q_email || '',
+            tipoAtacado: r.q_tipo || '',
+            tags: r.q_tags || '',
+            modulos: r.q_modulos || '',
+            criacao: r.c_created_at ? (r.c_created_at.toISOString ? r.c_created_at.toISOString() : String(r.c_created_at)) : '',
+            fromLakehouse: true,
+        });
+    }
+    console.log('  Lakehouse empresas consolidadas: ' + empresas.length +
+        ' (com Id Empresa GUID: ' + empresas.filter(e => e.id).length +
+        ', status Ativa: ' + empresas.filter(e => e.statusEmpresa === 'Ativa').length + ')');
+    return empresas;
+}
+
+// ===================== LAKEHOUSE: validacao cruzada via MongoDB_Pedidos_Geral =====================
+// Compara totais de pedidos/GMV da fonte atual (Merged Pedidos DAX) contra MongoDB_Pedidos_Geral
+// agregado por dominioId. Nao bloqueia o build — so loga diferencas grandes.
+async function validateAgainstMongoPedidos(sqlToken, empresasList) {
+    try {
+        const q = `
+            SELECT domainId, companyId, COUNT(*) AS qtd, SUM(summary_total) AS valor
+            FROM dbo.MongoDB_Pedidos_Geral
+            WHERE domainId IS NOT NULL
+            GROUP BY domainId, companyId
+        `;
+        const rows = await runSqlQuery(sqlToken, q, 'MongoDB_Pedidos_Geral (validacao)');
+        const mongoByDominio = new Map();
+        for (const r of rows) {
+            const d = Number(r.domainId);
+            if (!Number.isFinite(d)) continue;
+            const cur = mongoByDominio.get(d) || { qtd: 0, valor: 0 };
+            cur.qtd += Number(r.qtd) || 0;
+            cur.valor += Number(r.valor) || 0;
+            mongoByDominio.set(d, cur);
+        }
+        let totalMongoQtd = 0, totalMongoVal = 0;
+        for (const v of mongoByDominio.values()) { totalMongoQtd += v.qtd; totalMongoVal += v.valor; }
+        let totalBuildQtd = 0, totalBuildVal = 0;
+        for (const e of empresasList) { totalBuildQtd += (e.pedidos || 0); totalBuildVal += (e.valTotal || e.gmv || 0); }
+
+        console.log('\n=== Validacao cruzada MongoDB_Pedidos_Geral ===');
+        console.log('  Mongo : ' + totalMongoQtd + ' pedidos, R$ ' + totalMongoVal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+        console.log('  Build : ' + totalBuildQtd + ' pedidos, R$ ' + totalBuildVal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+        const deltaQtd = totalMongoQtd > 0 ? ((totalBuildQtd - totalMongoQtd) / totalMongoQtd * 100) : 0;
+        const deltaVal = totalMongoVal > 0 ? ((totalBuildVal - totalMongoVal) / totalMongoVal * 100) : 0;
+        console.log('  Delta : ' + deltaQtd.toFixed(1) + '% qtd, ' + deltaVal.toFixed(1) + '% valor');
+
+        // Top 5 diffs por dominio (apenas os que temos no build)
+        const diffs = [];
+        for (const e of empresasList) {
+            if (!e.idDominio) continue;
+            const d = Number(e.idDominio);
+            const m = mongoByDominio.get(d);
+            if (!m) continue;
+            const bQtd = e.pedidos || 0;
+            const bVal = e.valTotal || e.gmv || 0;
+            if (m.qtd < 5 && bQtd < 5) continue;
+            const diffPct = m.qtd > 0 ? Math.abs(bQtd - m.qtd) / m.qtd : 0;
+            if (diffPct > 0.10) {
+                diffs.push({ nome: e.nomeFantasia || e.nomeDominio, dominioId: d, buildQtd: bQtd, mongoQtd: m.qtd, buildVal: bVal, mongoVal: m.valor });
+            }
+        }
+        if (diffs.length > 0) {
+            console.log('  Empresas com diff >10% em quantidade (top 5):');
+            diffs.sort((a, b) => Math.abs(b.mongoQtd - b.buildQtd) - Math.abs(a.mongoQtd - a.buildQtd))
+                .slice(0, 5)
+                .forEach(d => console.log('   ', d.nome, '(dom ' + d.dominioId + '): build=' + d.buildQtd + ' vs mongo=' + d.mongoQtd));
+        }
+    } catch (err) {
+        console.warn('  AVISO: validacao MongoDB_Pedidos_Geral falhou:', err.message);
+    }
 }
 
 // ===================== POWER BI DAX QUERY =====================
@@ -560,6 +790,17 @@ async function main() {
 
     // ---------- 1. Authenticate with Microsoft ----------
     const accessToken = await getAccessToken();
+    const sqlToken = await getSqlAccessToken();
+
+    // ---------- 1b. Fetch empresas ativas do lakehouse (ODBC_Domains + enrichment) ----------
+    // Esta eh a fonte de verdade para quais marcas aparecem no dashboard. Substitui o filtro
+    // antigo baseado em Marcas e Planos (Excel) + Cadastros Empresas (DAX).
+    console.log('\nFetching empresas ativas do Lakehouse (ODBC_Domains vendas)...');
+    const lakehouseEmpresas = await fetchLakehouseEmpresas(sqlToken);
+    const vendasDomainIds = new Set(lakehouseEmpresas.map(e => e.dominioId));
+    const lakehouseByDominio = new Map(lakehouseEmpresas.map(e => [e.dominioId, e]));
+    const lakehouseByEmpresaId = new Map();
+    lakehouseEmpresas.forEach(e => { if (e.id) lakehouseByEmpresaId.set(e.id, e); });
 
     // ---------- 2. Query Power BI tables in parallel ----------
     console.log('\nQuerying Power BI DAX API...');
@@ -1217,26 +1458,63 @@ async function main() {
     // ---------- 8. Build final empresas list ----------
     console.log('\nBuilding empresas list...');
 
-    // Filtrar empresas: manter apenas as que têm plano na planilha Marcas e Planos
+    // Filtrar empresas: manter apenas as que tem modulo "vendas" habilitado no ODBC_Domains
+    // (lakehouse VestiHouse). Esta eh a fonte de verdade de marca ativa — substitui o filtro
+    // antigo baseado em Marcas e Planos do Excel.
     const allEmps = Object.values(empresasMap).filter(e => e.nomeFantasia || e.nomeDominio);
     const empresasAtivas = allEmps.filter(e => {
-        const cnpjNum = (e.cnpj || '').replace(/[.\-\/]/g, '');
-        let temPlano = !!marcasMap[cnpjNum];
-        if (!temPlano && cnpjNum.length >= 8) {
-            for (const mcnpj of Object.keys(marcasMap)) {
-                if (mcnpj.substring(0, 8) === cnpjNum.substring(0, 8)) { temPlano = true; break; }
-            }
-        }
-        if (!temPlano) {
-            const nomeEmp = normalize(e.nomeFantasia || e.nomeDominio || '');
-            for (const [, mdata] of Object.entries(marcasMap)) {
-                const nMarca = normalize(mdata.marca || '');
-                if (nMarca && nomeEmp && (nMarca === nomeEmp || (nMarca.length >= 5 && nomeEmp.length >= 5 && (nomeEmp.includes(nMarca) || nMarca.includes(nomeEmp))))) { temPlano = true; break; }
-            }
-        }
-        return temPlano;
+        const dom = e.idDominio != null ? Number(e.idDominio) : NaN;
+        return Number.isFinite(dom) && vendasDomainIds.has(dom);
     });
-    // Add empresas from Excel not found in Fabric
+    // Enriquece com statusEmpresa vindo do Lakehouse (Confeccao2025_Query1) — fonte mais
+    // atualizada que a DAX Metricas (CS 2024 incompleto).
+    empresasAtivas.forEach(e => {
+        const lh = lakehouseByDominio.get(Number(e.idDominio));
+        if (lh && lh.statusEmpresa) {
+            e.statusEmpresa = lh.statusEmpresa;
+        }
+    });
+    // Dominios vendas do lakehouse que nao estao no Cadastros Empresas DAX: adiciona stubs
+    // pra nao perder cobertura. Keys sintetizadas se Q1 nao tiver GUID.
+    const knownDominios = new Set();
+    empresasAtivas.forEach(e => { if (e.idDominio) knownDominios.add(Number(e.idDominio)); });
+    let addedLakehouse = 0;
+    for (const lh of lakehouseEmpresas) {
+        if (knownDominios.has(lh.dominioId)) continue;
+        const empresaId = lh.id || ('lakehouse-' + lh.dominioId);
+        empresasAtivas.push({
+            id: empresaId,
+            cnpj: lh.cnpj,
+            nomeFantasia: lh.nomeFantasia,
+            nomeDominio: lh.nomeDominio,
+            razaoSocial: lh.razaoSocial,
+            canal: lh.canal,
+            anjo: lh.anjo,
+            integracao: lh.integracao,
+            tags: lh.tags,
+            temIntegracao: lh.integracao ? 'Sim' : '',
+            idDominio: lh.dominioId,
+            modulo: lh.modulos,
+            tipoAtacado: lh.tipoAtacado,
+            criacao: lh.criacao,
+            tipoIntegracao: '',
+            dataPrimeiroPedido: '',
+            valorPlano: 0,
+            statusEmpresa: lh.statusEmpresa || '',
+            transCartao: 0, transPix: 0, transTotal: 0,
+            valCartao: 0, valPix: 0, valTotal: 0,
+            pedidos: 0, pedidosPagos: 0, pedidosCancelados: 0, pedidosPendentes: 0,
+            valPedidosPagos: 0, valPedidosCancelados: 0, valPedidosPendentes: 0,
+            linksEnviados: 0, cliques: 0,
+            cartaoImpl: false, pixImpl: false,
+        });
+        empresasMap[empresaId] = empresasAtivas[empresasAtivas.length - 1];
+        addedLakehouse++;
+    }
+    console.log('  Empresas adicionadas do Lakehouse (nao estavam em Cadastros DAX): ' + addedLakehouse);
+
+    // Continua adicionando empresas do Excel Marcas e Planos que nao foram cobertas,
+    // mas agora *apenas* quando o CNPJ ainda nao esta no conjunto (legacy, pouco usado).
     const matchedRoots = new Set();
     empresasAtivas.forEach(e => { const c = (e.cnpj || '').replace(/[.\-\/]/g, ''); if (c.length >= 8) matchedRoots.add(c.substring(0, 8)); });
     let addedExcel = 0;
@@ -1464,7 +1742,7 @@ async function main() {
                 planoObservacoes: marca ? marca.observacoes : '',
                 planoSubconta: marca ? marca.subconta : '',
                 planos: marca && marca.planos ? marca.planos : undefined,
-                marcaAtiva: metricasMap[e.id] && metricasMap[e.id].statusEmpresa === 'Ativa' ? 'Sim' : metricasMap[e.id] && metricasMap[e.id].statusEmpresa === 'Desativada' ? 'Não' : '',
+                marcaAtiva: (e.statusEmpresa === 'Ativa' || (metricasMap[e.id] && metricasMap[e.id].statusEmpresa === 'Ativa')) ? 'Sim' : (e.statusEmpresa === 'Desativada' || (metricasMap[e.id] && metricasMap[e.id].statusEmpresa === 'Desativada')) ? 'Não' : '',
                 mensalidade,
                 etapaHub,
                 oraculoEtapa,
@@ -1483,7 +1761,9 @@ async function main() {
                 churnScore,
                 churnRisco,
                 churnMotivos: churnMotivos.length > 0 ? churnMotivos.join('; ') : '',
-                statusEmpresa: metricasMap[e.id] ? metricasMap[e.id].statusEmpresa : '',
+                // Lakehouse (ODBC_Domains -> Confeccao2025_Query1) tem prioridade sobre o
+                // DAX Metricas (CS 2024, incompleto). Usa lakehouse se estiver preenchido.
+                statusEmpresa: e.statusEmpresa || (metricasMap[e.id] ? metricasMap[e.id].statusEmpresa : ''),
                 controleEstoque: metricasMap[e.id] ? metricasMap[e.id].controleEstoque : '',
                 ...(function () {
                     const f = getFreteCombinado(e);
@@ -1546,7 +1826,10 @@ async function main() {
     }
     console.log('  Invoices matched to empresas: ' + invoiceMatched + '/' + empresasList.length);
 
-    // Filtro de empresas ativas já aplicado acima (planilha Marcas e Planos)
+    // Validacao cruzada MongoDB_Pedidos_Geral (lakehouse). Nao bloqueia o build.
+    await validateAgainstMongoPedidos(sqlToken, empresasList);
+
+    // Filtro de empresas ativas aplicado via ODBC_Domains (modulos LIKE '%vendas%')
 
     // ---------- 9. Build output ----------
     const oraculoSummary = {};
