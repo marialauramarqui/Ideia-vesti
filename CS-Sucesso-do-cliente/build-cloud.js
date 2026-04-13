@@ -1343,17 +1343,17 @@ async function main() {
     const MES_PT_TO_NUM = { 'janeiro':'01','fevereiro':'02','março':'03','marco':'03','abril':'04','maio':'05','junho':'06','julho':'07','agosto':'08','setembro':'09','outubro':'10','novembro':'11','dezembro':'12' };
     const vpPorEmpresa = new Map();
     for (const row of (vpTotalsRows || [])) {
-        const cid = row["'2025'[companyId]"] || row['2025[companyId]'] || row['[companyId]'];
+        const cid = row.companyId;
         if (!cid) continue;
         vpPorEmpresa.set(cid, {
-            qtCartao: row['[qtCartao]'] || 0,
-            valCartao: row['[valCartao]'] || 0,
-            qtPix: row['[qtPix]'] || 0,
-            valPix: row['[valPix]'] || 0,
-            qtPedidos: row['[qtPedidos]'] || 0,
-            qtPagos: row['[qtPagos]'] || 0,
-            valTotal: row['[valTotal]'] || 0,
-            valPagos: row['[valPagos]'] || 0,
+            qtCartao: row.qtCartao || 0,
+            valCartao: row.valCartao || 0,
+            qtPix: row.qtPix || 0,
+            valPix: row.valPix || 0,
+            qtPedidos: row.qtPedidos || 0,
+            qtPagos: row.qtPagos || 0,
+            valTotal: row.valTotal || 0,
+            valPagos: row.valPagos || 0,
         });
     }
     let vpMatched = 0;
@@ -1372,22 +1372,22 @@ async function main() {
     // A tabela '2025' so tem dados de 2025, entao hardcode ano.
     const vpPorEmpresaMensal = new Map();
     for (const row of (vpMonthlyRows || [])) {
-        const cid = row["'2025'[companyId]"] || row['2025[companyId]'] || row['[companyId]'];
-        const mesPt = (row["'2025'[Mes]"] || row['2025[Mes]'] || row['[Mes]'] || '').toLowerCase().trim();
+        const cid = row.companyId;
+        const mesPt = (row.Mes || '').toLowerCase().trim();
         if (!cid || !mesPt) continue;
         const mm = MES_PT_TO_NUM[mesPt];
         if (!mm) continue;
         const mesKey = '2025-' + mm;
         if (!vpPorEmpresaMensal.has(cid)) vpPorEmpresaMensal.set(cid, new Map());
         vpPorEmpresaMensal.get(cid).set(mesKey, {
-            qtCartao: row['[qtCartao]'] || 0,
-            valCartao: row['[valCartao]'] || 0,
-            qtPix: row['[qtPix]'] || 0,
-            valPix: row['[valPix]'] || 0,
-            qtPedidos: row['[qtPedidos]'] || 0,
-            qtPagos: row['[qtPagos]'] || 0,
-            valTotal: row['[valTotal]'] || 0,
-            valPagos: row['[valPagos]'] || 0,
+            qtCartao: row.qtCartao || 0,
+            valCartao: row.valCartao || 0,
+            qtPix: row.qtPix || 0,
+            valPix: row.valPix || 0,
+            qtPedidos: row.qtPedidos || 0,
+            qtPagos: row.qtPagos || 0,
+            valTotal: row.valTotal || 0,
+            valPagos: row.valPagos || 0,
         });
     }
     console.log('  VestiPago monthly aplicados: ' + vpPorEmpresaMensal.size + ' empresas x meses');
