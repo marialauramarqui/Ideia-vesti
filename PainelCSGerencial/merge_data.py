@@ -139,6 +139,7 @@ def main() -> None:
     nps = build_nps(sheets)
     csat_oraculo = build_csat_oraculo(sheets)
     csat_plataforma = build_csat_plataforma(hubspot)
+    csat_plataforma_monthly = sheets.get("csat_plataforma_monthly", []) if isinstance(sheets, dict) else []
     cs_names = derive_cs_names(companies, nps)
 
     def dump(name: str, data) -> str:
@@ -148,6 +149,7 @@ def main() -> None:
         dump("NPS_DATA", nps)
         + dump("CSAT_ORACULO_DATA", csat_oraculo)
         + dump("CSAT_PLATAFORMA_DATA", csat_plataforma)
+        + dump("CSAT_PLATAFORMA_MONTHLY", csat_plataforma_monthly)
         + dump("COMPANIES_DATA", companies)
         + dump("USERS_DATA", users)
         + dump("CS_NAMES", cs_names)
@@ -157,6 +159,7 @@ def main() -> None:
     print(f"  NPS_DATA:             {len(nps)}")
     print(f"  CSAT_ORACULO_DATA:    {len(csat_oraculo)}")
     print(f"  CSAT_PLATAFORMA_DATA: {len(csat_plataforma)}")
+    print(f"  CSAT_PLATAFORMA_MONTHLY: {len(csat_plataforma_monthly)}")
     print(f"  COMPANIES_DATA:       {len(companies)}")
     print(f"  USERS_DATA:           {len(users)}")
     print(f"  CS_NAMES:             {len(cs_names)}")

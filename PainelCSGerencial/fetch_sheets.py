@@ -263,15 +263,69 @@ def extract_csat_oraculo() -> list[dict]:
     return out
 
 
+def _month_ranges(ws) -> list[tuple[str, int, int]]:
+    """Detecta ranges de colunas por mes usando row 1 (headers tipo 'Janeiro')."""
+    starts: list[tuple[str, int]] = []
+    for c in range(1, ws.max_column + 1):
+        v = ws.cell(1, c).value
+        if isinstance(v, str) and v.strip() in MONTHS_PT:
+            starts.append((MONTHS_PT[v.strip()], c))
+    ranges = []
+    for i, (mm, sc) in enumerate(starts):
+        ec = starts[i + 1][1] - 1 if i + 1 < len(starts) else ws.max_column
+        ranges.append((mm, sc, ec))
+    return ranges
+
+
+def _monthly_from_rows(ws, year: str, rows: list[int]) -> list[dict]:
+    """Para cada mes, media das colunas semanais (medias semanais ja vem agregadas).
+    Se mais de uma row for passada (ex: CONFECCAO + MULTIMARCA), combina por semana."""
+    out = []
+    for mm, sc, ec in _month_ranges(ws):
+        week_vals = []
+        for c in range(sc, ec + 1):
+            cell_vals = []
+            for r in rows:
+                v = ws.cell(r, c).value
+                if isinstance(v, (int, float)):
+                    cell_vals.append(float(v))
+            if cell_vals:
+                week_vals.append(sum(cell_vals) / len(cell_vals))
+        if week_vals:
+            out.append({
+                "mes": f"{year}-{mm}",
+                "avg": round(sum(week_vals) / len(week_vals), 4),
+                "weeks": len(week_vals),
+            })
+    return out
+
+
+def extract_csat_plataforma_monthly() -> list[dict]:
+    """Le CSAT Plataforma mensal da planilha OKR. Para 2026 combina CONFECCAO (row 14)
+    e MULTIMARCA (row 20). Para 2025 usa a unica row de CSAT (row 15)."""
+    print(f"[csat-plat-monthly] lendo {OKR_XLSX.name}")
+    wb = openpyxl.load_workbook(OKR_XLSX, data_only=True)
+    out = []
+    if "Plataforma - KPIs" in wb.sheetnames:
+        out.extend(_monthly_from_rows(wb["Plataforma - KPIs"], "2025", [15]))
+    if "Plataforma - KPIs (2026)" in wb.sheetnames:
+        out.extend(_monthly_from_rows(wb["Plataforma - KPIs (2026)"], "2026", [14, 20]))
+    out.sort(key=lambda x: x["mes"])
+    print(f"[csat-plat-monthly] {len(out)} meses extraidos")
+    return out
+
+
 def main() -> None:
     token = get_sa_token()
     download_xlsx(NPS_SHEET_ID, NPS_XLSX, token)
     download_xlsx(OKR_SHEET_ID, OKR_XLSX, token)
     nps = extract_nps()
     csat_oraculo = extract_csat_oraculo()
+    csat_plataforma_monthly = extract_csat_plataforma_monthly()
     data = {
         "nps": nps,
         "csat_oraculo": csat_oraculo,
+        "csat_plataforma_monthly": csat_plataforma_monthly,
         "generated_at": datetime.now().isoformat(timespec="seconds"),
     }
     OUT.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
