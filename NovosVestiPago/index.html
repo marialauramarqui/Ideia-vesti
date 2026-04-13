@@ -208,8 +208,8 @@ function render(){
     var rows=DADOS.clientes.slice();
     if(fcs)rows=rows.filter(function(r){return r.cs===fcs});
     if(fm)rows=rows.filter(function(r){return (r.marca||'').toLowerCase().indexOf(fm)>=0});
-    // Se filtrou por mes, esconde empresas que nao tiveram nenhum pedido naquele mes
-    if(fmes)rows=rows.filter(function(r){return r.meses&&r.meses[fmes]&&r.meses[fmes].valTotal>0});
+    // Se filtrou por mes, mostra so empresas cujo PRIMEIRO pedido VP foi naquele mes
+    if(fmes)rows=rows.filter(function(r){return (r.primeiroPedidoVp||'').substring(0,7)===fmes});
     // Re-sort by effective value total
     rows.sort(function(a,b){return effective(b).valTotal-effective(a).valTotal});
 
