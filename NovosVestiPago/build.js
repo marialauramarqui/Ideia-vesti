@@ -112,7 +112,7 @@ async function main() {
     // 1. Empresas NOVAS no VestiPago (primeiro pedido VP >= START_DATE) + valor mes atual
     const qNovos = `
         WITH vp AS (
-            SELECT domainId, settings_createdAt_TIMESTAMP, summary_total
+            SELECT domainId, settings_createdAt_TIMESTAMP, summary_total, payment_method
             FROM dbo.MongoDB_Pedidos_Geral
             WHERE payment_method IN ('PIX','CREDIT_CARD')
               AND domainId IS NOT NULL
@@ -127,20 +127,28 @@ async function main() {
         ),
         vp_periodo AS (
             SELECT domainId,
-                   SUM(summary_total) AS val_periodo,
-                   COUNT(*) AS qt_periodo
+                   SUM(CASE WHEN payment_method = 'PIX' THEN summary_total ELSE 0 END) AS val_pix,
+                   SUM(CASE WHEN payment_method = 'CREDIT_CARD' THEN summary_total ELSE 0 END) AS val_cartao,
+                   SUM(summary_total) AS val_total,
+                   SUM(CASE WHEN payment_method = 'PIX' THEN 1 ELSE 0 END) AS qt_pix,
+                   SUM(CASE WHEN payment_method = 'CREDIT_CARD' THEN 1 ELSE 0 END) AS qt_cartao,
+                   COUNT(*) AS qt_total
             FROM vp
             WHERE settings_createdAt_TIMESTAMP >= '${START_DATE}'
             GROUP BY domainId
         )
         SELECT fv.domainId,
                fv.first_at,
-               vp.val_periodo,
-               vp.qt_periodo
+               vp.val_pix,
+               vp.val_cartao,
+               vp.val_total,
+               vp.qt_pix,
+               vp.qt_cartao,
+               vp.qt_total
         FROM first_vp fv
         LEFT JOIN vp_periodo vp ON vp.domainId = fv.domainId
         WHERE fv.first_at >= '${START_DATE}'
-        ORDER BY vp.val_periodo DESC
+        ORDER BY vp.val_total DESC
     `;
     const novos = await runSql(token, qNovos, 'Novos VestiPago (first_at >= ' + START_DATE + ')');
     console.log(`  ${novos.length} empresas com primeiro pedido VP a partir de ${START_DATE}`);
@@ -202,19 +210,25 @@ async function main() {
             cnpj: emp.cnpj,
             statusEmpresa: emp.statusEmpresa,
             primeiroPedidoVp: n.first_at ? (n.first_at.toISOString ? n.first_at.toISOString().substring(0, 10) : String(n.first_at).substring(0, 10)) : '',
-            valPeriodo: Math.round((Number(n.val_periodo) || 0) * 100) / 100,
-            qtPeriodo: Number(n.qt_periodo) || 0,
+            valPix: Math.round((Number(n.val_pix) || 0) * 100) / 100,
+            valCartao: Math.round((Number(n.val_cartao) || 0) * 100) / 100,
+            valTotal: Math.round((Number(n.val_total) || 0) * 100) / 100,
+            qtPix: Number(n.qt_pix) || 0,
+            qtCartao: Number(n.qt_cartao) || 0,
+            qtTotal: Number(n.qt_total) || 0,
         });
     }
     console.log(`  Joined: ${clientes.length} com match, ${semMatch} domain_id sem empresa no lakehouse`);
-    clientes.sort((a, b) => b.valPeriodo - a.valPeriodo);
+    clientes.sort((a, b) => b.valTotal - a.valTotal);
 
     // Lista unica de CS pra dropdown
     const csSet = new Set(clientes.map(c => c.cs).filter(Boolean));
     const csList = [...csSet].sort((a, b) => a.localeCompare(b, 'pt-BR'));
 
-    const totalGeral = clientes.reduce((s, c) => s + c.valPeriodo, 0);
-    const totalPedidos = clientes.reduce((s, c) => s + c.qtPeriodo, 0);
+    const totalPix = clientes.reduce((s, c) => s + c.valPix, 0);
+    const totalCartao = clientes.reduce((s, c) => s + c.valCartao, 0);
+    const totalGeral = clientes.reduce((s, c) => s + c.valTotal, 0);
+    const totalPedidos = clientes.reduce((s, c) => s + c.qtTotal, 0);
 
     const output = {
         inicio: START_DATE,
@@ -224,6 +238,8 @@ async function main() {
         resumo: {
             nClientes: clientes.length,
             totalValor: Math.round(totalGeral * 100) / 100,
+            totalPix: Math.round(totalPix * 100) / 100,
+            totalCartao: Math.round(totalCartao * 100) / 100,
             totalPedidos,
         },
     };
