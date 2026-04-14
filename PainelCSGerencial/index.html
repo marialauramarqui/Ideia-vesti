@@ -64,9 +64,10 @@ table.dt tr:hover td{background:#FAFAFA}
 .tab-btn{flex:1;padding:12px 20px;border:none;background:transparent;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:var(--g);transition:all .2s}
 .tab-btn.active{background:var(--p);color:#fff;box-shadow:0 2px 8px rgba(108,92,231,.35)}
 .tab-btn:hover:not(.active){background:#F0EFFF;color:var(--p)}
-.sub-tabs{display:inline-flex;gap:4px;background:#F0EFFF;border-radius:10px;padding:4px;margin-bottom:16px}
-.sub-tab-btn{padding:8px 18px;border:none;background:transparent;border-radius:7px;cursor:pointer;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--p)}
-.sub-tab-btn.active{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.sub-tabs{display:inline-flex;gap:6px;background:#fff;border:2px solid var(--p);border-radius:12px;padding:5px;margin-bottom:16px;box-shadow:0 2px 8px rgba(108,92,231,.15)}
+.sub-tab-btn{padding:11px 22px;border:none;background:transparent;border-radius:8px;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;color:var(--p);letter-spacing:.2px;transition:all .15s}
+.sub-tab-btn:hover:not(.active){background:#F0EFFF}
+.sub-tab-btn.active{background:var(--p);color:#fff;box-shadow:0 2px 10px rgba(108,92,231,.4)}
 .tab-panel{display:none}.tab-panel.active{display:block}
 .csat-panel{display:none}.csat-panel.active{display:block}
 .empty{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:40px;text-align:center;color:var(--g);font-size:14px}
@@ -119,7 +120,7 @@ table.dt tr:hover td{background:#FAFAFA}
 </div>
 <!-- BACK NAV (aparece so fora da Home) -->
 <div id="backNav" style="display:none;margin-bottom:12px">
-    <button onclick="goBack()" style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:var(--card);border:2px solid var(--lg);border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--p);box-shadow:var(--sh)">&larr; <span id="backNavLabel">Voltar</span></button>
+    <button onclick="goBack()" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;background:var(--p);border:none;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;color:#fff;box-shadow:0 2px 8px rgba(108,92,231,.35)">&larr; <span id="backNavLabel">Voltar para Geral</span></button>
     <span id="breadcrumb" style="margin-left:12px;font-size:12px;color:var(--g)"></span>
 </div>
 <!-- SUBTABS Satisfacao (CSAT/NPS) -->
@@ -371,9 +372,9 @@ function switchTab(t,skipPush){
     updateAll();
 }
 function goBack(){
-    var prev=navStack.pop();
-    if(!prev||prev===currentTab)prev='home';
-    switchTab(prev,true);
+    // Voltar sempre leva pra Home (pagina inicial), nao desfaz acoes
+    navStack=[];
+    switchTab('home',true);
 }
 function switchCsat(s){currentCsat=s;document.getElementById('stb-oraculo').classList.toggle('active',s==='oraculo');document.getElementById('stb-plataforma').classList.toggle('active',s==='plataforma');document.getElementById('csat-oraculo').classList.toggle('active',s==='oraculo');document.getElementById('csat-plataforma').classList.toggle('active',s==='plataforma');chartFilter=null;document.getElementById('chartFilterBar').style.display='none';updateAll()}
 
