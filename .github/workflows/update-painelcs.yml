@@ -74,3 +74,22 @@ jobs:
           git add PainelCSGerencial/index.html PainelCSGerencial/dashboard_full_data.js 2>/dev/null || true
           git diff --cached --quiet || git commit -m "Atualizacao PainelCS $(date +'%d/%m/%Y %H:%M')"
           git push
+
+      - name: Publicar no repo PainelCSGerencial (GitHub Pages)
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          set -e
+          git clone --depth 1 "https://x-access-token:${GH_PAT}@github.com/marialauramarqui/PainelCSGerencial.git" /tmp/pcs-publish
+          cp PainelCSGerencial/index.html /tmp/pcs-publish/index.html
+          cp PainelCSGerencial/dashboard_full_data.js /tmp/pcs-publish/dashboard_full_data.js
+          cd /tmp/pcs-publish
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html dashboard_full_data.js
+          if git diff --cached --quiet; then
+            echo "sem mudancas para publicar"
+          else
+            git commit -m "Atualizacao automatica $(date +'%Y-%m-%d %H:%M') (via Ideia-vesti)"
+            git push
+          fi
