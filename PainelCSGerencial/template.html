@@ -177,7 +177,7 @@ table.dt tr:hover td{background:#FAFAFA}
         </div>
         <div id="csatPlataformaEmpty" class="empty" style="display:none">
             <p style="font-size:15px;font-weight:600;margin-bottom:6px">Nenhuma resposta disponivel</p>
-            <p>O Private App do HubSpot precisa do scope <code>forms</code> para que fetch_hubspot.py possa baixar as submissions do form <code>9ec20b97-836d-4afc-acf3-8b80f6c65bd0</code>.</p>
+            <p>Ainda nao ha respostas individuais do CSAT Plataforma carregadas. Elas aparecem automaticamente quando o fetch_hubspot.py baixar novas submissions.</p>
         </div>
         <div id="csatPlataformaContent" style="display:none">
             <div class="chart-row full"><div class="ch"><h4>CSAT Plataforma - Evolucao Mensal</h4><div class="cw tall"><canvas id="cp1"></canvas></div></div></div>
@@ -392,7 +392,15 @@ function updateCsatOraculo(){
 function updateCsatPlataforma(){
     var d=getfCsatPlat();
     var empty=document.getElementById('csatPlataformaEmpty'),content=document.getElementById('csatPlataformaContent');
-    if(!d.length){empty.style.display='block';content.style.display='none';document.getElementById('kp-csat').textContent='--';document.getElementById('kp-total').textContent='0';document.getElementById('kp-best').textContent='--';document.getElementById('kp-worst').textContent='--';return}
+    var _rawAll=(typeof CSAT_PLATAFORMA_DATA!=='undefined'?CSAT_PLATAFORMA_DATA:[]);
+    if(!d.length){
+        if(!_rawAll.length){empty.style.display='block';content.style.display='none';document.getElementById('kp-csat').textContent='--';document.getElementById('kp-total').textContent='0';document.getElementById('kp-best').textContent='--';document.getElementById('kp-worst').textContent='--';return}
+        empty.style.display='none';content.style.display='block';
+        document.getElementById('kp-csat').textContent='--';document.getElementById('kp-csat-s').textContent='0 respostas';document.getElementById('kp-total').textContent='0';document.getElementById('kp-best').textContent='--';document.getElementById('kp-best-m').textContent='';document.getElementById('kp-worst').textContent='--';document.getElementById('kp-worst-m').textContent='';
+        kill('cp1');kill('cp2');kill('cp3');
+        var _tb=document.querySelector('#tCsatPlat tbody');if(_tb)_tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:#999;padding:16px">Sem respostas individuais para esse filtro</td></tr>';
+        return;
+    }
     empty.style.display='none';content.style.display='block';
     var avg=(d.reduce(function(a,b){return a+b.nota},0)/d.length).toFixed(2);
     document.getElementById('kp-csat').textContent=avg;
