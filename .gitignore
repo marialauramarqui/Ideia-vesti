@@ -1,0 +1,10 @@
+IUGU_API_TOKENS_FINAL.csv
+IUGU*.csv
+IUGU*.xlsx
+*.env
+.streamlit/secrets.toml
+SECRETS_PARA_COLAR_NO_STREAMLIT.toml
+__pycache__/
+*.pyc
+.venv/
+venv/
