@@ -69,7 +69,7 @@ def criar_fatura(token, dados):
     return r, payload
 
 
-def listar_faturas(token, data_inicio, data_fim, limit=100):
+def listar_faturas(token, data_inicio, data_fim, limit=30):
     params = {
         "limit": limit,
         "start": 0,
@@ -84,6 +84,24 @@ def listar_faturas(token, data_inicio, data_fim, limit=100):
         timeout=30,
     )
     return r
+
+
+def buscar_detalhes_faturas(token, items):
+    detalhadas = []
+    for item in items:
+        inv_id = item.get("id")
+        if not inv_id:
+            detalhadas.append(item)
+            continue
+        try:
+            r = consultar_fatura(token, inv_id)
+            if r.status_code < 400:
+                detalhadas.append(r.json())
+            else:
+                detalhadas.append(item)
+        except requests.RequestException:
+            detalhadas.append(item)
+    return detalhadas
 
 
 def consultar_fatura(token, invoice_id):
@@ -270,11 +288,14 @@ def pagina_conferir(parceiros):
         return
 
     resp = r.json()
-    items = resp.get("items") or []
+    items_basicos = resp.get("items") or []
 
-    if not items:
+    if not items_basicos:
         st.info("Nenhuma fatura encontrada no período.")
         return
+
+    with st.spinner(f"Buscando detalhes de {len(items_basicos)} fatura(s)..."):
+        items = buscar_detalhes_faturas(parceiro["token"], items_basicos)
 
     st.success(f"{len(items)} fatura(s) encontrada(s).")
 
