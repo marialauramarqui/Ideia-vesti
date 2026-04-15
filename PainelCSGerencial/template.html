@@ -130,7 +130,7 @@ table.dt tr:hover td{background:#FAFAFA}
 </div>
 <!-- ============ HOME (GERAL) TAB ============ -->
 <div class="tab-panel active" id="tab-home">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px">
         <div class="hl-card" style="background:linear-gradient(135deg,#6C5CE7,#8B7BF7);cursor:pointer" onclick="switchTab('csat')">
             <div class="hl-icon">&#128202;</div>
             <div class="hl-label">Satisfacao (CSAT + NPS)</div>
@@ -144,6 +144,39 @@ table.dt tr:hover td{background:#FAFAFA}
             <div class="hl-cargo" id="home-vp-val">--</div>
             <div class="hl-score" style="font-size:22px;margin-top:8px" id="home-vp-sub">--</div>
             <div class="hl-meta" style="margin-top:10px" id="home-vp-legend">Clientes que contrataram VestiPago a partir de janeiro/2026</div>
+        </div>
+        <div class="hl-card" style="background:linear-gradient(135deg,#E17055,#FF8863);cursor:pointer" onclick="switchTab('churn')">
+            <div class="hl-icon">&#128201;</div>
+            <div class="hl-label">Churn VestiPago</div>
+            <div class="hl-cargo" id="home-churn-val">--</div>
+            <div class="hl-score" style="font-size:22px;margin-top:8px" id="home-churn-sub">--</div>
+            <div class="hl-meta" style="margin-top:10px">Clientes ativos na Vesti que pararam o VestiPago &rarr;</div>
+        </div>
+    </div>
+</div>
+<!-- ============ CHURN TAB ============ -->
+<div class="tab-panel" id="tab-churn">
+    <div class="kpi-row">
+        <div class="kpi"><div class="ki" style="background:#FDEAEA">&#128201;</div><div class="kl">Total Churn VestiPago</div><div class="kv" style="color:var(--d)" id="ch-ktot">--</div><div class="ks" id="ch-ktot-s">no periodo</div></div>
+        <div class="kpi"><div class="ki" style="background:#FFF3E0">&#128197;</div><div class="kl">Mes de Pico</div><div class="kv" style="color:var(--w);font-size:20px" id="ch-kpeak">--</div><div class="ks" id="ch-kpeak-s"></div></div>
+        <div class="kpi"><div class="ki" style="background:#F0EFFF">&#128100;</div><div class="kl">CS Mais Impactado</div><div class="kv" style="color:var(--p);font-size:18px" id="ch-kcs">--</div><div class="ks" id="ch-kcs-s"></div></div>
+        <div class="kpi"><div class="ki" style="background:#E0F7F0">&#128230;</div><div class="kl">Media por Mes</div><div class="kv" style="color:var(--s)" id="ch-kavg">--</div><div class="ks">empresas/mes</div></div>
+    </div>
+    <div class="filters">
+        <div class="filter-group"><label>Mes:</label><select class="f-select" id="chFMes" onchange="updateChurn()"><option value="">Todos</option></select></div>
+        <div class="filter-group"><label>CS:</label><select class="f-select" id="chFCS" onchange="updateChurn()"><option value="">Todos</option></select></div>
+        <button class="f-btn" onclick="churnClearFilters()">Limpar</button>
+        <span style="font-size:11px;color:var(--g);margin-left:auto">Empresas que continuam ativas na Vesti mas pararam de usar VestiPago &middot; a partir de jan/2026</span>
+    </div>
+    <div class="chart-row full"><div class="ch"><h4>Evolucao Mensal &middot; Empresas que pararam o VestiPago</h4><div class="cw tall"><canvas id="ch1"></canvas></div></div></div>
+    <div class="chart-row full"><div class="ch"><h4>Churn VestiPago por CS</h4><div class="cw tall"><canvas id="ch3"></canvas></div></div></div>
+    <div class="tbl-card">
+        <h4>Detalhamento &middot; <span id="ch-tbl-count" style="color:var(--g);font-weight:500">--</span></h4>
+        <div style="max-height:520px;overflow-y:auto">
+            <table class="dt" id="tChurn">
+                <thead><tr><th>Mes Parou</th><th>Empresa</th><th>CS</th><th style="text-align:right">Ult. Pedido VP</th><th style="text-align:right">Ult. Pedido</th><th style="text-align:right">Total VP</th></tr></thead>
+                <tbody></tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -341,7 +374,7 @@ function switchTab(t,skipPush){
     var prev=currentTab;
     if(prev && prev!==t && !skipPush){navStack.push(prev)}
     currentTab=t;
-    var tabs=['home','csat','nps','vp'];
+    var tabs=['home','csat','nps','vp','churn'];
     tabs.forEach(function(x){
         var pan=document.getElementById('tab-'+x);if(pan)pan.classList.toggle('active',x===t);
     });
@@ -355,12 +388,12 @@ function switchTab(t,skipPush){
     // Back nav aparece fora da home
     var bn=document.getElementById('backNav');
     bn.style.display=t==='home'?'none':'block';
-    var labels={'csat':'Satisfacao (CSAT)','nps':'Satisfacao (NPS)','vp':'Novos VestiPago','home':'Geral'};
+    var labels={'csat':'Satisfacao (CSAT)','nps':'Satisfacao (NPS)','vp':'Novos VestiPago','churn':'Churn de Clientes','home':'Geral'};
     document.getElementById('breadcrumb').textContent='Voce esta em: '+(labels[t]||t);
     // Filtros globais (empresa/CS) visiveis em TODAS as paginas; KPIs globais so fora de vp
     document.querySelector('.filters').style.display='flex';
-    document.getElementById('globalKpiRow').style.display=(t==='vp'||t==='home')?'none':'grid';
-    var cd=document.getElementById('coDetail');if(cd)cd.style.display=(t==='vp'||t==='home')?'none':'';
+    document.getElementById('globalKpiRow').style.display=(t==='vp'||t==='home'||t==='churn')?'none':'grid';
+    var cd=document.getElementById('coDetail');if(cd)cd.style.display=(t==='vp'||t==='home'||t==='churn')?'none':'';
     updateAll();
 }
 function goBack(){
@@ -600,14 +633,115 @@ function updateVp(){
     }).join('');
 }
 
+// === CHURN VESTIPAGO DATA ===
+// Empresas que continuam ativas na Vesti (fazendo pedidos) mas pararam de usar o VestiPago.
+// mes = mes em que pararam o VP (= mes do ultimo pedido VP + 1)
+var CHURN_DATA=[
+{mes:'2026-01',cs:'Jennyfer Rabelo',empresa:'Viotto',domainId:'1482280',ultVP:'2025-12-11',ultPed:'2026-04-14',totalVP:77,totalPed:3530},
+{mes:'2026-01',cs:'Thamiris Ribeiro',empresa:'Muna',domainId:'1516190',ultVP:'2025-12-15',ultPed:'2026-04-15',totalVP:41,totalPed:1277},
+{mes:'2026-02',cs:'Elisa Marques',empresa:'N-BLOOM',domainId:'1687315',ultVP:'2026-01-28',ultPed:'2026-03-29',totalVP:87,totalPed:192},
+{mes:'2026-02',cs:'Luana Coutinho',empresa:'G&B Bros',domainId:'1776270',ultVP:'2026-01-12',ultPed:'2026-04-14',totalVP:106,totalPed:213},
+{mes:'2026-02',cs:'Sem CS',empresa:'Bling Bling',domainId:'709790',ultVP:'2026-01-06',ultPed:'2026-03-25',totalVP:6,totalPed:108},
+{mes:'2026-02',cs:'Thamiris Ribeiro',empresa:'Little Star',domainId:'1391220',ultVP:'2026-01-27',ultPed:'2026-03-28',totalVP:12,totalPed:54},
+{mes:'2026-03',cs:'Jennyfer Rabelo',empresa:'Sued T-Shirt',domainId:'1436061',ultVP:'2026-02-05',ultPed:'2026-03-27',totalVP:22,totalPed:42},
+{mes:'2026-03',cs:'Luana Coutinho',empresa:'Boise',domainId:'828876',ultVP:'2026-02-20',ultPed:'2026-04-15',totalVP:64,totalPed:12443},
+{mes:'2026-03',cs:'Shirley Silva',empresa:'Bem Me Quer',domainId:'166943',ultVP:'2026-02-10',ultPed:'2026-04-14',totalVP:14,totalPed:3968},
+{mes:'2026-04',cs:'Sem CS',empresa:'Elae',domainId:'218051',ultVP:'2026-03-13',ultPed:'2026-04-14',totalVP:100,totalPed:325},
+{mes:'2026-04',cs:'Sem CS',empresa:'Vida Vici',domainId:'257448',ultVP:'2026-03-12',ultPed:'2026-04-14',totalVP:16,totalPed:870},
+{mes:'2026-04',cs:'Gabriella Busto',empresa:'Martt',domainId:'965096',ultVP:'2026-03-31',ultPed:'2026-04-15',totalVP:264,totalPed:1481},
+{mes:'2026-04',cs:'Gabriella Busto',empresa:'Menina Gata',domainId:'812626',ultVP:'2026-03-11',ultPed:'2026-04-14',totalVP:69,totalPed:7402},
+{mes:'2026-04',cs:'Gabriella Busto',empresa:'Valentina Sirrah',domainId:'619088',ultVP:'2026-03-30',ultPed:'2026-04-14',totalVP:322,totalPed:2369},
+{mes:'2026-04',cs:'Jennyfer Rabelo',empresa:'DJIELE MODA BEB\u00ca',domainId:'787879',ultVP:'2026-03-27',ultPed:'2026-04-10',totalVP:156,totalPed:464},
+{mes:'2026-04',cs:'Luana Coutinho',empresa:'Esta\u00e7\u00e3o Fit integra\u00e7\u00e3o',domainId:'873969',ultVP:'2026-03-11',ultPed:'2026-04-14',totalVP:199,totalPed:5420},
+{mes:'2026-04',cs:'Luana Coutinho',empresa:'Florita',domainId:'1201385',ultVP:'2026-03-30',ultPed:'2026-04-14',totalVP:150,totalPed:1084},
+{mes:'2026-04',cs:'Luana Coutinho',empresa:'KINWAY MODA PRAIA',domainId:'1656666',ultVP:'2026-03-31',ultPed:'2026-04-13',totalVP:29,totalPed:596},
+{mes:'2026-04',cs:'Luana Coutinho',empresa:'Le Ricard',domainId:'157680',ultVP:'2026-03-18',ultPed:'2026-04-15',totalVP:105,totalPed:5413},
+{mes:'2026-04',cs:'Luana Coutinho',empresa:'Rosie Lingerie',domainId:'998275',ultVP:'2026-03-03',ultPed:'2026-04-13',totalVP:122,totalPed:1014},
+{mes:'2026-04',cs:'Sem CS',empresa:'Canoni',domainId:'21682',ultVP:'2026-03-06',ultPed:'2026-04-13',totalVP:3,totalPed:59},
+{mes:'2026-04',cs:'Sem CS',empresa:'Emili',domainId:'44756',ultVP:'2026-03-30',ultPed:'2026-04-14',totalVP:210,totalPed:1318},
+{mes:'2026-04',cs:'Sem CS',empresa:'I1 Modas',domainId:'45794',ultVP:'2026-03-31',ultPed:'2026-04-13',totalVP:88,totalPed:124},
+{mes:'2026-04',cs:'Sem CS',empresa:'Kanolly',domainId:'344642',ultVP:'2026-03-27',ultPed:'2026-04-14',totalVP:80,totalPed:402},
+{mes:'2026-04',cs:'Sem CS',empresa:'Moirai',domainId:'145165',ultVP:'2026-03-31',ultPed:'2026-04-14',totalVP:128,totalPed:3276},
+{mes:'2026-04',cs:'Sem CS',empresa:'Seiss & Deiss',domainId:'120695',ultVP:'2026-03-18',ultPed:'2026-04-14',totalVP:105,totalPed:2756},
+{mes:'2026-04',cs:'Shirley Silva',empresa:'ESSENCE FASHION',domainId:'1771336',ultVP:'2026-03-12',ultPed:'2026-04-09',totalVP:3,totalPed:10},
+{mes:'2026-04',cs:'Shirley Silva',empresa:'Miss Cigarrete',domainId:'1326489',ultVP:'2026-03-30',ultPed:'2026-04-14',totalVP:48,totalPed:607},
+{mes:'2026-04',cs:'Thamiris Ribeiro',empresa:'Aero Summer',domainId:'1213886',ultVP:'2026-03-09',ultPed:'2026-04-14',totalVP:27,totalPed:1287},
+{mes:'2026-04',cs:'Thamiris Ribeiro',empresa:'Lemier',domainId:'1574022',ultVP:'2026-03-13',ultPed:'2026-04-14',totalVP:4,totalPed:675},
+{mes:'2026-04',cs:'Thamiris Ribeiro',empresa:'Nicoboco Pedido',domainId:'1044170',ultVP:'2026-03-25',ultPed:'2026-04-15',totalVP:73,totalPed:1041}
+];
+var _churnInited=false;
+function churnInit(){
+    if(_churnInited)return;_churnInited=true;
+    var meses={},css={};
+    CHURN_DATA.forEach(function(r){meses[r.mes]=1;css[r.cs]=1});
+    var mSel=document.getElementById('chFMes');
+    Object.keys(meses).sort().forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=fmtM(m);mSel.appendChild(o)});
+    var cSel=document.getElementById('chFCS');
+    Object.keys(css).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;cSel.appendChild(o)});
+}
+function churnClearFilters(){document.getElementById('chFMes').value='';document.getElementById('chFCS').value='';updateChurn()}
+function getfChurn(){
+    var d=CHURN_DATA.slice();
+    var m=document.getElementById('chFMes').value;if(m)d=d.filter(function(r){return r.mes===m});
+    var c=document.getElementById('chFCS').value;if(c)d=d.filter(function(r){return r.cs===c});
+    return d;
+}
+function fmtD(s){if(!s)return '--';var p=s.split('-');return p[2]+'/'+p[1]+'/'+p[0].slice(2)}
+function updateChurn(){
+    churnInit();
+    var d=getfChurn();
+    var total=d.length;
+    document.getElementById('ch-ktot').textContent=total.toLocaleString('pt-BR');
+    // por mes
+    var byMes={};d.forEach(function(r){byMes[r.mes]=(byMes[r.mes]||0)+1});
+    var mesKeys=Object.keys(byMes).sort();
+    var peak=null;mesKeys.forEach(function(k){if(!peak||byMes[k]>peak.v)peak={k:k,v:byMes[k]}});
+    document.getElementById('ch-kpeak').textContent=peak?fmtM(peak.k):'--';
+    document.getElementById('ch-kpeak-s').textContent=peak?peak.v+' empresas':'';
+    document.getElementById('ch-kavg').textContent=mesKeys.length?Math.round(total/mesKeys.length):'--';
+    // por cs (top)
+    var byCs={};d.forEach(function(r){byCs[r.cs]=(byCs[r.cs]||0)+1});
+    var csList=Object.keys(byCs).map(function(c){return{c:c,v:byCs[c]}}).sort(function(a,b){return b.v-a.v});
+    if(csList.length){document.getElementById('ch-kcs').textContent=csList[0].c;document.getElementById('ch-kcs-s').textContent=csList[0].v+' empresas ('+(total?Math.round(csList[0].v/total*100):0)+'%)'}
+    else{document.getElementById('ch-kcs').textContent='--';document.getElementById('ch-kcs-s').textContent=''}
+    document.getElementById('ch-ktot-s').textContent=mesKeys.length+' mes(es)';
+    // ch1: barras por mes (unica serie)
+    kill('ch1');
+    if(mesKeys.length){
+        charts['ch1']=new Chart(document.getElementById('ch1'),{type:'bar',data:{labels:mesKeys.map(function(m){return fmtM(m)}),datasets:[{label:'Empresas que pararam VP',data:mesKeys.map(function(m){return byMes[m]}),backgroundColor:'#E17055',borderRadius:6,barPercentage:.55}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{display:true,anchor:'end',align:'top',color:'#2D3436',font:{weight:'bold',size:12}},tooltip:{callbacks:{label:function(c){return c.parsed.y+' empresa(s)'}}}},scales:{y:{title:{display:true,text:'Empresas que pararam VP'},ticks:{precision:0}}}},plugins:[ChartDataLabels]});
+    }
+    // ch3: top CS
+    kill('ch3');
+    var csTop=csList.slice(0,12);
+    if(csTop.length){
+        charts['ch3']=new Chart(document.getElementById('ch3'),{type:'bar',data:{labels:csTop.map(function(x){return x.c}),datasets:[{label:'Empresas',data:csTop.map(function(x){return x.v}),backgroundColor:csTop.map(function(x){return x.v>=8?'#E17055':x.v>=4?'#F39C12':'#6C5CE7'}),borderRadius:6,barPercentage:.7}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},datalabels:{display:true,anchor:'end',align:'right',font:{weight:'bold',size:11},color:'#2D3436'}},scales:{x:{ticks:{precision:0}}}},plugins:[ChartDataLabels]});
+    }
+    // tabela
+    var tb=document.querySelector('#tChurn tbody'),h=[];
+    d.slice().sort(function(a,b){return (b.mes||'').localeCompare(a.mes||'')||b.totalVP-a.totalVP}).forEach(function(r){
+        h.push('<tr><td>'+fmtM(r.mes)+'</td><td><b>'+r.empresa+'</b> <span style="color:var(--g);font-size:10px">#'+r.domainId+'</span></td><td>'+r.cs+'</td><td style="text-align:right">'+fmtD(r.ultVP)+'</td><td style="text-align:right">'+fmtD(r.ultPed)+'</td><td style="text-align:right;font-weight:600;color:var(--d)">'+r.totalVP+'</td></tr>');
+    });
+    tb.innerHTML=h.join('')||'<tr><td colspan="6" style="text-align:center;color:#999;padding:16px">Sem dados</td></tr>';
+    document.getElementById('ch-tbl-count').textContent=d.length+' empresa(s)';
+}
+function updateHomeChurn(){
+    var total=CHURN_DATA.length;
+    var meses={};CHURN_DATA.forEach(function(r){meses[r.mes]=(meses[r.mes]||0)+1});
+    var mk=Object.keys(meses).sort();
+    var last=mk.length?mk[mk.length-1]:null;
+    document.getElementById('home-churn-val').textContent=total.toLocaleString('pt-BR')+' empresas';
+    document.getElementById('home-churn-sub').textContent=last?(meses[last]+' em '+fmtM(last)):'--';
+}
+
 function updateAll(){
     updateGlobalKpis();
-    if(currentTab==='home')updateHome();
+    if(currentTab==='home'){updateHome();updateHomeChurn()}
     else if(currentTab==='nps')updateNps();
     else if(currentTab==='csat'){if(currentCsat==='oraculo')updateCsatOraculo();else updateCsatPlataforma()}
     else if(currentTab==='vp')updateVp();
+    else if(currentTab==='churn')updateChurn();
 }
-window.selectCo=selectCo;window.clearEmpresa=clearEmpresa;window.clearAll=clearAll;window.updateAll=updateAll;window.clearChartFilter=clearChartFilter;window.setChartFilter=setChartFilter;window.switchTab=switchTab;window.switchCsat=switchCsat;window.updateVp=updateVp;window.vpClearFilters=vpClearFilters;window.goBack=goBack;
+window.selectCo=selectCo;window.clearEmpresa=clearEmpresa;window.clearAll=clearAll;window.updateAll=updateAll;window.clearChartFilter=clearChartFilter;window.setChartFilter=setChartFilter;window.switchTab=switchTab;window.switchCsat=switchCsat;window.updateVp=updateVp;window.vpClearFilters=vpClearFilters;window.goBack=goBack;window.updateChurn=updateChurn;window.churnClearFilters=churnClearFilters;
 // Inicializacao: Home e default; filtros globais visiveis, KPIs globais ocultos
 document.querySelector('.filters').style.display='flex';
 document.getElementById('globalKpiRow').style.display='none';
