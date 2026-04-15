@@ -518,7 +518,15 @@ function updateEmpresaDatalist(){
     empresas=empresas.filter(e=>e.isMatriz||!e.matrizId);
     const termo=stripAcc(document.getElementById('fEmpresa').value.trim());
     const lista=termo?empresas.filter(e=>stripAcc(e.nome).includes(termo)):empresas;
-    lista.forEach(e=>{const o=document.createElement('option');o.value=e.nome;dl.appendChild(o);});
+    lista.forEach(e=>{
+        const o=document.createElement('option');o.value=e.nome;dl.appendChild(o);
+        // Datalist filtering in browsers is accent-sensitive. Add a second option
+        // with the accent-stripped name so typing "delia" surfaces "Délia Modas Fashion".
+        const semAcento=stripAcc(e.nome);
+        if(semAcento && semAcento!==e.nome.toLowerCase()){
+            const o2=document.createElement('option');o2.value=semAcento;dl.appendChild(o2);
+        }
+    });
 }
 
 function clearFilters(){
