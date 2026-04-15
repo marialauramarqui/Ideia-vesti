@@ -115,18 +115,11 @@ def main():
             value=f"CTR-{date.today().strftime('%Y%m%d')}",
         )
 
-        st.markdown("**⚙️ Opções avançadas (debug)**")
-        journey_label = st.selectbox(
-            "Journey",
-            [
-                "4 - Somente autorização (sem cobrança imediata)",
-                "3 - Cobrança imediata + autorização da recorrência",
-            ],
-            index=0,
+        st.info(
+            "🔁 O QR Code gerado cobra a 1ª parcela **e** já autoriza a recorrência "
+            "automaticamente no mesmo ato — o cliente não precisa habilitar nada."
         )
-        enviar_payable_with = st.checkbox(
-            "Enviar payable_with=['pix'] no payload", value=False
-        )
+        enviar_payable_with = False
 
         submitted = st.form_submit_button("🚀 Gerar Pix Automático", type="primary")
 
@@ -156,7 +149,7 @@ def main():
         "due_date": due_date,
         "recurrence_beginning": recurrence_beginning,
         "contract_number": contract_number.strip() or f"CTR-{cpf_limpo}",
-        "journey": int(journey_label.split(" ")[0]),
+        "journey": 3,
         "enviar_payable_with": enviar_payable_with,
     }
 
@@ -207,30 +200,25 @@ def main():
     auto_url = auto.get("authorization_url") or auto.get("url")
 
     st.divider()
-    st.subheader("🔁 Pix Automático (autorização da recorrência)")
+    st.subheader("🔁 Pix Automático — pagamento + recorrência")
+    st.caption(
+        "Ao escanear este QR Code, o cliente paga a 1ª parcela e já autoriza "
+        "automaticamente a recorrência no mesmo ato."
+    )
     if auto_qr_img or auto_qr_text or auto_url:
         if auto_qr_img:
-            st.image(auto_qr_img, caption="QR Code - Autorização Pix Automático", width=260)
+            st.image(auto_qr_img, caption="QR Code - Pix Automático (pagamento + recorrência)", width=260)
         if auto_qr_text:
-            st.markdown("**Código copia e cola (Pix Automático):**")
+            st.markdown("**Código copia e cola:**")
             st.code(auto_qr_text, language=None)
         if auto_url:
-            st.link_button("🔗 Abrir link de autorização", auto_url)
+            st.link_button("🔗 Abrir link de pagamento", auto_url)
     else:
         st.warning(
-            "⚠️ Nenhum QR Code específico de Pix Automático foi retornado pela iugu. "
-            "Veja abaixo o conteúdo completo do objeto `automatic_pix` para identificar "
-            "qual campo usar."
+            "⚠️ Nenhum QR Code de Pix Automático foi retornado pela iugu. "
+            "Veja abaixo o conteúdo do objeto `automatic_pix`."
         )
         st.json(auto)
-
-    st.divider()
-    with st.expander("📄 Dados do Pix comum (pix.*)"):
-        if pix.get("qrcode"):
-            st.image(pix["qrcode"], caption="QR Code Pix comum", width=220)
-        if pix.get("qrcode_text"):
-            st.code(pix["qrcode_text"], language=None)
-        st.json(pix)
 
     if data.get("secure_url"):
         st.link_button("🔗 Abrir página de pagamento iugu", data["secure_url"])
