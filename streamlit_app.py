@@ -1,11 +1,11 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 import requests
 import streamlit as st
 
 BASE_URL = "https://api.iugu.com/v1"
 
-st.set_page_config(page_title="Vesti - Pix Automático", page_icon="💸", layout="centered")
+st.set_page_config(page_title="Vesti - Pix Automático", page_icon="💸", layout="wide")
 
 
 def check_password():
@@ -31,6 +31,12 @@ def carregar_parceiros():
     return [dict(p) for p in parceiros]
 
 
+def selecionar_parceiro(parceiros, key):
+    nomes = [p["nome"] for p in parceiros]
+    parceiro_nome = st.selectbox("Parceiro (conta iugu)", nomes, key=key)
+    return next(p for p in parceiros if p["nome"] == parceiro_nome)
+
+
 def criar_fatura(token, dados):
     payload = {
         "email": dados["email"],
@@ -54,9 +60,6 @@ def criar_fatura(token, dados):
             "contract_number": dados["contract_number"][:35],
         },
     }
-    if dados.get("enviar_payable_with"):
-        payload["payable_with"] = ["pix"]
-
     r = requests.post(
         f"{BASE_URL}/invoices",
         auth=(token, ""),
@@ -66,26 +69,51 @@ def criar_fatura(token, dados):
     return r, payload
 
 
-def main():
-    if not check_password():
-        st.stop()
+def listar_faturas(token, data_inicio, data_fim, limit=100):
+    params = {
+        "limit": limit,
+        "start": 0,
+        "sortBy[created_at]": "desc",
+        "created_at_from": data_inicio.isoformat(),
+        "created_at_to": data_fim.isoformat(),
+    }
+    r = requests.get(
+        f"{BASE_URL}/invoices",
+        auth=(token, ""),
+        params=params,
+        timeout=30,
+    )
+    return r
 
-    st.title("💸 Gerador de Pix Automático")
-    st.caption("Crie cobranças recorrentes com Pix Automático da iugu")
 
-    parceiros = carregar_parceiros()
-    if not parceiros:
-        st.error(
-            "Nenhum parceiro configurado. Adicione os parceiros em Settings → Secrets."
-        )
-        st.stop()
+def consultar_fatura(token, invoice_id):
+    r = requests.get(
+        f"{BASE_URL}/invoices/{invoice_id}",
+        auth=(token, ""),
+        timeout=30,
+    )
+    return r
 
-    nomes = [p["nome"] for p in parceiros]
-    parceiro_nome = st.selectbox("Parceiro (conta iugu)", nomes)
-    parceiro = next(p for p in parceiros if p["nome"] == parceiro_nome)
 
-    st.divider()
+def classificar_fatura(inv):
+    status = (inv.get("status") or "").lower()
+    auto = inv.get("automatic_pix") or {}
+    tem_auto = bool(auto)
+    pago = status == "paid"
+    if pago and tem_auto:
+        return "🟢 Pago + recorrência"
+    if pago and not tem_auto:
+        return "🟡 Pago SEM recorrência"
+    if status == "pending":
+        return "⚪ Aguardando pagamento"
+    if status in ("canceled", "expired"):
+        return f"⚫ {status.capitalize()}"
+    return f"❔ {status or 'desconhecido'}"
+
+
+def pagina_gerar(parceiros):
     st.subheader("Dados do cliente")
+    parceiro = selecionar_parceiro(parceiros, key="parceiro_gerar")
 
     with st.form("fatura_form"):
         col1, col2 = st.columns(2)
@@ -119,7 +147,6 @@ def main():
             "🔁 O QR Code gerado cobra a 1ª parcela **e** já autoriza a recorrência "
             "automaticamente no mesmo ato — o cliente não precisa habilitar nada."
         )
-        enviar_payable_with = False
 
         submitted = st.form_submit_button("🚀 Gerar Pix Automático", type="primary")
 
@@ -150,7 +177,6 @@ def main():
         "recurrence_beginning": recurrence_beginning,
         "contract_number": contract_number.strip() or f"CTR-{cpf_limpo}",
         "journey": 3,
-        "enviar_payable_with": enviar_payable_with,
     }
 
     with st.spinner(f"Criando fatura em {parceiro['nome']}..."):
@@ -159,9 +185,6 @@ def main():
         except requests.RequestException as e:
             st.error(f"Erro de conexão: {e}")
             return
-
-    with st.expander("📤 Payload enviado para iugu (debug)"):
-        st.json(payload_enviado)
 
     if r.status_code >= 400:
         st.error(f"Erro {r.status_code} ao criar fatura")
@@ -184,28 +207,11 @@ def main():
     if auto.get("receiver_recurrence_id"):
         st.markdown(f"**Recurrence ID:** `{auto['receiver_recurrence_id']}`")
 
-    qr_img = (
-        pix.get("qrcode")
-        or auto.get("qrcode")
-        or auto.get("qr_code")
-        or auto.get("qrcode_url")
-        or auto.get("authorization_qrcode")
-    )
-    qr_text = (
-        pix.get("qrcode_text")
-        or auto.get("qrcode_text")
-        or auto.get("qr_code_text")
-        or auto.get("emv")
-        or auto.get("authorization_qrcode_text")
-        or auto.get("copy_paste")
-    )
+    qr_img = pix.get("qrcode")
+    qr_text = pix.get("qrcode_text")
 
     st.divider()
     st.subheader("🔁 Pix Automático — pagamento + recorrência")
-    st.caption(
-        "Ao escanear este QR Code, o cliente paga a 1ª parcela e já autoriza "
-        "automaticamente a recorrência no mesmo ato."
-    )
     if qr_img or qr_text:
         if qr_img:
             st.image(qr_img, caption="QR Code - Pix Automático (pagamento + recorrência)", width=260)
@@ -213,21 +219,170 @@ def main():
             st.markdown("**Código copia e cola:**")
             st.code(qr_text, language=None)
         st.info(
-            "📱 Compartilhe **apenas este QR Code / código copia e cola** com o cliente. "
-            "Na jornada 3 da iugu, este mesmo QR cobra a 1ª parcela e autoriza a recorrência "
-            "automaticamente no mesmo ato — o cliente não escolhe nada."
+            "📱 Compartilhe este QR Code ou o link de pagamento com o cliente. "
+            "Na jornada 3, o mesmo QR cobra a 1ª parcela e autoriza a recorrência."
         )
     else:
-        st.warning(
-            "⚠️ Nenhum QR Code foi retornado pela iugu. Veja a resposta abaixo."
-        )
+        st.warning("⚠️ Nenhum QR Code foi retornado pela iugu.")
         st.json({"pix": pix, "automatic_pix": auto})
 
     if data.get("secure_url"):
         st.link_button("🔗 Abrir página de pagamento iugu", data["secure_url"])
 
-    with st.expander("🧪 Ver resposta completa da iugu (debug)"):
-        st.json(data)
+
+def pagina_conferir(parceiros):
+    st.subheader("📋 Conferir faturas")
+    st.caption(
+        "Liste as faturas recentes e veja quais foram pagas **com** recorrência e quais "
+        "foram pagas **sem** recorrência (🟡 = precisa de atenção)."
+    )
+
+    parceiro = selecionar_parceiro(parceiros, key="parceiro_conferir")
+
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col1:
+        data_inicio = st.date_input(
+            "De", value=date.today() - timedelta(days=7), key="data_inicio"
+        )
+    with col2:
+        data_fim = st.date_input("Até", value=date.today(), key="data_fim")
+    with col3:
+        st.write("")
+        st.write("")
+        buscar = st.button("🔍 Buscar faturas", type="primary")
+
+    if not buscar:
+        return
+
+    with st.spinner(f"Consultando faturas de {parceiro['nome']}..."):
+        try:
+            r = listar_faturas(parceiro["token"], data_inicio, data_fim)
+        except requests.RequestException as e:
+            st.error(f"Erro de conexão: {e}")
+            return
+
+    if r.status_code >= 400:
+        st.error(f"Erro {r.status_code} ao listar faturas")
+        try:
+            st.json(r.json())
+        except Exception:
+            st.code(r.text)
+        return
+
+    resp = r.json()
+    items = resp.get("items") or []
+
+    if not items:
+        st.info("Nenhuma fatura encontrada no período.")
+        return
+
+    st.success(f"{len(items)} fatura(s) encontrada(s).")
+
+    total = len(items)
+    pagos_sem_rec = sum(
+        1
+        for i in items
+        if (i.get("status") or "").lower() == "paid" and not (i.get("automatic_pix") or {})
+    )
+    pagos_com_rec = sum(
+        1
+        for i in items
+        if (i.get("status") or "").lower() == "paid" and (i.get("automatic_pix") or {})
+    )
+    pendentes = sum(1 for i in items if (i.get("status") or "").lower() == "pending")
+
+    k1, k2, k3, k4 = st.columns(4)
+    k1.metric("Total", total)
+    k2.metric("🟢 Pagos c/ recorrência", pagos_com_rec)
+    k3.metric("🟡 Pagos SEM recorrência", pagos_sem_rec)
+    k4.metric("⚪ Pendentes", pendentes)
+
+    if pagos_sem_rec > 0:
+        st.warning(
+            f"⚠️ {pagos_sem_rec} fatura(s) foram pagas mas a recorrência "
+            "**NÃO** foi autorizada pelo cliente. Verifique abaixo."
+        )
+
+    filtro = st.radio(
+        "Filtrar",
+        ["Todas", "🟡 Apenas pagas SEM recorrência", "🟢 Apenas pagas com recorrência", "⚪ Apenas pendentes"],
+        horizontal=True,
+    )
+
+    def passa_filtro(inv):
+        status = (inv.get("status") or "").lower()
+        tem_auto = bool(inv.get("automatic_pix") or {})
+        if filtro == "Todas":
+            return True
+        if filtro == "🟡 Apenas pagas SEM recorrência":
+            return status == "paid" and not tem_auto
+        if filtro == "🟢 Apenas pagas com recorrência":
+            return status == "paid" and tem_auto
+        if filtro == "⚪ Apenas pendentes":
+            return status == "pending"
+        return True
+
+    filtradas = [i for i in items if passa_filtro(i)]
+
+    linhas = []
+    for inv in filtradas:
+        auto = inv.get("automatic_pix") or {}
+        linhas.append(
+            {
+                "Situação": classificar_fatura(inv),
+                "Criada em": inv.get("created_at") or inv.get("created_at_iso"),
+                "Cliente": inv.get("payer_name") or "—",
+                "Email": inv.get("payer_email") or "—",
+                "Valor": inv.get("total") or f"R$ {(inv.get('total_cents') or 0)/100:.2f}",
+                "Pago em": inv.get("paid_at") or "—",
+                "Contrato": auto.get("contract_number") or "—",
+                "Recurrence ID": auto.get("receiver_recurrence_id") or "—",
+                "Invoice ID": inv.get("id"),
+            }
+        )
+
+    st.dataframe(linhas, use_container_width=True, hide_index=True)
+
+    st.divider()
+    with st.expander("🔎 Inspecionar uma fatura específica"):
+        invoice_id = st.text_input("Invoice ID", key="insp_id")
+        if st.button("Consultar", key="insp_btn") and invoice_id.strip():
+            try:
+                r = consultar_fatura(parceiro["token"], invoice_id.strip())
+            except requests.RequestException as e:
+                st.error(f"Erro de conexão: {e}")
+                return
+            if r.status_code >= 400:
+                st.error(f"Erro {r.status_code}")
+                st.code(r.text)
+                return
+            inv = r.json()
+            st.markdown(f"**Situação:** {classificar_fatura(inv)}")
+            st.markdown(f"**Status:** {inv.get('status')}")
+            st.markdown(f"**Cliente:** {inv.get('payer_name')}")
+            st.markdown(f"**Valor:** {inv.get('total')}")
+            st.markdown(f"**Pago em:** {inv.get('paid_at') or '—'}")
+            st.json(inv.get("automatic_pix") or {})
+
+
+def main():
+    if not check_password():
+        st.stop()
+
+    st.title("💸 Vesti - Pix Automático")
+
+    parceiros = carregar_parceiros()
+    if not parceiros:
+        st.error(
+            "Nenhum parceiro configurado. Adicione os parceiros em Settings → Secrets."
+        )
+        st.stop()
+
+    tab1, tab2 = st.tabs(["🚀 Gerar fatura", "📋 Conferir faturas"])
+    with tab1:
+        pagina_gerar(parceiros)
+    with tab2:
+        pagina_conferir(parceiros)
 
 
 if __name__ == "__main__":
