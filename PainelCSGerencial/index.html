@@ -556,7 +556,7 @@ function updateHome(){
     plat.forEach(function(r){if(r.nota!=null)allCsat.push(+r.nota)});
     var csatAvg=allCsat.length?(allCsat.reduce(function(a,b){return a+b},0)/allCsat.length):null;
     document.getElementById('home-csat-nps-val').textContent='NPS '+(nScore==null?'--':nScore);
-    document.getElementById('home-csat-nps-sub').textContent='CSAT medio '+(csatAvg==null?'--':csatAvg.toFixed(2))+'/5 ('+allCsat.length+' respostas)';
+    document.getElementById('home-csat-nps-sub').textContent='CSAT medio '+(csatAvg==null?'--':csatAvg.toFixed(2))+'/5';
     // Novos VestiPago respeita filtros globais
     var vp=(typeof VP_DATA!=='undefined'?VP_DATA:null);
     var nClientes=0,totalValor=0;
@@ -566,7 +566,7 @@ function updateHome(){
         rows.forEach(function(r){totalValor+=(r.valTotal||0)});
     }
     document.getElementById('home-vp-val').textContent=nClientes+' clientes';
-    document.getElementById('home-vp-sub').textContent='R$ '+totalValor.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+' transacionado';
+    document.getElementById('home-vp-sub').textContent='R$ '+totalValor.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 
 // === UPDATE: NOVOS VESTIPAGO ===
