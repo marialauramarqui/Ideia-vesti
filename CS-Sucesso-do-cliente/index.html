@@ -529,6 +529,9 @@ function clearFilters(){
     applyFilters();
 }
 
+/* ========== TEXT HELPERS ========== */
+function stripAcc(s){return (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+
 /* ========== DATE HELPERS ========== */
 function monthInRange(ym,de,ate){
     if(!de&&!ate)return true;
@@ -546,7 +549,7 @@ function sumMonthly(e,field,de,ate){
 
 /* ========== FILTER ========== */
 function applyFilters(){
-    const fE=document.getElementById('fEmpresa').value.trim().toLowerCase();
+    const fE=stripAcc(document.getElementById('fEmpresa').value.trim());
     const fA=document.getElementById('fAnjo').value;
     const fCa=document.getElementById('fCanal').value;
     const fCr=document.getElementById('fCartao').value;
@@ -569,7 +572,7 @@ function applyFilters(){
     const fFilial=document.getElementById('fFilial').value;
 
     filtered=DADOS.empresas.filter(e=>{
-        if(fE&&!e.nome.toLowerCase().includes(fE)&&!(e.id&&e.id.toLowerCase().includes(fE)))return false;
+        if(fE&&!stripAcc(e.nome).includes(fE)&&!(e.id&&e.id.toLowerCase().includes(fE)))return false;
         if(fA&&e.anjo!==fA)return false;
         if(fCa&&e.canal!==fCa)return false;
         if(fCr==='Sim'&&e.cartao!=='Sim')return false;
@@ -589,7 +592,7 @@ function applyFilters(){
 
     // Apply filial filter after main filter
     if(fE){
-        const mainMatch=DADOS.empresas.find(e=>e.nome.toLowerCase()===fE||(e.id&&e.id.toLowerCase()===fE));
+        const mainMatch=DADOS.empresas.find(e=>stripAcc(e.nome)===fE||(e.id&&e.id.toLowerCase()===fE));
         if(mainMatch&&mainMatch.filiais&&mainMatch.filiais.length>0){
             if(fFilial){
                 // Specific filial/matriz selected - show only that one
@@ -639,8 +642,8 @@ function applyFilters(){
 
 /* ========== EMPRESA PANEL ========== */
 function getDisplayEmpresa(){
-    const fE=document.getElementById('fEmpresa').value.trim().toLowerCase();
-    const mainMatch=fE?DADOS.empresas.find(e=>e.nome.toLowerCase()===fE||(e.id&&e.id.toLowerCase()===fE)):null;
+    const fE=stripAcc(document.getElementById('fEmpresa').value.trim());
+    const mainMatch=fE?DADOS.empresas.find(e=>stripAcc(e.nome)===fE||(e.id&&e.id.toLowerCase()===fE)):null;
     if(!mainMatch) return {main:null,display:null};
     const fFilial=document.getElementById('fFilial').value;
     if(fFilial){

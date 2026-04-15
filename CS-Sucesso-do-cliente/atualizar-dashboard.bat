@@ -3,7 +3,7 @@ REM ============================================================
 REM  Atualiza dados do dashboard e faz push para o GitHub
 REM ============================================================
 
-cd /d "C:\Users\adria\AppData\Local\Temp\Ideia-vesti\CS-Sucesso-do-cliente"
+cd /d "C:\Users\Laura\Projetos\Ideia-vesti\CS-Sucesso-do-cliente"
 
 echo [%date% %time%] Iniciando atualizacao... >> atualizar.log
 
@@ -48,7 +48,7 @@ if %errorlevel% neq 0 (
 )
 
 REM 4. Verificar se dados.js mudou
-cd /d "C:\Users\adria\AppData\Local\Temp\Ideia-vesti"
+cd /d "C:\Users\Laura\Projetos\Ideia-vesti"
 git diff --quiet CS-Sucesso-do-cliente/dados.js
 if %errorlevel% equ 0 (
     echo [%date% %time%] Sem alteracoes em dados.js, nada a fazer. >> CS-Sucesso-do-cliente\atualizar.log
