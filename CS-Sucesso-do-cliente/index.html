@@ -1647,6 +1647,8 @@ function loadApp(){
         // Mostrar empresas Ativas + as sem status preenchido (build parcial nao deve apagar tudo).
         // Apenas Desativada eh excluida explicitamente.
         DADOS.empresas=DADOS.empresas.filter(e=>e.statusEmpresa!=='Desativada');
+        // Exclui empresas sem pedidos em 2026 (mesma logica do PainelCSGerencial)
+        DADOS.empresas=DADOS.empresas.filter(e=>{if(!e.m)return false;return Object.keys(e.m).some(k=>k.startsWith('2026'));});
         // Fabric (PainelCSGerencial) eh a fonte da verdade para contagem de empresas.
         // Se patch-empresas.js rodou, DADOS.fabricCounts existe e tem {matriz,filial,total}.
         const nEmp=(DADOS.fabricCounts&&DADOS.fabricCounts.matriz)||DADOS.empresas.filter(e=>e.isMatriz||!e.isFilial).length;

@@ -189,6 +189,13 @@ OUTER APPLY (
 """
 
 
+SQL_PEDIDOS_2026 = """
+SELECT DISTINCT domainId
+FROM dbo.MongoDB_Pedidos_Geral
+WHERE settings_createdAt_TIMESTAMP >= '2026-01-01'
+"""
+
+
 def fetch_rows(conn: "pyodbc.Connection") -> list[dict]:
     print("[fabric] rodando query (domains + companies + joins)")
     cur = conn.cursor()
@@ -199,14 +206,31 @@ def fetch_rows(conn: "pyodbc.Connection") -> list[dict]:
     return rows
 
 
+def fetch_domains_com_pedidos_2026(conn: "pyodbc.Connection") -> set[str]:
+    print("[fabric] rodando query (dominios com pedidos em 2026)")
+    cur = conn.cursor()
+    cur.execute(SQL_PEDIDOS_2026)
+    ids = set()
+    for r in cur.fetchall():
+        v = r[0]
+        if v is None or str(v).strip() == "":
+            continue
+        try:
+            ids.add(str(int(v)))
+        except (ValueError, TypeError):
+            ids.add(str(v).strip())
+    print(f"[fabric] {len(ids)} dominios com pedidos em 2026")
+    return ids
+
+
 def _s(v) -> str:
     return "" if v is None else str(v)
 
 
-def build_companies(rows: list[dict]) -> list[dict]:
+def build_companies(rows: list[dict], domains_2026: set[str] | None = None) -> list[dict]:
     merged = []
     stats = {"matriz": 0, "filial": 0, "com_anjo": 0, "com_integ": 0,
-             "com_canal": 0, "com_cnpj": 0, "com_plano": 0, "com_valor": 0}
+             "com_canal": 0, "com_cnpj": 0, "com_plano": 0, "com_valor": 0, "com_ped2026": 0}
     for row in rows:
         did = _s(row["domain_id"])
         rn = int(row.get("row_num") or 1)
@@ -244,6 +268,8 @@ def build_companies(rows: list[dict]) -> list[dict]:
         if cnpj: stats["com_cnpj"] += 1
         if plano: stats["com_plano"] += 1
         if valor_mensal: stats["com_valor"] += 1
+        tem_pedidos_2026 = did in domains_2026 if domains_2026 else True
+        if tem_pedidos_2026: stats["com_ped2026"] += 1
 
         merged.append({
             "domain_id": did,
@@ -262,11 +288,12 @@ def build_companies(rows: list[dict]) -> list[dict]:
             "status": "Ativa",
             "pedidos": 0,
             "matrizId": did if is_filial else "",
+            "temPedidos2026": tem_pedidos_2026,
         })
     print(f"[build] {len(merged)} linhas | matriz:{stats['matriz']} filial:{stats['filial']} "
           f"| anjo:{stats['com_anjo']} integ:{stats['com_integ']} "
           f"canal:{stats['com_canal']} cnpj:{stats['com_cnpj']} "
-          f"plano:{stats['com_plano']} valor:{stats['com_valor']}")
+          f"plano:{stats['com_plano']} valor:{stats['com_valor']} ped2026:{stats['com_ped2026']}")
     return merged
 
 
@@ -293,7 +320,8 @@ def main() -> None:
     cfg = load_config()
     with connect(cfg) as conn:
         rows = fetch_rows(conn)
-    merged = build_companies(rows)
+        domains_2026 = fetch_domains_com_pedidos_2026(conn)
+    merged = build_companies(rows, domains_2026)
     write_companies_json(merged)
     print("[ok] companies_data.json atualizado. merge_data.py vai compor o dashboard_full_data.js.")
 

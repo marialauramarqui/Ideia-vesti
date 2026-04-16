@@ -20,8 +20,10 @@ function main() {
         process.exit(1);
     }
     const list = JSON.parse(fs.readFileSync(COMPANIES, 'utf-8'));
+    // Só conta empresas com pedidos em 2026
+    const active = list.filter(c => c.temPedidos2026);
     let matriz = 0, filial = 0;
-    list.forEach(c => {
+    active.forEach(c => {
         if (c.isMatriz || c.is_filial === false) matriz++;
         else if (c.is_filial || c.isMatriz === false) filial++;
     });

@@ -323,7 +323,7 @@ CSAT_ORACULO_DATA.forEach(function(r){if(!csatOraPerCo[r.empresa])csatOraPerCo[r
 (typeof CSAT_PLATAFORMA_DATA!=='undefined'?CSAT_PLATAFORMA_DATA:[]).forEach(function(r){if(r.nota!=null&&r.empresa){if(!csatPlatPerCo[r.empresa])csatPlatPerCo[r.empresa]=[];csatPlatPerCo[r.empresa].push(r.nota)}});
 
 var activeList=[];
-COMPANIES_DATA.filter(function(c){return c.status==='Ativa'}).forEach(function(c){
+COMPANIES_DATA.filter(function(c){return c.status==='Ativa'&&c.temPedidos2026}).forEach(function(c){
     var nps=npsPerCo[c.name]||[],co=csatOraPerCo[c.name]||[],cp=csatPlatPerCo[c.name]||[];
     activeList.push(Object.assign({},c,{
         npsN:nps,csatN:co.concat(cp),
