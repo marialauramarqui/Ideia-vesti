@@ -81,6 +81,26 @@ table.dt tr:hover td{background:#FAFAFA}
 .hl-card .hl-cargo{font-size:22px;font-weight:700;margin:4px 0 2px}
 .hl-card .hl-score{font-size:36px;font-weight:800;line-height:1}
 .hl-card .hl-meta{font-size:11px;opacity:.85;margin-top:6px}
+.help-btn{width:32px;height:32px;border-radius:50%;border:2px solid var(--p);background:#fff;color:var(--p);font-size:15px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:auto;transition:all .15s;font-family:'Inter',sans-serif}
+.help-btn:hover{background:var(--p);color:#fff}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal-box{background:#fff;border-radius:16px;padding:28px 32px;max-width:560px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.2);position:relative}
+.modal-box h3{font-size:17px;font-weight:700;margin-bottom:14px;color:var(--dk)}
+.modal-box p,.modal-box li{font-size:13px;line-height:1.7;color:var(--g)}
+.modal-box ul{padding-left:18px;margin:8px 0}
+.modal-box li{margin-bottom:4px}
+.modal-box b{color:var(--dk)}
+.modal-box .close-btn{position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--g);font-weight:700}
+.modal-box .close-btn:hover{color:var(--dk)}
+.churn-detail{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:20px;margin-bottom:16px;display:none}
+.churn-detail.show{display:block}
+.churn-detail h3{font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.churn-detail .back-link{font-size:12px;color:var(--p);cursor:pointer;font-weight:600}
+.churn-detail .back-link:hover{text-decoration:underline}
+.churn-detail .d-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.churn-detail .d-item .dl{font-size:10px;color:var(--g);text-transform:uppercase;letter-spacing:.5px}
+.churn-detail .d-item .dv{font-size:13px;font-weight:600;margin-top:2px}
 @media(max-width:700px){.highlight-row{grid-template-columns:1fr}}
 @media(max-width:900px){.kpi-row{grid-template-columns:1fr 1fr}.chart-row{grid-template-columns:1fr}}
 @media(max-width:600px){.kpi-row{grid-template-columns:1fr}.filters{flex-direction:column;align-items:stretch}}
@@ -167,9 +187,23 @@ table.dt tr:hover td{background:#FAFAFA}
         <div class="filter-group"><label>Mes parou:</label><select class="f-select" id="chFMes" onchange="updateChurn()"><option value="">Todos</option></select></div>
         <div class="filter-group"><label>CS:</label><select class="f-select" id="chFCS" onchange="updateChurn()"><option value="">Todos</option></select></div>
         <button class="f-btn" onclick="churnClearFilters()">Limpar</button>
-        <span style="font-size:11px;color:var(--g);margin-left:auto">Os filtros globais de Empresa e CS (barra acima) tambem se aplicam aqui.</span>
+        <button class="help-btn" onclick="document.getElementById('helpChurn').classList.add('show')" title="Como funciona">?</button>
     </div>
-    <div class="tbl-card">
+    <!-- DETALHE DE EMPRESA CHURN -->
+    <div class="churn-detail" id="churnDetail">
+        <h3><span class="back-link" onclick="closeChurnDetail()">&larr; Voltar para lista</span> <span id="chd-nome"></span></h3>
+        <div class="d-row">
+            <div class="d-item"><div class="dl">CS</div><div class="dv" id="chd-cs">-</div></div>
+            <div class="d-item"><div class="dl">Mes Parou VP</div><div class="dv" id="chd-mes">-</div></div>
+            <div class="d-item"><div class="dl">Ult. Pedido VP</div><div class="dv" id="chd-ultvp">-</div></div>
+            <div class="d-item"><div class="dl">Ult. Pedido Geral</div><div class="dv" id="chd-ultped">-</div></div>
+            <div class="d-item"><div class="dl">Total Pedidos VP</div><div class="dv" id="chd-totvp">-</div></div>
+            <div class="d-item"><div class="dl">Valor Perdido</div><div class="dv" id="chd-valor" style="color:var(--s)">-</div></div>
+        </div>
+        <div class="chart-row full"><div class="ch"><h4>Historico mensal VestiPago (PIX vs Cartao)</h4><div class="cw tall"><canvas id="chd-chart"></canvas></div></div></div>
+    </div>
+    <!-- TABELA CHURN -->
+    <div class="tbl-card" id="churnTableCard">
         <h4 id="ch-tbl-title">Empresas &middot; <span id="ch-tbl-count" style="color:var(--g);font-weight:500">--</span></h4>
         <div style="max-height:520px;overflow-y:auto;overflow-x:auto">
             <table class="dt" id="tChurn">
@@ -177,6 +211,29 @@ table.dt tr:hover td{background:#FAFAFA}
                 <tbody></tbody>
             </table>
         </div>
+    </div>
+</div>
+<!-- MODAL AJUDA CHURN -->
+<div class="modal-overlay" id="helpChurn" onclick="if(event.target===this)this.classList.remove('show')">
+    <div class="modal-box">
+        <button class="close-btn" onclick="document.getElementById('helpChurn').classList.remove('show')">&times;</button>
+        <h3>Churn VestiPago - Como funciona</h3>
+        <p><b>O que e churn de VestiPago?</b></p>
+        <p>Empresas que continuam ativas na Vesti (fazendo pedidos normais) mas <b>pararam de usar o VestiPago</b> (PIX ou Cartao) ha pelo menos 2 meses.</p>
+        <ul>
+            <li><b>Mes Parou</b> = mes seguinte ao ultimo pedido com VestiPago</li>
+            <li><b>Valor Perdido</b> = soma dos pedidos VP no ultimo mes completo antes do churn. Se o mes anterior nao tinha atividade, usa o ultimo mes completo com transacoes VP</li>
+            <li><b>PIX / Cartao</b> = divisao do valor perdido por metodo de pagamento</li>
+            <li><b>Qtd</b> = total historico de pedidos VestiPago da empresa</li>
+            <li><b>*</b> (asterisco) = empresa sem atividade recorrente no mes anterior — valor de referencia pode ser de meses antes</li>
+        </ul>
+        <p><b>Filtros:</b></p>
+        <ul>
+            <li><b>Mes parou</b> = filtra pelo mes em que a empresa parou o VP</li>
+            <li><b>CS</b> = filtra pelo Customer Success responsavel</li>
+            <li>Os filtros globais (Empresa e CS na barra superior) tambem se aplicam</li>
+        </ul>
+        <p><b>Clique no nome da empresa</b> para ver o historico mensal de VestiPago com graficos.</p>
     </div>
 </div>
 <!-- ============ NOVOS VESTIPAGO TAB ============ -->
@@ -190,7 +247,7 @@ table.dt tr:hover td{background:#FAFAFA}
     <div class="filters">
         <div class="filter-group"><label>Mes completado:</label><select class="f-select" id="vpFMes" onchange="updateVp()"><option value="">Todos (agregado)</option></select></div>
         <button class="f-btn" onclick="vpClearFilters()">Limpar</button>
-        <span style="font-size:11px;color:var(--g);margin-left:auto">Os filtros globais de Empresa e CS (barra acima) tambem se aplicam aqui.</span>
+        <button class="help-btn" onclick="document.getElementById('helpVp').classList.add('show')" title="Como funciona">?</button>
     </div>
     <div class="tbl-card">
         <h4 id="vp-tbl-title">Clientes &middot; <span id="vp-tbl-count" style="color:var(--g);font-weight:500">--</span></h4>
@@ -200,6 +257,35 @@ table.dt tr:hover td{background:#FAFAFA}
                 <tbody></tbody>
             </table>
         </div>
+    </div>
+</div>
+<!-- MODAL AJUDA VP -->
+<div class="modal-overlay" id="helpVp" onclick="if(event.target===this)this.classList.remove('show')">
+    <div class="modal-box">
+        <button class="close-btn" onclick="document.getElementById('helpVp').classList.remove('show')">&times;</button>
+        <h3>Novos VestiPago - Como funciona</h3>
+        <p><b>O que sao Novos VestiPago?</b></p>
+        <p>Clientes que fizeram o <b>primeiro pedido com VestiPago</b> (PIX ou Cartao) a partir de janeiro/2026. Sao empresas que adotaram o VestiPago recentemente.</p>
+        <ul>
+            <li><b>Clientes novos</b> = total de empresas que comecaram a usar VP desde jan/2026</li>
+            <li><b>Total transacionado</b> = soma de todos os pedidos VP desses clientes</li>
+            <li><b>Total PIX / Total Cartao</b> = divisao por metodo de pagamento</li>
+        </ul>
+        <p><b>Filtro "Mes completado":</b></p>
+        <ul>
+            <li>Mostra clientes que <b>completaram o 1o mes</b> de VestiPago no mes selecionado</li>
+            <li>Ex: selecionar Fev/26 mostra clientes cujo 1o pedido VP foi em Jan/26 (completaram 1 mes em Fev)</li>
+            <li>Sem filtro = agregado total desde jan/2026</li>
+        </ul>
+        <p><b>Tabela:</b></p>
+        <ul>
+            <li><b>CS</b> = Customer Success responsavel (clique para filtrar)</li>
+            <li><b>Marca</b> = nome da empresa (clique para filtrar)</li>
+            <li><b>1o pedido VP</b> = data do primeiro pedido com VestiPago</li>
+            <li><b>PIX / Cartao / Total</b> = valores transacionados</li>
+            <li><b>Qtd</b> = quantidade de pedidos VP</li>
+        </ul>
+        <p>Os filtros globais de <b>Empresa</b> e <b>CS</b> (barra superior) tambem se aplicam aqui.</p>
     </div>
 </div>
 <!-- ============ NPS TAB ============ -->
@@ -372,6 +458,7 @@ function switchTab(t,skipPush){
     var prev=currentTab;
     if(prev && prev!==t && !skipPush){navStack.push(prev)}
     currentTab=t;
+    if(typeof closeChurnDetail==='function')closeChurnDetail();
     var tabs=['home','csat','nps','vp','churn'];
     tabs.forEach(function(x){
         var pan=document.getElementById('tab-'+x);if(pan)pan.classList.toggle('active',x===t);
@@ -678,7 +765,7 @@ function updateChurn(){
         var obsTag=r.obs?' <span title="'+esc(r.obs)+'" style="cursor:help;color:var(--w);font-size:10px;font-weight:700">*</span>':'';
         h.push('<tr>'+
             '<td><span class="badge sm click" onclick="filterByCS(\''+csEsc+'\')">'+esc(r.cs||'-')+'</span></td>'+
-            '<td class="click" onclick="selectCo(\''+empEsc+'\')"><b>'+esc(r.empresa||'-')+'</b>'+obsTag+'</td>'+
+            '<td class="click" onclick="openChurnDetail(\''+esc(r.domainId)+'\')"><b>'+esc(r.empresa||'-')+'</b>'+obsTag+'</td>'+
             '<td style="color:var(--g);white-space:nowrap">'+fmtVpD(r.ultVP)+'</td>'+
             '<td style="color:var(--g);white-space:nowrap">'+fmtM(r.mes)+'</td>'+
             '<td style="text-align:right;font-weight:600;color:'+((r.valPix||0)>0?'#0984E3':'#B2BEC3')+'">'+((r.valPix||0)>0?fmtVpC(r.valPix):'&mdash;')+'</td>'+
@@ -694,6 +781,38 @@ function updateChurn(){
     if(!rodape){rodape=document.createElement('div');rodape.id='ch-rodape';rodape.style.cssText='font-size:10px;color:var(--g);margin-top:8px;padding:0 4px';tb.closest('.tbl-card').appendChild(rodape)}
     rodape.innerHTML=temObs?'<span style="color:var(--w);font-weight:700">*</span> Empresas sem atividade VP recorrente no mes anterior ao churn — valor referente ao mes do ultimo pedido VP (pode ser parcial).':'';
 }
+// === CHURN DETAIL (subpagina por empresa) ===
+var _chdChart=null;
+function openChurnDetail(domainId){
+    var r=CHURN_DATA.filter(function(x){return x.domainId===domainId})[0];
+    if(!r)return;
+    document.getElementById('churnDetail').classList.add('show');
+    document.getElementById('churnTableCard').style.display='none';
+    document.getElementById('chd-nome').textContent=r.empresa;
+    document.getElementById('chd-cs').textContent=r.cs||'-';
+    document.getElementById('chd-mes').textContent=fmtM(r.mes);
+    document.getElementById('chd-ultvp').textContent=fmtVpD(r.ultVP);
+    document.getElementById('chd-ultped').textContent=fmtVpD(r.ultPed);
+    document.getElementById('chd-totvp').textContent=(r.totalVP||0).toLocaleString('pt-BR');
+    document.getElementById('chd-valor').textContent=fmtVpC(r.valorPerdido);
+    // Grafico historico mensal
+    if(_chdChart){_chdChart.destroy();_chdChart=null}
+    var vm=r.vpMensal||{};
+    var meses=Object.keys(vm).sort();
+    if(meses.length){
+        var ctx=document.getElementById('chd-chart');
+        _chdChart=new Chart(ctx,{type:'bar',data:{labels:meses.map(function(m){return fmtM(m)}),datasets:[
+            {label:'PIX',data:meses.map(function(m){return vm[m].pix||0}),backgroundColor:'#0984E3',borderRadius:4},
+            {label:'Cartao',data:meses.map(function(m){return vm[m].cartao||0}),backgroundColor:'#F39C12',borderRadius:4}
+        ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'},datalabels:{display:function(ctx){return ctx.dataset.data[ctx.dataIndex]>0},anchor:'end',align:'top',font:{weight:'bold',size:10},formatter:function(v){return'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0})}}},scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:function(v){return'R$ '+v.toLocaleString('pt-BR')}}}}},plugins:[ChartDataLabels]});
+    }
+}
+function closeChurnDetail(){
+    document.getElementById('churnDetail').classList.remove('show');
+    document.getElementById('churnTableCard').style.display='block';
+    if(_chdChart){_chdChart.destroy();_chdChart=null}
+}
+
 function updateHomeChurn(){
     var total=CHURN_DATA.length;
     var valor=CHURN_DATA.reduce(function(a,b){return a+(b.valorPerdido||0)},0);
@@ -710,7 +829,7 @@ function updateAll(){
     else if(currentTab==='churn')updateChurn();
 }
 function filterByCS(name){fCS.value=name;document.getElementById('fClear').style.display='inline-block';updateAll()}
-window.selectCo=selectCo;window.clearEmpresa=clearEmpresa;window.clearAll=clearAll;window.updateAll=updateAll;window.clearChartFilter=clearChartFilter;window.setChartFilter=setChartFilter;window.switchTab=switchTab;window.switchCsat=switchCsat;window.updateVp=updateVp;window.vpClearFilters=vpClearFilters;window.goBack=goBack;window.updateChurn=updateChurn;window.churnClearFilters=churnClearFilters;window.filterByCS=filterByCS;
+window.selectCo=selectCo;window.clearEmpresa=clearEmpresa;window.clearAll=clearAll;window.updateAll=updateAll;window.clearChartFilter=clearChartFilter;window.setChartFilter=setChartFilter;window.switchTab=switchTab;window.switchCsat=switchCsat;window.updateVp=updateVp;window.vpClearFilters=vpClearFilters;window.goBack=goBack;window.updateChurn=updateChurn;window.churnClearFilters=churnClearFilters;window.filterByCS=filterByCS;window.openChurnDetail=openChurnDetail;window.closeChurnDetail=closeChurnDetail;
 // Inicializacao: Home e default; filtros globais visiveis, KPIs globais ocultos
 document.querySelector('.filters').style.display='flex';
 document.getElementById('globalKpiRow').style.display='none';

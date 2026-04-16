@@ -240,17 +240,32 @@ def main() -> None:
             r["valCartao"] = round(d["cartao"], 2)
             r["valorPerdido"] = round(d["pix"] + d["cartao"], 2)
         else:
-            # Fallback: mes do proprio ultimo pedido VP
-            d2 = vp_data.get((did, ult_vp_month))
-            if d2 and (d2["pix"] + d2["cartao"]) > 0:
+            # Fallback: busca o ultimo mes completo COM atividade VP, anterior ao ultVP
+            all_months = sorted(
+                [k[1] for k in vp_data if k[0] == did and k[1] < ult_vp_month
+                 and (vp_data[k]["pix"] + vp_data[k]["cartao"]) > 0],
+                reverse=True
+            )
+            if all_months:
+                fb_mes = all_months[0]
+                d2 = vp_data[(did, fb_mes)]
                 r["valPix"] = round(d2["pix"], 2)
                 r["valCartao"] = round(d2["cartao"], 2)
                 r["valorPerdido"] = round(d2["pix"] + d2["cartao"], 2)
-                r["obs"] = f"Valor ref. {_fmt_month(ult_vp_month)} - mes do ultimo pedido VP (sem atividade em {_fmt_month(preferred)})"
+                r["obs"] = f"Valor ref. {_fmt_month(fb_mes)} - ultimo mes completo com VP (sem atividade em {_fmt_month(preferred)})"
             else:
                 r["valPix"] = 0
                 r["valCartao"] = 0
                 r["valorPerdido"] = 0
+
+    # Adiciona historico mensal VP por empresa (para graficos de detalhe)
+    for r in churn_rows:
+        did = r["domainId"]
+        mensal = {}
+        for (d_id, mes), vals in vp_data.items():
+            if d_id == did and (vals["pix"] + vals["cartao"]) > 0:
+                mensal[mes] = {"pix": round(vals["pix"], 2), "cartao": round(vals["cartao"], 2)}
+        r["vpMensal"] = dict(sorted(mensal.items()))
 
     # === STEP 4: salvar JSON para o dashboard ===
     OUT_JSON.write_text(
