@@ -171,7 +171,7 @@ def main() -> None:
             if total_vp < args.min_pedidos:
                 continue
             last_vp_month = dt.date(last_vp.year, last_vp.month, 1)
-            if last_vp_month >= cutoff_month:
+            if last_vp_month > cutoff_month:
                 continue
             cy, cm = _add_month(last_vp.year, last_vp.month)
             churn_month = dt.date(cy, cm, 1)
