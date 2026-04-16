@@ -6,14 +6,15 @@
 <title>Painel CS Gerencial</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--p:#6C5CE7;--pl:rgba(108,92,231,.15);--s:#00B894;--w:#F39C12;--d:#E17055;--dk:#2D3436;--g:#636E72;--lg:#DFE6E9;--bg:#F8F9FA;--card:#FFF;--sh:0 2px 10px rgba(0,0,0,.07);--r:14px}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--dk);overflow-x:hidden}
 .top-bar{background:linear-gradient(135deg,#6C5CE7,#8B7BF7);color:#fff;padding:16px 24px;display:flex;justify-content:center;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(108,92,231,.3);position:relative}
 .top-bar .info{position:absolute;right:24px;top:50%;transform:translateY(-50%)}
-.top-bar .logo{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.top-bar .logo{font-family:'Manrope',sans-serif;font-size:24px;font-weight:800;letter-spacing:-.5px;display:flex;align-items:center;gap:8px}
+.top-bar .logo .accent{background:rgba(255,255,255,.2);padding:2px 10px;border-radius:8px;font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase}
 .top-bar .info{font-size:11px;color:rgba(255,255,255,.6)}
 .container{max-width:1400px;margin:0 auto;padding:16px 20px}
 .filters{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:14px 18px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
@@ -97,7 +98,7 @@ table.dt tr:hover td{background:#FAFAFA}
     </div>
 </div>
 <div id="dashContent" style="display:none">
-<div class="top-bar"><div style="display:flex;align-items:center;gap:14px"><img src="assets/logo-vesti.png" alt="Vesti" style="height:48px;width:auto;flex-shrink:0"><div style="text-align:left"><div class="logo">CS Gerencial</div><div style="font-size:12px;opacity:.7;margin-top:2px">Painel de Customer Success</div></div></div><div class="info" id="info-dates">Fontes: Fabric + Sheets + HubSpot</div></div>
+<div class="top-bar"><div style="display:flex;align-items:center;gap:14px"><img src="assets/logo-vesti.png" alt="Vesti" style="height:48px;width:auto;flex-shrink:0"><div style="text-align:left"><div class="logo">CS Gerencial <span class="accent">2026</span></div><div style="font-family:'Manrope',sans-serif;font-size:11px;opacity:.65;margin-top:3px;letter-spacing:.8px;font-weight:600;text-transform:uppercase">Customer Success Dashboard</div></div></div><div class="info" id="info-dates"></div></div>
 <div class="container">
 <!-- GLOBAL FILTERS -->
 <div class="filters">
