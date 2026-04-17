@@ -55,9 +55,12 @@ async function getToken() {
     const td = JSON.parse(tr.b);
     if (td.refresh_token && td.refresh_token !== ENV.FABRIC_REFRESH_TOKEN) {
         const p = path.join(DIR, '.env');
-        let env = fs.readFileSync(p, 'utf-8');
-        env = env.replace(/^FABRIC_REFRESH_TOKEN=.*$/m, 'FABRIC_REFRESH_TOKEN=' + td.refresh_token);
-        fs.writeFileSync(p, env, 'utf-8');
+        if (fs.existsSync(p)) {
+            let env = fs.readFileSync(p, 'utf-8');
+            env = env.replace(/^FABRIC_REFRESH_TOKEN=.*$/m, 'FABRIC_REFRESH_TOKEN=' + td.refresh_token);
+            fs.writeFileSync(p, env, 'utf-8');
+        }
+        fs.writeFileSync(path.join(DIR, '.new_refresh_token'), td.refresh_token, 'utf-8');
     }
     return td.access_token;
 }
