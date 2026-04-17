@@ -172,10 +172,14 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
 </div>
 </div>
 
-<script src="dados.js?v=0"></script>
 <script>
-// cache-buster
-document.querySelector('script[src^="dados.js"]').src='dados.js?v='+Date.now();
+// carrega dados.js com cache-bust agressivo — evita browser servir versao velha
+(function(){
+    var s=document.createElement('script');
+    s.src='dados.js?v='+Date.now()+'_'+Math.random().toString(36).substring(2,8);
+    s.onload=function(){window._dadosLoaded=true};
+    document.head.appendChild(s);
+})();
 
 function doLogin(){
     var p=document.getElementById('loginPass').value;
@@ -192,7 +196,7 @@ function showApp(){
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('appContent').style.display='block';
     (function wait(){
-        if(typeof window.DADOS!=='undefined'&&window.DADOS){init()}
+        if(window._dadosLoaded&&typeof window.DADOS!=='undefined'&&window.DADOS){init()}
         else{setTimeout(wait,60)}
     })();
 }
