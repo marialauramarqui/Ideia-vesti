@@ -12,6 +12,7 @@ def carregar_config():
     return {
         "subconta_nome": c["subconta_nome"],
         "token": c["token"],
+        "plan_identifier": c["plan_identifier"],
         "valor_cents": int(c["valor_cents"]),
         "descricao": c["descricao"],
         "titulo": c.get("titulo", "Assinatura"),
@@ -79,11 +80,26 @@ def obter_ou_criar_cliente(token, dados):
     return r.json().get("id"), False, r
 
 
-def criar_fatura_automatic_pix(token, customer_id, config, dados, contract_number):
+def criar_subscription(token, customer_id, config):
+    payload = {
+        "customer_id": customer_id,
+        "plan_identifier": config["plan_identifier"],
+        "only_on_charge_success": False,
+        "payable_with": "pix",
+    }
+    return requests.post(f"{BASE_URL}/subscriptions", auth=(token, ""), json=payload, timeout=30)
+
+
+def cancelar_fatura(token, invoice_id):
+    return requests.put(f"{BASE_URL}/invoices/{invoice_id}/cancel", auth=(token, ""), timeout=30)
+
+
+def criar_fatura_automatic_pix(token, customer_id, subscription_id, config, dados, contract_number):
     hoje = date.today()
     due = (hoje + timedelta(days=3)).isoformat()
     payload = {
         "customer_id": customer_id,
+        "subscription_id": subscription_id,
         "email": dados["email"],
         "due_date": due,
         "payable_with": ["pix"],
@@ -196,10 +212,37 @@ def processar(config, dados):
     if reutilizado:
         st.info("🔎 Identificamos seu CNPJ já cadastrado — vamos vincular a fatura ao seu cadastro existente.")
 
+    with st.spinner("Criando sua assinatura..."):
+        try:
+            r_sub = criar_subscription(config["token"], customer_id, config)
+        except requests.RequestException as e:
+            st.error(f"Erro ao criar assinatura: {e}")
+            return
+
+    if r_sub.status_code >= 400:
+        st.error("Não foi possível criar a assinatura. Tente novamente ou entre em contato.")
+        try:
+            st.json(r_sub.json())
+        except Exception:
+            st.code(r_sub.text)
+        return
+
+    subscription = r_sub.json()
+    subscription_id = subscription.get("id")
+
+    # Cancela a fatura auto-gerada pela subscription (vamos criar a nossa com automatic_pix)
+    for inv_placeholder in (subscription.get("recent_invoices") or []):
+        placeholder_id = inv_placeholder.get("id")
+        if placeholder_id:
+            try:
+                cancelar_fatura(config["token"], placeholder_id)
+            except requests.RequestException:
+                pass
+
     with st.spinner("Gerando seu Pix Automático..."):
         try:
             r_inv = criar_fatura_automatic_pix(
-                config["token"], customer_id, config, dados, f"CTR-{dados['cnpj']}"
+                config["token"], customer_id, subscription_id, config, dados, f"CTR-{dados['cnpj']}"
             )
         except requests.RequestException as e:
             st.error(f"Erro ao gerar fatura: {e}")
