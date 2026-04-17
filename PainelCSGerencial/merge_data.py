@@ -11,6 +11,7 @@ Consts gerados:
   USERS_DATA           -> users_data.json (fetch_users)
   CS_NAMES             -> derivado de COMPANIES_DATA.anjo + NPS_DATA.anjo
   CHURN_DATA           -> churn_vestipago_data.json (fetch_churn_vestipago) [pode ser []]
+  GMV_DATA             -> gmv_data.json (fetch_gmv) [pode ser {}]
 """
 
 import json
@@ -157,6 +158,7 @@ def main() -> None:
     hubspot = load("hubspot_data.json", [])
     vp = load_vp()
     churn = load("churn_vestipago_data.json", [])
+    gmv = load("gmv_data.json", {})
 
     nps = build_nps(sheets)
     csat_oraculo = build_csat_oraculo(sheets)
@@ -177,6 +179,7 @@ def main() -> None:
         + dump("CS_NAMES", cs_names)
         + dump("VP_DATA", vp)
         + dump("CHURN_DATA", churn)
+        + dump("GMV_DATA", gmv)
     )
     OUT.write_text(content, encoding="utf-8")
     print(f"[merge] {OUT.name} escrito")
@@ -189,6 +192,7 @@ def main() -> None:
     print(f"  CS_NAMES:             {len(cs_names)}")
     print(f"  VP_DATA.clientes:     {len(vp.get('clientes', [])) if isinstance(vp, dict) else 0}")
     print(f"  CHURN_DATA:           {len(churn)}")
+    print(f"  GMV_DATA.empresas:    {len(gmv.get('empresas', [])) if isinstance(gmv, dict) else 0}")
 
 
 if __name__ == "__main__":

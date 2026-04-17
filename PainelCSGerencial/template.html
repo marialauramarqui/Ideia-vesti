@@ -151,7 +151,7 @@ table.dt tr:hover td{background:#FAFAFA}
 </div>
 <!-- ============ HOME (GERAL) TAB ============ -->
 <div class="tab-panel active" id="tab-home">
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:20px">
         <div class="hl-card" style="background:linear-gradient(135deg,#6C5CE7,#8B7BF7);cursor:pointer" onclick="switchTab('csat')">
             <div class="hl-icon">&#128202;</div>
             <div class="hl-label">Satisfacao (CSAT + NPS)</div>
@@ -172,6 +172,13 @@ table.dt tr:hover td{background:#FAFAFA}
             <div class="hl-cargo" id="home-churn-val">--</div>
             <div class="hl-score" style="font-size:22px;margin-top:8px" id="home-churn-sub">--</div>
             <div class="hl-meta" style="margin-top:10px">Clientes ativos na Vesti que pararam o VestiPago &rarr;</div>
+        </div>
+        <div class="hl-card" style="background:linear-gradient(135deg,#0984E3,#5AA9FF);cursor:pointer" onclick="switchTab('gmv')">
+            <div class="hl-icon">&#128200;</div>
+            <div class="hl-label">GMV Mensal 2026</div>
+            <div class="hl-cargo" id="home-gmv-val">--</div>
+            <div class="hl-score" style="font-size:22px;margin-top:8px" id="home-gmv-sub">R$ --</div>
+            <div class="hl-meta" style="margin-top:10px">Valor transacionado por empresa, mes a mes (PIX + Cartao + demais meios) &rarr;</div>
         </div>
     </div>
 </div>
@@ -284,6 +291,56 @@ table.dt tr:hover td{background:#FAFAFA}
             <li><b>1o pedido VP</b> = data do primeiro pedido com VestiPago</li>
             <li><b>PIX / Cartao / Total</b> = valores transacionados</li>
             <li><b>Qtd</b> = quantidade de pedidos VP</li>
+        </ul>
+        <p>Os filtros globais de <b>Empresa</b> e <b>CS</b> (barra superior) tambem se aplicam aqui.</p>
+    </div>
+</div>
+<!-- ============ GMV MENSAL TAB ============ -->
+<div class="tab-panel" id="tab-gmv">
+    <div class="kpi-row">
+        <div class="kpi"><div class="ki" style="background:#F0EFFF">&#127970;</div><div class="kl">Empresas com GMV</div><div class="kv" style="color:var(--p)" id="gmv-kn">--</div><div class="ks">desde jan/2026</div></div>
+        <div class="kpi"><div class="ki" style="background:#E0F7F0">&#128181;</div><div class="kl">Total transacionado</div><div class="kv" style="color:var(--s);font-size:20px" id="gmv-ktot">R$ --</div></div>
+        <div class="kpi"><div class="ki" style="background:#E8EAF6">&#128178;</div><div class="kl">Total PIX</div><div class="kv" style="color:#0984E3;font-size:20px" id="gmv-kpix">R$ --</div></div>
+        <div class="kpi"><div class="ki" style="background:#FFF3E0">&#128179;</div><div class="kl">Total Cartao</div><div class="kv" style="color:var(--w);font-size:20px" id="gmv-kcar">R$ --</div></div>
+    </div>
+    <div class="filters">
+        <div class="filter-group"><label>Mes:</label><select class="f-select" id="gmvFMes" onchange="updateGmv()"><option value="">Todos (agregado)</option></select></div>
+        <button class="f-btn" onclick="gmvClearFilters()">Limpar</button>
+        <button class="help-btn" onclick="document.getElementById('helpGmv').classList.add('show')" title="Como funciona">?</button>
+    </div>
+    <div class="tbl-card">
+        <h4 id="gmv-tbl-title">Empresas &middot; <span id="gmv-tbl-count" style="color:var(--g);font-weight:500">--</span></h4>
+        <div style="max-height:520px;overflow-y:auto;overflow-x:auto">
+            <table class="dt" id="tGmv">
+                <thead><tr><th>CS</th><th>Marca</th><th style="text-align:right">PIX</th><th style="text-align:right">Cartao</th><th style="text-align:right">Total</th><th style="text-align:right">Qtd</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!-- MODAL AJUDA GMV -->
+<div class="modal-overlay" id="helpGmv" onclick="if(event.target===this)this.classList.remove('show')">
+    <div class="modal-box">
+        <button class="close-btn" onclick="document.getElementById('helpGmv').classList.remove('show')">&times;</button>
+        <h3>GMV Mensal - Como funciona</h3>
+        <p><b>O que e GMV?</b></p>
+        <p>GMV (Gross Merchandise Value) = valor bruto transacionado pelos pedidos de cada empresa no ano corrente. Considera todos os pedidos com valor > 0 do lakehouse (PIX, Cartao e demais meios de pagamento).</p>
+        <ul>
+            <li><b>Empresas com GMV</b> = dominios ativos que tiveram pedidos desde jan/2026</li>
+            <li><b>Total transacionado</b> = soma de todos os pedidos (inclui PIX, Cartao e outros meios)</li>
+            <li><b>Total PIX / Total Cartao</b> = fatia de VestiPago (PIX e Cartao) dentro do GMV</li>
+        </ul>
+        <p><b>Filtro "Mes":</b></p>
+        <ul>
+            <li>Selecione um mes para ver o GMV daquele mes. Sem filtro = agregado de todo o ano</li>
+        </ul>
+        <p><b>Tabela:</b></p>
+        <ul>
+            <li><b>CS</b> = Customer Success responsavel (clique para filtrar)</li>
+            <li><b>Marca</b> = nome da empresa (clique para filtrar)</li>
+            <li><b>PIX / Cartao</b> = valor VestiPago no mes/periodo</li>
+            <li><b>Total</b> = GMV bruto (todos os meios de pagamento)</li>
+            <li><b>Qtd</b> = quantidade de pedidos</li>
         </ul>
         <p>Os filtros globais de <b>Empresa</b> e <b>CS</b> (barra superior) tambem se aplicam aqui.</p>
     </div>
@@ -459,7 +516,7 @@ function switchTab(t,skipPush){
     if(prev && prev!==t && !skipPush){navStack.push(prev)}
     currentTab=t;
     if(typeof closeChurnDetail==='function')closeChurnDetail();
-    var tabs=['home','csat','nps','vp','churn'];
+    var tabs=['home','csat','nps','vp','churn','gmv'];
     tabs.forEach(function(x){
         var pan=document.getElementById('tab-'+x);if(pan)pan.classList.toggle('active',x===t);
     });
@@ -473,12 +530,13 @@ function switchTab(t,skipPush){
     // Back nav aparece fora da home
     var bn=document.getElementById('backNav');
     bn.style.display=t==='home'?'none':'block';
-    var labels={'csat':'Satisfacao (CSAT)','nps':'Satisfacao (NPS)','vp':'Novos VestiPago','churn':'Churn de Clientes','home':'Geral'};
+    var labels={'csat':'Satisfacao (CSAT)','nps':'Satisfacao (NPS)','vp':'Novos VestiPago','churn':'Churn de Clientes','gmv':'GMV Mensal','home':'Geral'};
     document.getElementById('breadcrumb').textContent='Voce esta em: '+(labels[t]||t);
-    // Filtros globais (empresa/CS) visiveis em TODAS as paginas; KPIs globais so fora de vp
+    // Filtros globais (empresa/CS) visiveis em TODAS as paginas; KPIs globais so fora de vp/gmv/churn/home
     document.querySelector('.filters').style.display='flex';
-    document.getElementById('globalKpiRow').style.display=(t==='vp'||t==='home'||t==='churn')?'none':'grid';
-    var cd=document.getElementById('coDetail');if(cd)cd.style.display=(t==='vp'||t==='home'||t==='churn')?'none':'';
+    var hideKpi=(t==='vp'||t==='home'||t==='churn'||t==='gmv');
+    document.getElementById('globalKpiRow').style.display=hideKpi?'none':'grid';
+    var cd=document.getElementById('coDetail');if(cd)cd.style.display=hideKpi?'none':'';
     updateAll();
 }
 function goBack(){
@@ -644,6 +702,16 @@ function updateHome(){
     }
     document.getElementById('home-vp-val').textContent=nClientes+' clientes';
     document.getElementById('home-vp-sub').textContent='R$ '+totalValor.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    // GMV respeita filtros globais (selCo, fCS)
+    var gmv=(typeof GMV_DATA!=='undefined'?GMV_DATA:null);
+    var gN=0,gTot=0;
+    if(gmv&&gmv.empresas){
+        var gRows=_gmvFilterRows(gmv);
+        gN=gRows.length;
+        gRows.forEach(function(r){gTot+=(r.valTotal||0)});
+    }
+    document.getElementById('home-gmv-val').textContent=gN.toLocaleString('pt-BR')+' empresa(s)';
+    document.getElementById('home-gmv-sub').textContent='R$ '+gTot.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 
 // === UPDATE: NOVOS VESTIPAGO ===
@@ -716,6 +784,71 @@ function updateVp(){
             '<td style="text-align:right;font-weight:600;color:'+(e.valCartao>0?'#F39C12':'#B2BEC3')+'">'+(e.valCartao>0?fmtVpC(e.valCartao):'&mdash;')+'</td>'+
             '<td style="text-align:right;font-weight:700;color:var(--s)">'+fmtVpC(e.valTotal)+'</td>'+
             '<td style="text-align:right;color:var(--g)">'+(e.qtTotal||0)+'</td>'+
+        '</tr>'
+    }).join('');
+}
+
+// === GMV MENSAL ===
+// GMV_DATA e injetado pelo merge_data.py (fetch_gmv.py -> gmv_data.json). Fallback: {}
+if(typeof GMV_DATA==='undefined')window.GMV_DATA={empresas:[],mesesList:[]};
+var _gmvInited=false;
+function gmvInit(){
+    if(_gmvInited)return;_gmvInited=true;
+    var gmv=(typeof GMV_DATA!=='undefined'?GMV_DATA:null);if(!gmv||!gmv.mesesList)return;
+    var mes=document.getElementById('gmvFMes');
+    gmv.mesesList.forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=fmtM(m);mes.appendChild(o)});
+}
+function gmvClearFilters(){document.getElementById('gmvFMes').value='';updateGmv()}
+function _gmvFilterRows(gmv){
+    var fcsGlobal=(fCS&&fCS.value)||'';
+    var selCoLow=selCo?selCo.toLowerCase():'';
+    var rows=(gmv.empresas||[]).slice();
+    if(fcsGlobal)rows=rows.filter(function(r){return (r.cs||'')===fcsGlobal});
+    if(selCoLow)rows=rows.filter(function(r){return (r.marca||'').toLowerCase().indexOf(selCoLow)>=0});
+    return rows;
+}
+function updateGmv(){
+    gmvInit();
+    var gmv=(typeof GMV_DATA!=='undefined'?GMV_DATA:null);
+    var tb=document.querySelector('#tGmv tbody');
+    if(!gmv||!gmv.empresas||!gmv.empresas.length){
+        document.getElementById('gmv-kn').textContent='0';
+        document.getElementById('gmv-ktot').textContent='R$ 0,00';
+        document.getElementById('gmv-kpix').textContent='R$ 0,00';
+        document.getElementById('gmv-kcar').textContent='R$ 0,00';
+        document.getElementById('gmv-tbl-count').textContent='0 empresas';
+        tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#999;padding:24px">Sem dados (GMV_DATA vazio). Rode python fetch_gmv.py</td></tr>';
+        return;
+    }
+    var fmes=document.getElementById('gmvFMes').value;
+    function eff(r){
+        if(fmes){var mv=r.meses&&r.meses[fmes];return {valPix:mv?mv.valPix:0,valCartao:mv?mv.valCartao:0,valTotal:mv?mv.valTotal:0,qtPix:mv?mv.qtPix:0,qtCartao:mv?mv.qtCartao:0,qtTotal:mv?mv.qtTotal:0}}
+        return {valPix:r.valPix,valCartao:r.valCartao,valTotal:r.valTotal,qtPix:r.qtPix,qtCartao:r.qtCartao,qtTotal:r.qtTotal};
+    }
+    var rows=_gmvFilterRows(gmv);
+    // Quando mes selecionado, mostra so quem tem pedido no mes
+    if(fmes)rows=rows.filter(function(r){return r.meses&&r.meses[fmes]&&r.meses[fmes].valTotal>0});
+    rows.sort(function(a,b){return eff(b).valTotal-eff(a).valTotal});
+    document.getElementById('gmv-kn').textContent=rows.length.toLocaleString('pt-BR');
+    var tT=0,tP=0,tC=0;rows.forEach(function(r){var e=eff(r);tT+=e.valTotal;tP+=e.valPix;tC+=e.valCartao});
+    document.getElementById('gmv-ktot').textContent=fmtVpC(tT);
+    document.getElementById('gmv-kpix').textContent=fmtVpC(tP);
+    document.getElementById('gmv-kcar').textContent=fmtVpC(tC);
+    var mesLbl=fmes?(' em '+fmtM(fmes)):' (agregado 2026)';
+    document.getElementById('gmv-tbl-count').textContent=rows.length+' empresa(s)'+mesLbl;
+    if(!rows.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#999;padding:24px">Nenhuma empresa com os filtros atuais</td></tr>';return}
+    var esc=function(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+    tb.innerHTML=rows.map(function(r){
+        var e=eff(r);
+        var csEsc=(r.cs||'-').replace(/'/g,"\\'");
+        var marcaEsc=(r.marca||'-').replace(/'/g,"\\'");
+        return '<tr>'+
+            '<td><span class="badge sm click" onclick="filterByCS(\''+csEsc+'\')">'+esc(r.cs||'-')+'</span></td>'+
+            '<td class="click" onclick="selectCo(\''+marcaEsc+'\')"><b>'+esc(r.marca||'-')+'</b></td>'+
+            '<td style="text-align:right;font-weight:600;color:'+(e.valPix>0?'#0984E3':'#B2BEC3')+'">'+(e.valPix>0?fmtVpC(e.valPix):'&mdash;')+'</td>'+
+            '<td style="text-align:right;font-weight:600;color:'+(e.valCartao>0?'#F39C12':'#B2BEC3')+'">'+(e.valCartao>0?fmtVpC(e.valCartao):'&mdash;')+'</td>'+
+            '<td style="text-align:right;font-weight:700;color:var(--s)">'+fmtVpC(e.valTotal)+'</td>'+
+            '<td style="text-align:right;color:var(--g)">'+(e.qtTotal||0).toLocaleString('pt-BR')+'</td>'+
         '</tr>'
     }).join('');
 }
@@ -827,6 +960,7 @@ function updateAll(){
     else if(currentTab==='csat'){if(currentCsat==='oraculo')updateCsatOraculo();else updateCsatPlataforma()}
     else if(currentTab==='vp')updateVp();
     else if(currentTab==='churn')updateChurn();
+    else if(currentTab==='gmv')updateGmv();
 }
 function filterByCS(name){fCS.value=name;document.getElementById('fClear').style.display='inline-block';updateAll()}
 window.selectCo=selectCo;window.clearEmpresa=clearEmpresa;window.clearAll=clearAll;window.updateAll=updateAll;window.clearChartFilter=clearChartFilter;window.setChartFilter=setChartFilter;window.switchTab=switchTab;window.switchCsat=switchCsat;window.updateVp=updateVp;window.vpClearFilters=vpClearFilters;window.goBack=goBack;window.updateChurn=updateChurn;window.churnClearFilters=churnClearFilters;window.filterByCS=filterByCS;window.openChurnDetail=openChurnDetail;window.closeChurnDetail=closeChurnDetail;
