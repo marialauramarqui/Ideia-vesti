@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '0 8 * * *'  # 5:00 BRT (8:00 UTC) - stagger apos update-dashboard.yml (7:30)
   workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Motivo do disparo manual'
+        required: false
+        default: 'manual'
 
 jobs:
   update:
