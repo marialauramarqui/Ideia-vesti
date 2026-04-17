@@ -175,10 +175,10 @@ table.dt tr:hover td{background:#FAFAFA}
         </div>
         <div class="hl-card" style="background:linear-gradient(135deg,#0984E3,#5AA9FF);cursor:pointer" onclick="switchTab('gmv')">
             <div class="hl-icon">&#128200;</div>
-            <div class="hl-label">GMV Mensal 2026</div>
+            <div class="hl-label">GMV 1&ordm; Mes Completo</div>
             <div class="hl-cargo" id="home-gmv-val">--</div>
             <div class="hl-score" style="font-size:22px;margin-top:8px" id="home-gmv-sub">R$ --</div>
-            <div class="hl-meta" style="margin-top:10px">Valor transacionado por empresa, mes a mes (PIX + Cartao + demais meios) &rarr;</div>
+            <div class="hl-meta" style="margin-top:10px">GMV do primeiro mes cheio de empresas que viraram clientes Vesti desde dez/2025 &rarr;</div>
         </div>
     </div>
 </div>
@@ -295,16 +295,16 @@ table.dt tr:hover td{background:#FAFAFA}
         <p>Os filtros globais de <b>Empresa</b> e <b>CS</b> (barra superior) tambem se aplicam aqui.</p>
     </div>
 </div>
-<!-- ============ GMV MENSAL TAB ============ -->
+<!-- ============ GMV 1o MES COMPLETO TAB ============ -->
 <div class="tab-panel" id="tab-gmv">
     <div class="kpi-row">
-        <div class="kpi"><div class="ki" style="background:#F0EFFF">&#127970;</div><div class="kl">Empresas com GMV</div><div class="kv" style="color:var(--p)" id="gmv-kn">--</div><div class="ks">desde jan/2026</div></div>
-        <div class="kpi"><div class="ki" style="background:#E0F7F0">&#128181;</div><div class="kl">Total transacionado</div><div class="kv" style="color:var(--s);font-size:20px" id="gmv-ktot">R$ --</div></div>
+        <div class="kpi"><div class="ki" style="background:#F0EFFF">&#127970;</div><div class="kl">Novos clientes</div><div class="kv" style="color:var(--p)" id="gmv-kn">--</div><div class="ks">desde dez/2025</div></div>
+        <div class="kpi"><div class="ki" style="background:#E0F7F0">&#128181;</div><div class="kl">GMV 1&ordm; mes completo</div><div class="kv" style="color:var(--s);font-size:20px" id="gmv-ktot">R$ --</div></div>
         <div class="kpi"><div class="ki" style="background:#E8EAF6">&#128178;</div><div class="kl">Total PIX</div><div class="kv" style="color:#0984E3;font-size:20px" id="gmv-kpix">R$ --</div></div>
         <div class="kpi"><div class="ki" style="background:#FFF3E0">&#128179;</div><div class="kl">Total Cartao</div><div class="kv" style="color:var(--w);font-size:20px" id="gmv-kcar">R$ --</div></div>
     </div>
     <div class="filters">
-        <div class="filter-group"><label>Mes:</label><select class="f-select" id="gmvFMes" onchange="updateGmv()"><option value="">Todos (agregado)</option></select></div>
+        <div class="filter-group"><label>Mes completo:</label><select class="f-select" id="gmvFMes" onchange="updateGmv()"><option value="">Todos (agregado)</option></select></div>
         <button class="f-btn" onclick="gmvClearFilters()">Limpar</button>
         <button class="help-btn" onclick="document.getElementById('helpGmv').classList.add('show')" title="Como funciona">?</button>
     </div>
@@ -312,7 +312,7 @@ table.dt tr:hover td{background:#FAFAFA}
         <h4 id="gmv-tbl-title">Empresas &middot; <span id="gmv-tbl-count" style="color:var(--g);font-weight:500">--</span></h4>
         <div style="max-height:520px;overflow-y:auto;overflow-x:auto">
             <table class="dt" id="tGmv">
-                <thead><tr><th>CS</th><th>Marca</th><th style="text-align:right">PIX</th><th style="text-align:right">Cartao</th><th style="text-align:right">Total</th><th style="text-align:right">Qtd</th></tr></thead>
+                <thead><tr><th>CS</th><th>Marca</th><th>Entrou na Vesti</th><th>1&ordm; mes completo</th><th style="text-align:right">PIX</th><th style="text-align:right">Cartao</th><th style="text-align:right">Total</th><th style="text-align:right">Qtd</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
@@ -322,25 +322,29 @@ table.dt tr:hover td{background:#FAFAFA}
 <div class="modal-overlay" id="helpGmv" onclick="if(event.target===this)this.classList.remove('show')">
     <div class="modal-box">
         <button class="close-btn" onclick="document.getElementById('helpGmv').classList.remove('show')">&times;</button>
-        <h3>GMV Mensal - Como funciona</h3>
-        <p><b>O que e GMV?</b></p>
-        <p>GMV (Gross Merchandise Value) = valor bruto transacionado pelos pedidos de cada empresa no ano corrente. Considera todos os pedidos com valor > 0 do lakehouse (PIX, Cartao e demais meios de pagamento).</p>
+        <h3>GMV 1&ordm; Mes Completo - Como funciona</h3>
+        <p><b>O que e?</b></p>
+        <p>GMV (Gross Merchandise Value) do <b>primeiro mes civil completo</b> de cada empresa que entrou na Vesti a partir de <b>dez/2025</b>. Inclui todos os meios de pagamento (PIX, Cartao, boleto, etc).</p>
         <ul>
-            <li><b>Empresas com GMV</b> = dominios ativos que tiveram pedidos desde jan/2026</li>
-            <li><b>Total transacionado</b> = soma de todos os pedidos (inclui PIX, Cartao e outros meios)</li>
-            <li><b>Total PIX / Total Cartao</b> = fatia de VestiPago (PIX e Cartao) dentro do GMV</li>
+            <li><b>"Entrou na Vesti"</b> = data do primeiro pedido com valor &gt; 0 no lakehouse</li>
+            <li><b>"1o mes completo"</b> = mes civil seguinte ao mes de entrada. Ex: entrou em 15/jan → 1o mes completo = fev</li>
+            <li>O mes em curso nao e considerado completo; clientes que so teriam o mes atual como 1o completo sao excluidos</li>
         </ul>
-        <p><b>Filtro "Mes":</b></p>
+        <p><b>Filtro "Mes completo":</b></p>
         <ul>
-            <li>Selecione um mes para ver o GMV daquele mes. Sem filtro = agregado de todo o ano</li>
+            <li><b>Janeiro/2026</b> = clientes que entraram em dez/2025 (janeiro foi o 1o mes completo deles)</li>
+            <li><b>Fevereiro/2026</b> = clientes que entraram em jan/2026</li>
+            <li>Sem filtro = agregado de todos os novos clientes (somando o 1o mes completo de cada um)</li>
         </ul>
         <p><b>Tabela:</b></p>
         <ul>
             <li><b>CS</b> = Customer Success responsavel (clique para filtrar)</li>
             <li><b>Marca</b> = nome da empresa (clique para filtrar)</li>
-            <li><b>PIX / Cartao</b> = valor VestiPago no mes/periodo</li>
-            <li><b>Total</b> = GMV bruto (todos os meios de pagamento)</li>
-            <li><b>Qtd</b> = quantidade de pedidos</li>
+            <li><b>Entrou na Vesti</b> = data do primeiro pedido</li>
+            <li><b>1o mes completo</b> = mes civil usado na agregacao</li>
+            <li><b>PIX / Cartao</b> = valor VestiPago no 1o mes completo</li>
+            <li><b>Total</b> = GMV bruto do 1o mes completo (todos os meios)</li>
+            <li><b>Qtd</b> = quantidade de pedidos no 1o mes completo</li>
         </ul>
         <p>Os filtros globais de <b>Empresa</b> e <b>CS</b> (barra superior) tambem se aplicam aqui.</p>
     </div>
@@ -702,15 +706,21 @@ function updateHome(){
     }
     document.getElementById('home-vp-val').textContent=nClientes+' clientes';
     document.getElementById('home-vp-sub').textContent='R$ '+totalValor.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-    // GMV respeita filtros globais (selCo, fCS)
+    // GMV respeita filtros globais (selCo, fCS) — ignora o filtro interno de mes na home
     var gmv=(typeof GMV_DATA!=='undefined'?GMV_DATA:null);
     var gN=0,gTot=0;
     if(gmv&&gmv.empresas){
-        var gRows=_gmvFilterRows(gmv);
+        var fcsGlobal=(fCS&&fCS.value)||'';
+        var selCoLow=selCo?selCo.toLowerCase():'';
+        var gRows=gmv.empresas.filter(function(r){
+            if(fcsGlobal&&(r.cs||'')!==fcsGlobal)return false;
+            if(selCoLow&&(r.marca||'').toLowerCase().indexOf(selCoLow)<0)return false;
+            return true;
+        });
         gN=gRows.length;
         gRows.forEach(function(r){gTot+=(r.valTotal||0)});
     }
-    document.getElementById('home-gmv-val').textContent=gN.toLocaleString('pt-BR')+' empresa(s)';
+    document.getElementById('home-gmv-val').textContent=gN.toLocaleString('pt-BR')+' novo(s) cliente(s)';
     document.getElementById('home-gmv-sub').textContent='R$ '+gTot.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 
@@ -802,9 +812,12 @@ function gmvClearFilters(){document.getElementById('gmvFMes').value='';updateGmv
 function _gmvFilterRows(gmv){
     var fcsGlobal=(fCS&&fCS.value)||'';
     var selCoLow=selCo?selCo.toLowerCase():'';
+    var fmesEl=document.getElementById('gmvFMes');
+    var fmes=fmesEl?fmesEl.value:'';
     var rows=(gmv.empresas||[]).slice();
     if(fcsGlobal)rows=rows.filter(function(r){return (r.cs||'')===fcsGlobal});
     if(selCoLow)rows=rows.filter(function(r){return (r.marca||'').toLowerCase().indexOf(selCoLow)>=0});
+    if(fmes)rows=rows.filter(function(r){return (r.mesCompleto||'')===fmes});
     return rows;
 }
 function updateGmv(){
@@ -817,38 +830,33 @@ function updateGmv(){
         document.getElementById('gmv-kpix').textContent='R$ 0,00';
         document.getElementById('gmv-kcar').textContent='R$ 0,00';
         document.getElementById('gmv-tbl-count').textContent='0 empresas';
-        tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#999;padding:24px">Sem dados (GMV_DATA vazio). Rode python fetch_gmv.py</td></tr>';
+        tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:#999;padding:24px">Sem dados (GMV_DATA vazio). Rode python fetch_gmv.py</td></tr>';
         return;
     }
     var fmes=document.getElementById('gmvFMes').value;
-    function eff(r){
-        if(fmes){var mv=r.meses&&r.meses[fmes];return {valPix:mv?mv.valPix:0,valCartao:mv?mv.valCartao:0,valTotal:mv?mv.valTotal:0,qtPix:mv?mv.qtPix:0,qtCartao:mv?mv.qtCartao:0,qtTotal:mv?mv.qtTotal:0}}
-        return {valPix:r.valPix,valCartao:r.valCartao,valTotal:r.valTotal,qtPix:r.qtPix,qtCartao:r.qtCartao,qtTotal:r.qtTotal};
-    }
     var rows=_gmvFilterRows(gmv);
-    // Quando mes selecionado, mostra so quem tem pedido no mes
-    if(fmes)rows=rows.filter(function(r){return r.meses&&r.meses[fmes]&&r.meses[fmes].valTotal>0});
-    rows.sort(function(a,b){return eff(b).valTotal-eff(a).valTotal});
+    rows.sort(function(a,b){return (b.valTotal||0)-(a.valTotal||0)});
     document.getElementById('gmv-kn').textContent=rows.length.toLocaleString('pt-BR');
-    var tT=0,tP=0,tC=0;rows.forEach(function(r){var e=eff(r);tT+=e.valTotal;tP+=e.valPix;tC+=e.valCartao});
+    var tT=0,tP=0,tC=0;rows.forEach(function(r){tT+=(r.valTotal||0);tP+=(r.valPix||0);tC+=(r.valCartao||0)});
     document.getElementById('gmv-ktot').textContent=fmtVpC(tT);
     document.getElementById('gmv-kpix').textContent=fmtVpC(tP);
     document.getElementById('gmv-kcar').textContent=fmtVpC(tC);
-    var mesLbl=fmes?(' em '+fmtM(fmes)):' (agregado 2026)';
+    var mesLbl=fmes?(' (1o mes completo '+fmtM(fmes)+')'):' (agregado 1o mes de cada cliente)';
     document.getElementById('gmv-tbl-count').textContent=rows.length+' empresa(s)'+mesLbl;
-    if(!rows.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#999;padding:24px">Nenhuma empresa com os filtros atuais</td></tr>';return}
+    if(!rows.length){tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:#999;padding:24px">Nenhuma empresa com os filtros atuais</td></tr>';return}
     var esc=function(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
     tb.innerHTML=rows.map(function(r){
-        var e=eff(r);
         var csEsc=(r.cs||'-').replace(/'/g,"\\'");
         var marcaEsc=(r.marca||'-').replace(/'/g,"\\'");
         return '<tr>'+
             '<td><span class="badge sm click" onclick="filterByCS(\''+csEsc+'\')">'+esc(r.cs||'-')+'</span></td>'+
             '<td class="click" onclick="selectCo(\''+marcaEsc+'\')"><b>'+esc(r.marca||'-')+'</b></td>'+
-            '<td style="text-align:right;font-weight:600;color:'+(e.valPix>0?'#0984E3':'#B2BEC3')+'">'+(e.valPix>0?fmtVpC(e.valPix):'&mdash;')+'</td>'+
-            '<td style="text-align:right;font-weight:600;color:'+(e.valCartao>0?'#F39C12':'#B2BEC3')+'">'+(e.valCartao>0?fmtVpC(e.valCartao):'&mdash;')+'</td>'+
-            '<td style="text-align:right;font-weight:700;color:var(--s)">'+fmtVpC(e.valTotal)+'</td>'+
-            '<td style="text-align:right;color:var(--g)">'+(e.qtTotal||0).toLocaleString('pt-BR')+'</td>'+
+            '<td style="color:var(--g);white-space:nowrap">'+fmtVpD(r.primeiroPedido)+'</td>'+
+            '<td style="color:var(--g);white-space:nowrap">'+fmtM(r.mesCompleto)+'</td>'+
+            '<td style="text-align:right;font-weight:600;color:'+((r.valPix||0)>0?'#0984E3':'#B2BEC3')+'">'+((r.valPix||0)>0?fmtVpC(r.valPix):'&mdash;')+'</td>'+
+            '<td style="text-align:right;font-weight:600;color:'+((r.valCartao||0)>0?'#F39C12':'#B2BEC3')+'">'+((r.valCartao||0)>0?fmtVpC(r.valCartao):'&mdash;')+'</td>'+
+            '<td style="text-align:right;font-weight:700;color:var(--s)">'+fmtVpC(r.valTotal||0)+'</td>'+
+            '<td style="text-align:right;color:var(--g)">'+(r.qtTotal||0).toLocaleString('pt-BR')+'</td>'+
         '</tr>'
     }).join('');
 }
