@@ -54,4 +54,4 @@ jobs:
           FABRIC_REFRESH_TOKEN: ${{ secrets.FABRIC_REFRESH_TOKEN }}
           FABRIC_TENANT_ID: ${{ secrets.FABRIC_TENANT_ID }}
           FABRIC_CLIENT_ID: ${{ secrets.FABRIC_CLIENT_ID }}
-        run: node build.js || echo "WARN: NovosVestiPago build falhou"
+        run: node build.js
