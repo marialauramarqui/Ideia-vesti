@@ -9,6 +9,9 @@ on:
         description: 'Motivo do disparo manual'
         required: false
         default: 'manual'
+  push:
+    paths:
+      - '.github/workflows/sync-painelcs.yml'
 
 jobs:
   update:
