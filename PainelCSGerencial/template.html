@@ -467,7 +467,11 @@ table.dt tr:hover td{background:#FAFAFA}
                     <th>Servico</th>
                     <th>Status</th>
                     <th>Etiqueta</th>
-                    <th style="text-align:right">Valor</th>
+                    <th style="text-align:right">Valor Pedido</th>
+                    <th style="text-align:right" title="delivery_provider_value">Cotacao BIA</th>
+                    <th style="text-align:right" title="MAX(BIA, Postagem*1.10)">ANA Final</th>
+                    <th style="text-align:right" title="SUM(ValorPostagem) do fechamento">Postagem Onlog</th>
+                    <th style="text-align:right" title="BIA - Postagem (preliminar)">Margem</th>
                 </tr></thead>
                 <tbody></tbody>
             </table>
@@ -495,6 +499,14 @@ table.dt tr:hover td{background:#FAFAFA}
             <li><b>Com etiqueta</b> - pedidos com URL do PDF da etiqueta.</li>
             <li><b>Sem etiqueta</b> - pedidos sem URL (inclui cancelados e aguardando pagamento).</li>
         </ul>
+        <p><b>Colunas financeiras (espelham o Painel Frete):</b></p>
+        <ul>
+            <li><b>Cotacao BIA</b> = <code>delivery_provider_value</code> (valor do frete no pedido do cliente).</li>
+            <li><b>ANA Final</b> = <code>MAX(BIA, Postagem * 1.10)</code> - medida DAX do painel frete.</li>
+            <li><b>Postagem Onlog</b> = <code>SUM(ValorPostagem)</code> das linhas em <code>sheets_onlog_fechamento</code> (CodigoVolume = domainId_orderNumber). Um pedido pode ter N volumes - soma.</li>
+            <li><b>Margem</b> = <code>BIA - Postagem</code> (preliminar, aguardando formula oficial). Verde = positiva, vermelho = negativa.</li>
+        </ul>
+        <p>&mdash; significa sem dado (pedido ainda nao foi postado no fechamento Onlog).</p>
         <p>Os filtros globais de <b>Empresa</b> e <b>CS</b> (barra superior) tambem se aplicam aqui.</p>
     </div>
 </div>
@@ -1195,7 +1207,7 @@ function updateOnlog(){
         document.getElementById('ol-ksem').textContent='0';
         document.getElementById('ol-kval').textContent='R$ 0,00';
         document.getElementById('ol-tbl-count').textContent='0 pedidos';
-        tb.innerHTML='<tr><td colspan="10" style="text-align:center;color:#999;padding:24px">Sem dados (ONLOG_DATA vazio). Rode python fetch_onlog.py</td></tr>';
+        tb.innerHTML='<tr><td colspan="14" style="text-align:center;color:#999;padding:24px">Sem dados (ONLOG_DATA vazio). Rode python fetch_onlog.py</td></tr>';
         return;
     }
     var rows=_onlogFilterRows(od);
@@ -1209,7 +1221,7 @@ function updateOnlog(){
     var de=document.getElementById('olFDe').value,ate=document.getElementById('olFAte').value;
     var per=(de||ate)?(' de '+(de||'inicio')+' ate '+(ate||'hoje')):(od.diasList&&od.diasList.length?' ('+od.diasList[od.diasList.length-1]+' a '+od.diasList[0]+')':'');
     document.getElementById('ol-tbl-count').textContent=rows.length+' pedido(s)'+per;
-    if(!rows.length){tb.innerHTML='<tr><td colspan="10" style="text-align:center;color:#999;padding:24px">Nenhum pedido com os filtros atuais</td></tr>';return}
+    if(!rows.length){tb.innerHTML='<tr><td colspan="14" style="text-align:center;color:#999;padding:24px">Nenhum pedido com os filtros atuais</td></tr>';return}
     var esc=function(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
     tb.innerHTML=rows.map(function(p){
         var csEsc=(p.cs||'-').replace(/'/g,"\\'");
@@ -1229,8 +1241,16 @@ function updateOnlog(){
             '<td style="font-size:11px;color:'+statusColor+';font-weight:600">'+esc(p.cancelado?'Cancelado':onlogStatusPt(p.status))+'</td>'+
             '<td>'+etqCell+'</td>'+
             '<td style="text-align:right;font-weight:700;color:var(--s);white-space:nowrap">R$ '+(p.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
+            '<td style="text-align:right;color:var(--dk);white-space:nowrap">'+_olFmt(p.cotacaoBia)+'</td>'+
+            '<td style="text-align:right;color:var(--p);white-space:nowrap">'+_olFmt(p.anaFinal)+'</td>'+
+            '<td style="text-align:right;color:#0984E3;white-space:nowrap">'+_olFmt(p.postagemOnlog)+'</td>'+
+            '<td style="text-align:right;white-space:nowrap;font-weight:600;color:'+((p.margem==null)?'#B2BEC3':(p.margem>=0?'var(--s)':'#E17055'))+'">'+_olFmt(p.margem)+'</td>'+
         '</tr>'
     }).join('');
+}
+function _olFmt(v){
+    if(v==null||v==='')return '<span style="color:#B2BEC3">&mdash;</span>';
+    return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 
 // === CHURN VESTIPAGO DATA ===

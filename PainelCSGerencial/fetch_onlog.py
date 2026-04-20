@@ -41,24 +41,42 @@ COMPANIES_JSON = ROOT / "companies_data.json"
 OUT_JSON = ROOT / "onlog_data.json"
 
 SQL_ONLOG = """
+WITH fechamento_agg AS (
+    -- Um pedido pode ter N linhas de fechamento (divisao em volumes).
+    -- Soma ValorPostagem (string BR "29,77" -> float) por CodigoVolume.
+    SELECT
+        CodigoVolume,
+        SUM(TRY_CAST(REPLACE(ValorPostagem, ',', '.') AS FLOAT)) AS postagem_onlog,
+        MAX(Operador) AS operador_fech,
+        MAX(Modalidade) AS modalidade_fech
+    FROM dbo.sheets_onlog_fechamento
+    WHERE CodigoVolume IS NOT NULL AND CodigoVolume <> ''
+    GROUP BY CodigoVolume
+)
 SELECT
-    orderNumber,
-    domainId,
-    companyId,
-    settings_createdAt_TIMESTAMP AS data_pedido,
-    delivery_provider_name AS provider,
-    status_consolidatedOrderStatus AS status,
-    summary_total AS valor,
-    delivery_tracking_shippingLabel AS etiqueta_url,
-    delivery_trackingCode AS tracking_code,
-    delivery_address_city_name AS cidade,
-    delivery_address_state_initials AS uf,
-    customer_name AS cliente,
-    status_canceled_isCanceled AS cancelado
-FROM dbo.MongoDB_Pedidos_Geral
-WHERE LOWER(delivery_provider_provider) = 'onlog'
-  AND settings_createdAt_TIMESTAMP IS NOT NULL
-ORDER BY settings_createdAt_TIMESTAMP DESC, orderNumber DESC
+    p.orderNumber,
+    p.domainId,
+    p.companyId,
+    p.settings_createdAt_TIMESTAMP AS data_pedido,
+    p.delivery_provider_name AS provider,
+    p.status_consolidatedOrderStatus AS status,
+    p.summary_total AS valor,
+    p.delivery_tracking_shippingLabel AS etiqueta_url,
+    p.delivery_trackingCode AS tracking_code,
+    p.delivery_address_city_name AS cidade,
+    p.delivery_address_state_initials AS uf,
+    p.customer_name AS cliente,
+    p.status_canceled_isCanceled AS cancelado,
+    p.delivery_provider_value AS cotacao_bia,
+    f.postagem_onlog,
+    f.operador_fech,
+    f.modalidade_fech
+FROM dbo.MongoDB_Pedidos_Geral p
+LEFT JOIN fechamento_agg f
+    ON f.CodigoVolume = CONCAT(p.domainId, '_', p.orderNumber)
+WHERE LOWER(p.delivery_provider_provider) = 'onlog'
+  AND p.settings_createdAt_TIMESTAMP IS NOT NULL
+ORDER BY p.settings_createdAt_TIMESTAMP DESC, p.orderNumber DESC
 """
 
 
@@ -134,6 +152,24 @@ def build(rows: list[dict], companies: dict[str, dict]) -> dict:
         val_total += valor
         cs = (c.get("anjo") or "") if c else ""
 
+        # Metricas financeiras do painel frete:
+        #   Cotacao BIA = delivery_provider_value (valor do frete no pedido)
+        #   Postagem Onlog = SUM(ValorPostagem) das linhas em sheets_onlog_fechamento
+        #   ANA FINAL = IF(BIA > Postagem*1.10, BIA, Postagem*1.10) -- medida DAX do painel frete
+        #   Margem = BIA - Postagem (formula preliminar, confirmar com o time)
+        bia = r.get("cotacao_bia")
+        bia_f = float(bia) if bia is not None else None
+        post = r.get("postagem_onlog")
+        post_f = float(post) if post is not None else None
+        ana_final = None
+        if bia_f is not None and post_f is not None:
+            ana_final = max(bia_f, post_f * 1.10)
+        elif bia_f is not None:
+            ana_final = bia_f
+        elif post_f is not None:
+            ana_final = post_f * 1.10
+        margem = (bia_f - post_f) if (bia_f is not None and post_f is not None) else None
+
         pedidos.append({
             "orderNumber": int(r.get("orderNumber") or 0),
             "dominioId": dom,
@@ -151,6 +187,11 @@ def build(rows: list[dict], companies: dict[str, dict]) -> dict:
             "uf": r.get("uf") or "",
             "cliente": r.get("cliente") or "",
             "cancelado": bool(r.get("cancelado")),
+            "cotacaoBia": round(bia_f, 2) if bia_f is not None else None,
+            "postagemOnlog": round(post_f, 2) if post_f is not None else None,
+            "anaFinal": round(ana_final, 2) if ana_final is not None else None,
+            "margem": round(margem, 2) if margem is not None else None,
+            "operadorReal": r.get("operador_fech") or "",
         })
         dias_set.add(data_str)
         empresas_set.add(dom)
