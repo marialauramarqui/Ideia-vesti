@@ -32,6 +32,7 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
 ROOT = Path(__file__).parent
 OUT_JS = ROOT / "dados.js"
+COMPANIES_JSON = ROOT.parent / "PainelCSGerencial" / "companies_data.json"
 
 SQL_SERVER = "7sowj2vsfd6efgf3phzgjfmvaq-nrdsskmspnteherwztit766zc4.datawarehouse.fabric.microsoft.com"
 SQL_DATABASE = "VestiHouse"
@@ -234,12 +235,40 @@ def fetch_rows(conn) -> list[dict]:
     return raw
 
 
+def _load_company_map() -> dict[str, str]:
+    """domain_id -> nome_fantasia (prioriza matriz). Dominios ausentes sao
+    considerados teste/inativos e serao filtrados."""
+    if not COMPANIES_JSON.exists():
+        print(f"[companies] {COMPANIES_JSON} nao existe — sem filtro de teste", file=sys.stderr)
+        return {}
+    try:
+        data = json.loads(COMPANIES_JSON.read_text(encoding="utf-8"))
+    except Exception as e:
+        print(f"[companies] falha lendo companies_data.json: {e}", file=sys.stderr)
+        return {}
+    mp: dict[str, str] = {}
+    for c in data:
+        did = str(c.get("domain_id") or "").strip()
+        if not did:
+            continue
+        nf = (c.get("nome_fantasia") or c.get("name") or "").strip()
+        if c.get("isMatriz") or did not in mp:
+            mp[did] = nf or mp.get(did, "")
+    print(f"[companies] {len(mp)} dominios ativos carregados")
+    return mp
+
+
 def build(raw: list[dict]) -> dict:
     """Agrupa por orderId; cada pedido e uma dict com `parcelas` aninhadas."""
+    company_map = _load_company_map()
     by_order: dict[str, dict] = {}
     for r in raw:
         oid = r.get("order_id") or ""
         if not oid:
+            continue
+        # filtra parcelas com netValue 0
+        _nv = float(r.get("rec_net_value") or 0)
+        if _nv == 0:
             continue
         parcela = {
             "recId": r.get("rec_id") or "",
@@ -258,11 +287,16 @@ def build(raw: list[dict]) -> dict:
         }
         ped = by_order.get(oid)
         if ped is None:
+            did = str(r.get("domain_id") or "").strip()
+            # se temos mapa de empresas e dominio nao esta nele -> teste/inativo
+            if company_map and did not in company_map:
+                continue
             ped = {
                 "orderId": oid,
                 "orderNumber": r.get("order_number"),
                 "companyId": r.get("company_id") or "",
-                "domainId": r.get("domain_id") or "",
+                "domainId": did,
+                "nomeFantasia": company_map.get(did, ""),
                 "customerName": r.get("customer_name") or "",
                 "customerDoc": r.get("customer_doc") or "",
                 "orderDate": _iso_or_empty(r.get("order_date")),
@@ -281,6 +315,8 @@ def build(raw: list[dict]) -> dict:
     # Pos-processa cada pedido — stats das parcelas
     pedidos: list[dict] = []
     for ped in by_order.values():
+        if not ped["parcelas"]:
+            continue
         parcelas = sorted(ped["parcelas"], key=lambda p: p["installment"])
         ped["parcelas"] = parcelas
         ped["nParcelas"] = len(parcelas)
@@ -304,6 +340,39 @@ def build(raw: list[dict]) -> dict:
     statuses = sorted({pc["status"] for p in pedidos for pc in p["parcelas"] if pc["status"]})
     companies = sorted({p["companyId"] for p in pedidos if p["companyId"]})
 
+    # --- Agregacao de antecipacoes ---
+    # Chave: (companyId, diaRecebido=paidAt, dueAt). Apenas parcelas advanced=True
+    # e netValue > 0. Soma netValue. nomeFantasia anexado pra exibicao.
+    antec_agg: dict[tuple, dict] = {}
+    for p in pedidos:
+        for pc in p["parcelas"]:
+            if not pc.get("advanced"):
+                continue
+            if (pc.get("netValue") or 0) == 0:
+                continue
+            dia_receb = (pc.get("paidAt") or "")[:10]
+            due = (pc.get("dueAt") or "")[:10]
+            key = (p["companyId"], dia_receb, due)
+            agg = antec_agg.get(key)
+            if agg is None:
+                agg = {
+                    "companyId": p["companyId"],
+                    "nomeFantasia": p.get("nomeFantasia", ""),
+                    "domainId": p.get("domainId", ""),
+                    "diaRecebido": dia_receb,
+                    "dueAt": due,
+                    "netValue": 0.0,
+                    "nParcelas": 0,
+                }
+                antec_agg[key] = agg
+            agg["netValue"] += pc["netValue"] or 0
+            agg["nParcelas"] += 1
+    antecipacoes = sorted(
+        [{**v, "netValue": round(v["netValue"], 2)} for v in antec_agg.values()],
+        key=lambda x: (x["diaRecebido"] or "", x["nomeFantasia"] or ""),
+        reverse=True,
+    )
+
     total_net = sum(p["totalNet"] for p in pedidos)
     total_gross = sum(p["totalGross"] for p in pedidos)
     total_vp = sum(p["totalVp"] for p in pedidos)
@@ -317,6 +386,7 @@ def build(raw: list[dict]) -> dict:
         "paymentMethods": methods,
         "statuses": statuses,
         "companies": companies,
+        "antecipacoes": antecipacoes,
         "resumo": {
             "nPedidos": len(pedidos),
             "nParcelas": total_parcelas,

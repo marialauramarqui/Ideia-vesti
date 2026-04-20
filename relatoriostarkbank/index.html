@@ -75,6 +75,11 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
 .parc-link{color:var(--p);font-weight:600;text-decoration:none;font-size:11px}
 .parc-link:hover{text-decoration:underline}
 .empty{text-align:center;padding:40px;color:var(--mut)}
+.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tab{padding:10px 20px;background:var(--card);border:1.5px solid var(--bd);border-radius:10px;cursor:pointer;font:600 13px 'Inter',sans-serif;color:var(--mut)}
+.tab.active{background:var(--p);color:#fff;border-color:var(--p)}
+.page{display:none}
+.page.active{display:block}
 @media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:900px){.kpis{grid-template-columns:1fr 1fr}}
 @media(max-width:620px){.kpis{grid-template-columns:1fr}.filters{flex-direction:column;align-items:stretch}.top{flex-direction:column;align-items:flex-start}.top .info{margin-left:0}.details-inner{padding-left:16px}}
@@ -103,6 +108,21 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
         <button class="logout" onclick="doLogout()">Sair</button>
     </div>
 
+    <div class="tabs">
+        <div class="tab active" data-page="receb" onclick="switchTab('receb')">Recebiveis</div>
+        <div class="tab" data-page="antec" onclick="switchTab('antec')">Antecipacao</div>
+    </div>
+
+    <div class="filters" style="margin-bottom:16px">
+        <div class="fg" style="flex:1;min-width:260px">
+            <label>Empresa (aplica nas duas abas)</label>
+            <input type="text" id="fEmpresa" list="empresaList" placeholder="Digite o nome fantasia ou companyId...">
+            <datalist id="empresaList"></datalist>
+        </div>
+        <button class="clear-btn" onclick="document.getElementById('fEmpresa').value='';render();renderAntec();">Limpar empresa</button>
+    </div>
+
+    <div class="page active" id="pageReceb">
     <div class="kpis">
         <div class="kpi"><div class="lbl">Pedidos</div><div class="val" id="kPed">--</div><div class="ks" id="kPed-s"></div></div>
         <div class="kpi blue"><div class="lbl">Parcelas</div><div class="val" id="kParc">--</div><div class="ks" id="kParc-s">total de recebiveis</div></div>
@@ -155,6 +175,7 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
                         <th></th>
                         <th>Pedido</th>
                         <th>Empresa</th>
+                        <th>CompanyId</th>
                         <th>Cliente</th>
                         <th>Metodo</th>
                         <th class="r">Parcelas</th>
@@ -169,6 +190,32 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
             </table>
         </div>
     </div>
+    </div><!-- /pageReceb -->
+
+    <div class="page" id="pageAntec">
+        <div class="kpis">
+            <div class="kpi"><div class="lbl">Linhas antecipadas</div><div class="val" id="aLin">--</div><div class="ks">grupos (empresa x dia x dueAt)</div></div>
+            <div class="kpi green"><div class="lbl">Total antecipado (net)</div><div class="val" id="aNet">R$ --</div><div class="ks">soma netValue</div></div>
+            <div class="kpi blue"><div class="lbl">Parcelas</div><div class="val" id="aParc">--</div><div class="ks">parcelas advanced</div></div>
+            <div class="kpi orange"><div class="lbl">Empresas</div><div class="val" id="aEmp">--</div><div class="ks">distintas com antecipacao</div></div>
+        </div>
+        <div class="tbl-card">
+            <div class="tbl-head"><h3>Antecipacoes</h3><span class="count" id="antCount">--</span></div>
+            <div class="tbl-wrap">
+                <table>
+                    <thead><tr>
+                        <th>Empresa (nome fantasia)</th>
+                        <th>CompanyId</th>
+                        <th>Dia do recebido</th>
+                        <th>DueAt</th>
+                        <th class="r">Parcelas</th>
+                        <th class="r">NetValue</th>
+                    </tr></thead>
+                    <tbody id="antBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div><!-- /pageAntec -->
 </div>
 </div>
 
@@ -188,7 +235,7 @@ window.addEventListener('error',function(e){
     window._dadosError='JS error: '+(e.message||'desconhecido');
     try{
         var el=document.getElementById('tbody');
-        if(el)el.innerHTML='<tr><td colspan="11" class="empty" style="color:#E17055">ERRO: '+(e.message||e.filename||'')+' (linha '+(e.lineno||'?')+')</td></tr>';
+        if(el)el.innerHTML='<tr><td colspan="12" class="empty" style="color:#E17055">ERRO: '+(e.message||e.filename||'')+' (linha '+(e.lineno||'?')+')</td></tr>';
     }catch(_){}
 });
 
@@ -211,17 +258,17 @@ function showApp(){
         tries++;
         if(window._dadosError){
             var el=document.getElementById('tbody');
-            if(el)el.innerHTML='<tr><td colspan="11" class="empty" style="color:#E17055">ERRO: '+window._dadosError+'</td></tr>';
+            if(el)el.innerHTML='<tr><td colspan="12" class="empty" style="color:#E17055">ERRO: '+window._dadosError+'</td></tr>';
             return;
         }
         if(window._dadosLoaded&&typeof window.DADOS!=='undefined'&&window.DADOS){
             try{init()}catch(e){
                 var el=document.getElementById('tbody');
-                if(el)el.innerHTML='<tr><td colspan="11" class="empty" style="color:#E17055">ERRO init: '+(e&&e.message)+'</td></tr>';
+                if(el)el.innerHTML='<tr><td colspan="12" class="empty" style="color:#E17055">ERRO init: '+(e&&e.message)+'</td></tr>';
             }
         } else if(tries>80){
             var el=document.getElementById('tbody');
-            if(el)el.innerHTML='<tr><td colspan="11" class="empty" style="color:#E17055">Timeout: dados.js nao carregou em 5s. Verifique o console (F12)</td></tr>';
+            if(el)el.innerHTML='<tr><td colspan="12" class="empty" style="color:#E17055">Timeout: dados.js nao carregou em 5s. Verifique o console (F12)</td></tr>';
         } else {
             setTimeout(wait,60);
         }
@@ -247,7 +294,32 @@ function init(){
     ['fOrderDe','fOrderAte','fDueDe','fDueAte','fMethod','fPaid','fBusca'].forEach(function(id){
         document.getElementById(id).addEventListener(id==='fBusca'?'input':'change',render);
     });
+    // datalist de empresas (nome fantasia unico + companyId)
+    var dl=document.getElementById('empresaList');
+    var seen={};
+    (DADOS.pedidos||[]).forEach(function(p){
+        var key=p.nomeFantasia||p.companyId;
+        if(!key||seen[key])return;seen[key]=1;
+        var o=document.createElement('option');
+        o.value=p.nomeFantasia||p.companyId;
+        if(p.nomeFantasia&&p.companyId)o.label=p.companyId;
+        dl.appendChild(o);
+    });
+    document.getElementById('fEmpresa').addEventListener('input',function(){render();renderAntec();});
     render();
+    renderAntec();
+}
+
+function switchTab(which){
+    document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.dataset.page===which)});
+    document.getElementById('pageReceb').classList.toggle('active',which==='receb');
+    document.getElementById('pageAntec').classList.toggle('active',which==='antec');
+}
+
+function empresaFiltroMatch(p){
+    var q=(document.getElementById('fEmpresa').value||'').toLowerCase().trim();
+    if(!q)return true;
+    return ((p.nomeFantasia||'').toLowerCase().indexOf(q)>=0)||((p.companyId||'').toLowerCase().indexOf(q)>=0);
 }
 
 function clearFilters(){
@@ -273,6 +345,7 @@ function getFiltered(){
         if(m&&p.paymentMethod!==m)return false;
         if(pd==='1'&&!p.allPaid)return false;
         if(pd==='0'&&p.allPaid)return false;
+        if(!empresaFiltroMatch(p))return false;
         if(bq){
             var hay=((p.orderId||'')+' '+(p.orderNumber||'')+' '+(p.companyId||'')+' '+(p.customerName||'')+' '+(p.customerDoc||'')).toLowerCase();
             if(hay.indexOf(bq)<0)return false;
@@ -332,7 +405,7 @@ function render(){
 
     var tb=document.getElementById('tbody');
     if(!pedidos.length){
-        tb.innerHTML='<tr><td colspan="11" class="empty">Nenhum pedido com os filtros atuais</td></tr>';
+        tb.innerHTML='<tr><td colspan="12" class="empty">Nenhum pedido com os filtros atuais</td></tr>';
         return;
     }
 
@@ -345,7 +418,8 @@ function render(){
         html.push('<tr class="ped'+(open?' open':'')+'" onclick="toggle(\''+p.orderId+'\')" data-oid="'+p.orderId+'">'+
             '<td class="chev">&rtrif;</td>'+
             '<td class="mono">'+esc((p.orderNumber||p.orderId||'').toString().substring(0,16))+'</td>'+
-            '<td class="mono">'+esc((p.companyId||'').substring(0,12))+'...</td>'+
+            '<td>'+esc(p.nomeFantasia||'-')+'</td>'+
+            '<td class="mono">'+esc((p.companyId||'').substring(0,12))+(p.companyId&&p.companyId.length>12?'...':'')+'</td>'+
             '<td>'+esc(p.customerName||'-')+'</td>'+
             '<td><span class="badge sm">'+esc(p.paymentMethod||'-')+'</span></td>'+
             '<td class="money" style="color:var(--p)">'+(p.nParcelas||0)+'x</td>'+
@@ -376,6 +450,36 @@ function render(){
                 '<td>'+statusCell+'</td>'+
             '</tr>');
         });
+    });
+    tb.innerHTML=html.join('');
+}
+
+function renderAntec(){
+    var q=(document.getElementById('fEmpresa').value||'').toLowerCase().trim();
+    var rows=(DADOS.antecipacoes||[]).filter(function(a){
+        if((a.netValue||0)===0)return false;
+        if(!q)return true;
+        return ((a.nomeFantasia||'').toLowerCase().indexOf(q)>=0)||((a.companyId||'').toLowerCase().indexOf(q)>=0);
+    });
+    document.getElementById('antCount').textContent=rows.length+' linha(s)';
+    var totNet=0,totParc=0,emp={};
+    rows.forEach(function(r){totNet+=r.netValue||0;totParc+=r.nParcelas||0;if(r.companyId)emp[r.companyId]=1});
+    document.getElementById('aLin').textContent=fmtN(rows.length);
+    document.getElementById('aNet').textContent=fmtC(totNet);
+    document.getElementById('aParc').textContent=fmtN(totParc);
+    document.getElementById('aEmp').textContent=fmtN(Object.keys(emp).length);
+    var tb=document.getElementById('antBody');
+    if(!rows.length){tb.innerHTML='<tr><td colspan="6" class="empty">Nenhuma antecipacao com os filtros atuais</td></tr>';return}
+    var html=[];
+    rows.forEach(function(a){
+        html.push('<tr>'+
+            '<td>'+esc(a.nomeFantasia||'-')+'</td>'+
+            '<td class="mono">'+esc((a.companyId||'').substring(0,14))+(a.companyId&&a.companyId.length>14?'...':'')+'</td>'+
+            '<td class="date">'+(a.diaRecebido?fmtD(a.diaRecebido):'-')+'</td>'+
+            '<td class="date">'+(a.dueAt?fmtD(a.dueAt):'-')+'</td>'+
+            '<td class="money" style="color:var(--b)">'+fmtN(a.nParcelas)+'</td>'+
+            '<td class="money total">'+fmtC(a.netValue)+'</td>'+
+        '</tr>');
     });
     tb.innerHTML=html.join('');
 }
