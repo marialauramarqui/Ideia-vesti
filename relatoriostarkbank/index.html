@@ -126,11 +126,11 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
             <input type="date" id="fDataAte">
         </div>
         <div class="fg">
-            <label>Pago pelo cliente (de)</label>
+            <label>Data da compra (de)</label>
             <input type="date" id="fPagoDe">
         </div>
         <div class="fg">
-            <label>Pago pelo cliente (até)</label>
+            <label>Data da compra (até)</label>
             <input type="date" id="fPagoAte">
         </div>
         <div class="fg" style="flex:1;min-width:260px">
@@ -160,7 +160,7 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
                     <tr>
                         <th style="width:22px"></th>
                         <th>Data / Empresa / Pedido</th>
-                        <th>Pago pelo cliente</th>
+                        <th>Data da compra</th>
                         <th class="r">Parcelas</th>
                         <th class="r">Valor total</th>
                         <th class="r">VestiPago</th>
@@ -296,7 +296,7 @@ function getFiltered(){
         var d=(p.payDate||'').substring(0,10);
         if(dDe&&(!d||d<dDe))return false;
         if(dAte&&(!d||d>dAte))return false;
-        var pg=(p.customerPaidAt||'').substring(0,10);
+        var pg=(p.orderDate||'').substring(0,10);
         if(pDe&&(!pg||pg<pDe))return false;
         if(pAte&&(!pg||pg>pAte))return false;
         if(q){
@@ -350,8 +350,8 @@ function render(){
         var dKey='D:'+date;
         var dOpen=!!openSet[dKey];
         var dLabel=date?fmtD(date):'(sem data)';
-        var nPagas=pags.filter(function(x){return x.isPaid}).length;
-        var pagoTxt=nPagas===pags.length?'<span class="badge paid">Todas pagas</span>':(nPagas>0?'<span class="badge pen">'+nPagas+'/'+pags.length+'</span>':'<span class="badge pen">Pendente</span>');
+        var ods=pags.map(function(x){return (x.orderDate||'').substring(0,10)}).filter(Boolean).sort();
+        var pagoTxt=ods.length?(ods[0]===ods[ods.length-1]?fmtD(ods[0]):fmtD(ods[0])+' – '+fmtD(ods[ods.length-1])):'-';
         html.push('<tr class="ped'+(dOpen?' open':'')+'" onclick="toggleKey(\''+dKey+'\')">'+
             '<td class="chev">&rtrif;</td>'+
             '<td><strong>'+dLabel+'</strong> <span style="color:var(--mut);font-weight:400">· '+fmtN(t.empCount)+' empresa(s) · '+fmtN(t.n)+' parcela(s)</span></td>'+
@@ -378,8 +378,8 @@ function render(){
             var cKey='C:'+date+'|'+cid;
             var cOpen=!!openSet[cKey];
             var cLabel=cPags[0].nomeFantasia||cid;
-            var cNPagas=cPags.filter(function(x){return x.isPaid}).length;
-            var cPagoTxt=cNPagas===cPags.length?'<span class="badge paid">Todas pagas</span>':(cNPagas>0?'<span class="badge pen">'+cNPagas+'/'+cPags.length+'</span>':'<span class="badge pen">Pendente</span>');
+            var cOds=cPags.map(function(x){return (x.orderDate||'').substring(0,10)}).filter(Boolean).sort();
+            var cPagoTxt=cOds.length?(cOds[0]===cOds[cOds.length-1]?fmtD(cOds[0]):fmtD(cOds[0])+' – '+fmtD(cOds[cOds.length-1])):'-';
             html.push('<tr class="parc show" onclick="event.stopPropagation();toggleKey(\''+cKey+'\')" style="cursor:pointer;'+(cOpen?'background:#E8E4FF;font-weight:600':'')+'">'+
                 '<td></td>'+
                 '<td class="ind" style="padding-left:40px">'+(cOpen?'▾':'▸')+' '+esc(cLabel)+' <span class="mono" style="color:#8290a0;font-weight:400">'+esc(cid.substring(0,14))+(cid.length>14?'...':'')+'</span></td>'+
@@ -396,7 +396,7 @@ function render(){
                 html.push('<tr class="parc show" style="background:#FAFAFF">'+
                     '<td></td>'+
                     '<td style="padding-left:80px;color:var(--tx)">Pedido #'+esc((p.orderNumber||p.orderId||'').toString())+' · parcela '+p.installment+'/'+(p.installmentsTotal||'?')+' · <span style="color:var(--mut)">'+esc(p.customerName||'-')+'</span></td>'+
-                    '<td class="date">'+(p.customerPaidAt?fmtD(p.customerPaidAt):'-')+'</td>'+
+                    '<td class="date">'+(p.orderDate?fmtD(p.orderDate):'-')+'</td>'+
                     '<td class="money" style="color:var(--p)">1</td>'+
                     '<td class="money" style="color:var(--mut)">'+fmtC(p.grossValue)+'</td>'+
                     '<td class="money" style="color:var(--b)">'+fmtC(p.vpValue)+'</td>'+
