@@ -383,13 +383,26 @@ def build(raw: list[dict]) -> dict:
                     "diaRecebido": dia_receb,
                     "dueAt": due,
                     "netValue": 0.0,
+                    "grossValue": 0.0,
+                    "vpValue": 0.0,
+                    "antifraudValue": 0.0,
                     "nParcelas": 0,
                 }
                 antec_agg[key] = agg
             agg["netValue"] += pc["netValue"] or 0
+            agg["grossValue"] += pc.get("grossValue") or 0
+            agg["vpValue"] += pc.get("vpValue") or 0
+            agg["antifraudValue"] += pc.get("antifraudValue") or 0
             agg["nParcelas"] += 1
     antecipacoes = sorted(
-        [{**v, "netValue": round(v["netValue"], 2)} for v in antec_agg.values()],
+        [{
+            **v,
+            "netValue": round(v["netValue"], 2),
+            "grossValue": round(v["grossValue"], 2),
+            "vpValue": round(v["vpValue"], 2),
+            "antifraudValue": round(v["antifraudValue"], 2),
+            "totalFees": round(v["grossValue"] - v["netValue"], 2),
+        } for v in antec_agg.values()],
         key=lambda x: (x["diaRecebido"] or "", x["nomeFantasia"] or ""),
         reverse=True,
     )

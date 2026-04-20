@@ -194,10 +194,11 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
 
     <div class="page" id="pageAntec">
         <div class="kpis">
-            <div class="kpi"><div class="lbl">Linhas antecipadas</div><div class="val" id="aLin">--</div><div class="ks">grupos (empresa x dia x dueAt)</div></div>
-            <div class="kpi green"><div class="lbl">Total antecipado (net)</div><div class="val" id="aNet">R$ --</div><div class="ks">soma netValue</div></div>
-            <div class="kpi blue"><div class="lbl">Parcelas</div><div class="val" id="aParc">--</div><div class="ks">parcelas advanced</div></div>
-            <div class="kpi orange"><div class="lbl">Empresas</div><div class="val" id="aEmp">--</div><div class="ks">distintas com antecipacao</div></div>
+            <div class="kpi"><div class="lbl">Valor bruto</div><div class="val" id="aGross">R$ --</div><div class="ks">soma grossValue</div></div>
+            <div class="kpi green"><div class="lbl">Valor liquido</div><div class="val" id="aNet">R$ --</div><div class="ks">apos todas as taxas</div></div>
+            <div class="kpi red"><div class="lbl">Taxas totais</div><div class="val" id="aFees">R$ --</div><div class="ks" id="aFeesPct">bruto - liquido</div></div>
+            <div class="kpi blue"><div class="lbl">Parcelas</div><div class="val" id="aParc">--</div><div class="ks" id="aLin">-- grupos</div></div>
+            <div class="kpi orange"><div class="lbl">Empresas</div><div class="val" id="aEmp">--</div><div class="ks">com antecipacao</div></div>
         </div>
         <div class="tbl-card">
             <div class="tbl-head"><h3>Antecipacoes</h3><span class="count" id="antCount">--</span></div>
@@ -209,6 +210,8 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
                         <th>Dia do recebido</th>
                         <th>Data do pedido</th>
                         <th class="r">Parcelas</th>
+                        <th class="r">Valor bruto</th>
+                        <th class="r">Taxas</th>
                         <th class="r">Valor liquido</th>
                     </tr></thead>
                     <tbody id="antBody"></tbody>
@@ -462,14 +465,19 @@ function renderAntec(){
         return ((a.nomeFantasia||'').toLowerCase().indexOf(q)>=0)||((a.companyId||'').toLowerCase().indexOf(q)>=0);
     });
     document.getElementById('antCount').textContent=rows.length+' linha(s)';
-    var totNet=0,totParc=0,emp={};
-    rows.forEach(function(r){totNet+=r.netValue||0;totParc+=r.nParcelas||0;if(r.companyId)emp[r.companyId]=1});
-    document.getElementById('aLin').textContent=fmtN(rows.length);
+    var totNet=0,totGross=0,totParc=0,emp={};
+    rows.forEach(function(r){totNet+=r.netValue||0;totGross+=r.grossValue||0;totParc+=r.nParcelas||0;if(r.companyId)emp[r.companyId]=1});
+    var totFees=totGross-totNet;
+    var feesPct=totGross>0?(totFees/totGross*100):0;
+    document.getElementById('aGross').textContent=fmtC(totGross);
     document.getElementById('aNet').textContent=fmtC(totNet);
+    document.getElementById('aFees').textContent=fmtC(totFees);
+    document.getElementById('aFeesPct').textContent=feesPct.toFixed(2).replace('.',',')+'% do bruto';
     document.getElementById('aParc').textContent=fmtN(totParc);
+    document.getElementById('aLin').textContent=fmtN(rows.length)+' grupos';
     document.getElementById('aEmp').textContent=fmtN(Object.keys(emp).length);
     var tb=document.getElementById('antBody');
-    if(!rows.length){tb.innerHTML='<tr><td colspan="6" class="empty">Nenhuma antecipacao com os filtros atuais</td></tr>';return}
+    if(!rows.length){tb.innerHTML='<tr><td colspan="8" class="empty">Nenhuma antecipacao com os filtros atuais</td></tr>';return}
     var html=[];
     rows.forEach(function(a){
         html.push('<tr>'+
@@ -478,6 +486,8 @@ function renderAntec(){
             '<td class="date">'+(a.diaRecebido?fmtD(a.diaRecebido):'-')+'</td>'+
             '<td class="date">'+(a.dueAt?fmtD(a.dueAt):'-')+'</td>'+
             '<td class="money" style="color:var(--b)">'+fmtN(a.nParcelas)+'</td>'+
+            '<td class="money" style="color:var(--mut)">'+fmtC(a.grossValue)+'</td>'+
+            '<td class="money" style="color:var(--r)">'+fmtC(a.totalFees)+'</td>'+
             '<td class="money total">'+fmtC(a.netValue)+'</td>'+
         '</tr>');
     });
