@@ -449,6 +449,7 @@ table.dt tr:hover td{background:#FAFAFA}
         <div class="filter-group"><label>Ate:</label><input type="date" class="f-input" id="olFAte" onchange="updateOnlog()" style="width:150px"></div>
         <div class="filter-group"><label>Dia unico:</label><input type="date" class="f-input" id="olFDia" onchange="onlogSetDia()" style="width:150px" title="Seleciona um dia especifico"></div>
         <div class="filter-group"><label>Etiqueta:</label><select class="f-select" id="olFEtiq" onchange="updateOnlog()"><option value="">Todos</option><option value="com">Com etiqueta</option><option value="sem">Sem etiqueta</option></select></div>
+        <div class="filter-group"><label>Status:</label><select class="f-select" id="olFStatus" onchange="updateOnlog()"><option value="">Todos</option></select></div>
         <button class="f-btn" onclick="onlogClearFilters()">Limpar</button>
         <button class="help-btn" onclick="document.getElementById('helpOnlog').classList.add('show')" title="Como funciona">?</button>
     </div>
@@ -1149,6 +1150,23 @@ var ONLOG_STATUS_PT={
     'RETURNED':'Devolvido','REFUNDED':'Reembolsado'
 };
 function onlogStatusPt(s){return ONLOG_STATUS_PT[(s||'').toUpperCase()]||(s||'-')}
+var _onlogStatusInited=false;
+function onlogStatusInit(){
+    if(_onlogStatusInited)return;_onlogStatusInited=true;
+    var od=(typeof ONLOG_DATA!=='undefined'?ONLOG_DATA:null);if(!od||!od.pedidos)return;
+    var set={};
+    od.pedidos.forEach(function(p){
+        if(p.cancelado){set['__CANCELED__']=1;return}
+        var s=(p.status||'').toUpperCase();if(s)set[s]=1;
+    });
+    var sel=document.getElementById('olFStatus');if(!sel)return;
+    Object.keys(set).sort().forEach(function(s){
+        var o=document.createElement('option');
+        o.value=s;
+        o.textContent=(s==='__CANCELED__'?'Cancelado':onlogStatusPt(s));
+        sel.appendChild(o);
+    });
+}
 function onlogSetDia(){
     var d=document.getElementById('olFDia').value;
     if(d){document.getElementById('olFDe').value=d;document.getElementById('olFAte').value=d}
@@ -1159,6 +1177,7 @@ function onlogClearFilters(){
     document.getElementById('olFAte').value='';
     document.getElementById('olFDia').value='';
     document.getElementById('olFEtiq').value='';
+    document.getElementById('olFStatus').value='';
     updateOnlog();
 }
 function _onlogFilterRows(od){
@@ -1174,9 +1193,13 @@ function _onlogFilterRows(od){
     if(ate)rows=rows.filter(function(p){return (p.data||'')<=ate});
     if(etq==='com')rows=rows.filter(function(p){return p.comEtiqueta});
     else if(etq==='sem')rows=rows.filter(function(p){return !p.comEtiqueta});
+    var st=document.getElementById('olFStatus').value;
+    if(st==='__CANCELED__')rows=rows.filter(function(p){return p.cancelado});
+    else if(st)rows=rows.filter(function(p){return !p.cancelado && (p.status||'').toUpperCase()===st});
     return rows;
 }
 function updateOnlog(){
+    onlogStatusInit();
     var od=(typeof ONLOG_DATA!=='undefined'?ONLOG_DATA:null);
     var tb=document.querySelector('#tOnlog tbody');
     if(!od||!od.pedidos||!od.pedidos.length){
