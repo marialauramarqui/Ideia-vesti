@@ -205,6 +205,7 @@ SELECT
     u.rec_antifraud_value, u.rec_antecipation_value, u.rec_advanced,
     u.rec_invoice_url, u.rec_transaction_id,
     c.paymentSettings_provider                         AS company_provider,
+    c.name                                             AS company_name,
     c.paymentSettings_customAntecipationFees_isEnabled AS antec_fee_enabled,
     c.paymentSettings_customAntecipationFees_d1        AS antec_d1
 FROM (
@@ -270,9 +271,12 @@ def build(raw: list[dict]) -> dict:
         oid = r.get("order_id") or ""
         if not oid:
             continue
-        # filtra parcelas com netValue 0
+        # filtra parcelas com netValue 0, exceto em empresas com antecipacao
+        # habilitada (ex: Andressa-Teste, cujos pedidos de teste vem zerados
+        # mas precisamos exibir pra validar o fluxo de antecipacao)
         _nv = float(r.get("rec_net_value") or 0)
-        if _nv == 0:
+        _has_antec = (float(r.get("antec_d1") or 0) > 0) or bool(r.get("antec_fee_enabled"))
+        if _nv == 0 and not _has_antec:
             continue
         parcela = {
             "recId": r.get("rec_id") or "",
@@ -292,15 +296,18 @@ def build(raw: list[dict]) -> dict:
         ped = by_order.get(oid)
         if ped is None:
             did = str(r.get("domain_id") or "").strip()
-            # se temos mapa de empresas e dominio nao esta nele -> teste/inativo
-            if company_map and did not in company_map:
+            # Empresas com antecipacao habilitada (d1>0) passam mesmo se o
+            # dominio nao estiver no companies_data.json (ex: "Andressa - Teste"
+            # em dominio de teste, usado pra validar o fluxo de antecipacao).
+            has_antec = (float(r.get("antec_d1") or 0) > 0) or bool(r.get("antec_fee_enabled"))
+            if company_map and did not in company_map and not has_antec:
                 continue
             ped = {
                 "orderId": oid,
                 "orderNumber": r.get("order_number"),
                 "companyId": r.get("company_id") or "",
                 "domainId": did,
-                "nomeFantasia": company_map.get(did, ""),
+                "nomeFantasia": company_map.get(did, "") or (r.get("company_name") or ""),
                 "customerName": r.get("customer_name") or "",
                 "customerDoc": r.get("customer_doc") or "",
                 "orderDate": _iso_or_empty(r.get("order_date")),
@@ -312,7 +319,7 @@ def build(raw: list[dict]) -> dict:
                 "txNetValue": float(r.get("tx_net_value") or 0),
                 "summaryTotal": float(r.get("summary_total") or 0),
                 "companyProvider": r.get("company_provider") or "",
-                "antecipacaoEnabled": (r.get("company_provider") == "STARKBANK") or bool(r.get("antec_fee_enabled")),
+                "antecipacaoEnabled": (float(r.get("antec_d1") or 0) > 0) or bool(r.get("antec_fee_enabled")),
                 "antecipacaoD1": float(r.get("antec_d1") or 0),
                 "parcelas": [],
             }
@@ -362,8 +369,6 @@ def build(raw: list[dict]) -> dict:
         if not p.get("antecipacaoEnabled"):
             continue
         for pc in p["parcelas"]:
-            if (pc.get("netValue") or 0) == 0:
-                continue
             paid_d = _parse_day(pc.get("paidAt") or "")
             due_d = _parse_day(pc.get("dueAt") or "")
             # Empresa opera em antecipacao: inclui todas as parcelas. Se paga,

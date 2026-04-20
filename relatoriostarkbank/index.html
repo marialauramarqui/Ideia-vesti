@@ -109,7 +109,7 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
     </div>
 
     <div class="tabs">
-        <div class="tab active" data-page="receb" onclick="switchTab('receb')">Recebíveis</div>
+        <div class="tab active" data-page="receb" onclick="switchTab('receb')">Fluxo</div>
         <div class="tab" data-page="antec" onclick="switchTab('antec')">Antecipação</div>
     </div>
 
@@ -165,7 +165,7 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
 
     <div class="tbl-card">
         <div class="tbl-head">
-            <h3>Pedidos STARKBANK</h3>
+            <h3>Pedidos em fluxo (STARKBANK)</h3>
             <span class="count" id="tblCount">--</span>
         </div>
         <div class="tbl-wrap">
@@ -377,6 +377,7 @@ function getFiltered(){
         if(m&&p.paymentMethod!==m)return false;
         if(pd==='1'&&!p.allPaid)return false;
         if(pd==='0'&&p.allPaid)return false;
+        if(p.antecipacaoEnabled)return false; // aba Fluxo = pedidos SEM antecipacao
         if(!empresaFiltroMatch(p))return false;
         if(bq){
             var hay=((p.orderId||'')+' '+(p.orderNumber||'')+' '+(p.companyId||'')+' '+(p.customerName||'')+' '+(p.customerDoc||'')).toLowerCase();
