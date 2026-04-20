@@ -1142,6 +1142,13 @@ function openTop80Detail(domainId){
 // === ONLOG (frete) ===
 // ONLOG_DATA injetado pelo merge_data.py (fetch_onlog.py). Fallback: {}
 if(typeof ONLOG_DATA==='undefined')window.ONLOG_DATA={pedidos:[],diasList:[]};
+var ONLOG_STATUS_PT={
+    'SEPARATED':'Separado','SENT':'Enviado','CANCELED':'Cancelado',
+    'WAITING':'Aguardando','DELIVERED':'Entregue','PAID':'Pago',
+    'PENDING':'Pendente','FINISHED':'Finalizado','PROCESSING':'Processando',
+    'RETURNED':'Devolvido','REFUNDED':'Reembolsado'
+};
+function onlogStatusPt(s){return ONLOG_STATUS_PT[(s||'').toUpperCase()]||(s||'-')}
 function onlogSetDia(){
     var d=document.getElementById('olFDia').value;
     if(d){document.getElementById('olFDe').value=d;document.getElementById('olFAte').value=d}
@@ -1209,7 +1216,7 @@ function updateOnlog(){
             '<td>'+esc(p.cliente||'-')+'</td>'+
             '<td style="white-space:nowrap">'+destino+'</td>'+
             '<td style="font-size:11px;color:var(--g)">'+esc(p.provider||'')+'</td>'+
-            '<td style="font-size:11px;color:'+statusColor+';font-weight:600">'+esc(p.cancelado?'CANCELADO':(p.status||'-'))+'</td>'+
+            '<td style="font-size:11px;color:'+statusColor+';font-weight:600">'+esc(p.cancelado?'Cancelado':onlogStatusPt(p.status))+'</td>'+
             '<td>'+etqCell+'</td>'+
             '<td style="text-align:right;font-weight:700;color:var(--s);white-space:nowrap">R$ '+(p.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
         '</tr>'
