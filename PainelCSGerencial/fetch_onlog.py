@@ -17,6 +17,7 @@ Formato (consumido pelo template.html via merge_data -> ONLOG_DATA):
             "status": "SENT",
             "valor": 2683.59,
             "comEtiqueta": true,
+            "etiquetaStatus": "gerada",  # "gerada" | "pendente" | "na"
             "etiquetaUrl": "https://...",
             "trackingCode": null,
             "cidade": "Sao Paulo",
@@ -95,12 +96,18 @@ def fetch_rows(conn) -> list[dict]:
 
 
 def build(rows: list[dict], companies: dict[str, dict]) -> dict:
+    # Status em que a etiqueta JA DEVERIA ter sido gerada se estivesse faltando
+    STATUS_DEVERIA_TER_ETIQUETA = {"SEPARATED", "SENT", "DELIVERED", "FINISHED", "PAID", "PROCESSING"}
+    # Status em que nao faz sentido exigir etiqueta
+    STATUS_NAO_APLICAVEL = {"CANCELED", "WAITING", "PENDING", "REFUNDED", "RETURNED"}
+
     pedidos: list[dict] = []
     dias_set: set[str] = set()
     cs_set: set[str] = set()
     empresas_set: set[str] = set()
-    n_com_etiqueta = 0
-    n_sem_etiqueta = 0
+    n_gerada = 0
+    n_pendente = 0
+    n_na = 0
     val_total = 0.0
     sem_match = 0
 
@@ -125,10 +132,22 @@ def build(rows: list[dict], companies: dict[str, dict]) -> dict:
 
         etq = r.get("etiqueta_url")
         com_etiqueta = bool(etq and str(etq).strip())
+        status_up = (r.get("status") or "").upper()
+        cancelado = bool(r.get("cancelado"))
+
         if com_etiqueta:
-            n_com_etiqueta += 1
+            etiqueta_status = "gerada"
+            n_gerada += 1
+        elif cancelado or status_up in STATUS_NAO_APLICAVEL:
+            etiqueta_status = "na"
+            n_na += 1
+        elif status_up in STATUS_DEVERIA_TER_ETIQUETA:
+            etiqueta_status = "pendente"
+            n_pendente += 1
         else:
-            n_sem_etiqueta += 1
+            # Status desconhecido: trata como pendente pra nao esconder
+            etiqueta_status = "pendente"
+            n_pendente += 1
 
         c = companies.get(dom) or {}
         if not c:
@@ -150,12 +169,13 @@ def build(rows: list[dict], companies: dict[str, dict]) -> dict:
             "status": r.get("status") or "",
             "valor": round(valor, 2),
             "comEtiqueta": com_etiqueta,
+            "etiquetaStatus": etiqueta_status,
             "etiquetaUrl": str(etq) if com_etiqueta else "",
             "trackingCode": r.get("tracking_code") or "",
             "cidade": r.get("cidade") or "",
             "uf": r.get("uf") or "",
             "cliente": r.get("cliente") or "",
-            "cancelado": bool(r.get("cancelado")),
+            "cancelado": cancelado,
         })
         dias_set.add(data_str)
         empresas_set.add(dom)
@@ -165,7 +185,7 @@ def build(rows: list[dict], companies: dict[str, dict]) -> dict:
     dias_list = sorted(dias_set, reverse=True)
     cs_list = sorted(cs_set, key=lambda s: s.lower())
 
-    print(f"[build] {len(pedidos)} pedidos | com etiqueta: {n_com_etiqueta} | sem: {n_sem_etiqueta} | sem match empresa: {sem_match}")
+    print(f"[build] {len(pedidos)} pedidos | gerada: {n_gerada} | pendente: {n_pendente} | n/a: {n_na} | sem match: {sem_match}")
     print(f"[build] GMV Onlog: R$ {val_total:,.2f}")
     if dias_list:
         print(f"[build] periodo: {dias_list[-1]} -> {dias_list[0]}")
@@ -177,8 +197,9 @@ def build(rows: list[dict], companies: dict[str, dict]) -> dict:
         "csList": cs_list,
         "resumo": {
             "nPedidos": len(pedidos),
-            "nComEtiqueta": n_com_etiqueta,
-            "nSemEtiqueta": n_sem_etiqueta,
+            "nEtqGerada": n_gerada,
+            "nEtqPendente": n_pendente,
+            "nEtqNA": n_na,
             "valTotal": round(val_total, 2),
             "nEmpresas": len(empresas_set),
         },
