@@ -387,6 +387,7 @@ def build(raw: list[dict]) -> dict:
                     "vpValue": 0.0,
                     "antifraudValue": 0.0,
                     "nParcelas": 0,
+                    "orderNumbers": [],
                 }
                 antec_agg[key] = agg
             agg["netValue"] += pc["netValue"] or 0
@@ -394,6 +395,9 @@ def build(raw: list[dict]) -> dict:
             agg["vpValue"] += pc.get("vpValue") or 0
             agg["antifraudValue"] += pc.get("antifraudValue") or 0
             agg["nParcelas"] += 1
+            on = p.get("orderNumber")
+            if on is not None and on not in agg["orderNumbers"]:
+                agg["orderNumbers"].append(on)
     antecipacoes = sorted(
         [{
             **v,

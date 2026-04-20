@@ -226,6 +226,7 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
                     <thead><tr>
                         <th>Empresa (nome fantasia)</th>
                         <th>CompanyId</th>
+                        <th>Nº do pedido</th>
                         <th>Dia do recebido</th>
                         <th>Data do pedido</th>
                         <th class="r">Parcelas</th>
@@ -515,12 +516,15 @@ function renderAntec(){
     document.getElementById('aLin').textContent=fmtN(rows.length)+' grupos';
     document.getElementById('aEmp').textContent=fmtN(Object.keys(emp).length);
     var tb=document.getElementById('antBody');
-    if(!rows.length){tb.innerHTML='<tr><td colspan="8" class="empty">Nenhuma antecipação com os filtros atuais</td></tr>';return}
+    if(!rows.length){tb.innerHTML='<tr><td colspan="9" class="empty">Nenhuma antecipação com os filtros atuais</td></tr>';return}
     var html=[];
     rows.forEach(function(a){
+        var ons=a.orderNumbers||[];
+        var onTxt=ons.length?(ons.length>3?ons.slice(0,3).join(', ')+' +'+(ons.length-3):ons.join(', ')):'-';
         html.push('<tr>'+
             '<td>'+esc(a.nomeFantasia||'-')+'</td>'+
             '<td class="mono">'+esc((a.companyId||'').substring(0,14))+(a.companyId&&a.companyId.length>14?'...':'')+'</td>'+
+            '<td class="mono" title="'+esc(ons.join(", "))+'">'+esc(onTxt)+'</td>'+
             '<td class="date">'+(a.diaRecebido?fmtD(a.diaRecebido):'-')+'</td>'+
             '<td class="date">'+(a.dueAt?fmtD(a.dueAt):'-')+'</td>'+
             '<td class="money" style="color:var(--b)">'+fmtN(a.nParcelas)+'</td>'+
