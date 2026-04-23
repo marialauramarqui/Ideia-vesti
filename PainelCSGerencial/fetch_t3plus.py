@@ -53,31 +53,42 @@ ranked_companies AS (
         ROW_NUMBER() OVER (PARTITION BY c.domain_id ORDER BY c.created_at ASC) AS rn
     FROM dbo.ODBC_Companies c
     WHERE c.domain_id IN (SELECT id FROM t3_domains)
+),
+-- UM item distinto por invoice (tabela bronze tem duplicatas por snapshot de ingestao):
+itens AS (
+    SELECT
+        inv.id                          AS invoice_id,
+        inv.customer_id                 AS customer_id,
+        inv.items_id                    AS items_id,
+        MAX(inv.items_description)      AS items_description,
+        MAX(inv.items_price_cents)      AS item_price_cents,
+        MAX(inv.items_quantity)         AS item_qty,
+        MAX(inv.created_at_iso_TIMESTAMP) AS invoice_date
+    FROM dbo.iugu_invoices inv
+    WHERE inv.status = 'paid'
+      AND inv.created_at_iso_TIMESTAMP >= '2025-01-01'
+      AND inv.items_id IS NOT NULL
+    GROUP BY inv.id, inv.customer_id, inv.items_id
 )
 SELECT
-    d.id                         AS domain_id,
-    d.name                       AS domain_name,
-    rc.company_name              AS company_name,
-    rc.social_name               AS social_name,
-    p.name                       AS partner_name,
-    a.name                       AS angel_name,
-    inv.id                       AS invoice_id,
-    inv.total_paid_cents         AS total_paid_cents,
-    inv.total_cents              AS total_cents,
-    inv.items_description        AS items_description,
-    inv.created_at_iso_TIMESTAMP AS invoice_date
+    d.id                 AS domain_id,
+    d.name               AS domain_name,
+    rc.company_name      AS company_name,
+    rc.social_name       AS social_name,
+    p.name               AS partner_name,
+    a.name               AS angel_name,
+    i.invoice_id         AS invoice_id,
+    i.items_id           AS items_id,
+    i.items_description  AS items_description,
+    i.item_price_cents   AS item_price_cents,
+    i.item_qty           AS item_qty,
+    i.invoice_date       AS invoice_date
 FROM t3_domains d
 JOIN ranked_companies rc       ON rc.domain_id = d.id AND rc.rn = 1
 LEFT JOIN dbo.ODBC_Partners p  ON p.id = d.partner_id
 LEFT JOIN dbo.ODBC_Angels   a  ON a.id = d.angel_id
 JOIN dbo.silver_companiesativos_iugu sc ON sc.domain_id = d.id
-JOIN (
-    SELECT DISTINCT id, customer_id, total_cents, total_paid_cents,
-           status, items_description, created_at_iso_TIMESTAMP
-    FROM dbo.iugu_invoices
-    WHERE status = 'paid'
-) inv ON inv.customer_id = sc.Customer_ID_Iugu
-WHERE inv.created_at_iso_TIMESTAMP >= '2025-01-01'
+JOIN itens i                    ON i.customer_id = sc.Customer_ID_Iugu
 """
 
 
@@ -184,32 +195,35 @@ def fetch_rows(conn) -> list[dict]:
 
 def build(rows: list[dict]) -> dict:
     # Acumuladores
-    serie_acc: dict[str, dict] = defaultdict(lambda: {k: 0.0 for k in CATEGORIES} | {"nInvoices": 0, "_emps": set()})
+    serie_acc: dict[str, dict] = defaultdict(lambda: {k: 0.0 for k in CATEGORIES} | {"_invs": set(), "_emps": set()})
     empresas: dict[str, dict] = {}
-    excluidas = 0
-    erros = 0
+    excluidos_itens = 0
 
     for r in rows:
         dom = str(r.get("domain_id") or "").strip()
         if not dom:
             continue
-        total = _cents_to_reais(r.get("total_paid_cents") or r.get("total_cents"))
-        if total <= 0:
+        price = _cents_to_reais(r.get("item_price_cents"))
+        qty = int(r.get("item_qty") or 1)
+        val = price * max(qty, 1)
+        if val == 0:
             continue
         mes = _ym(r.get("invoice_date"))
         if not mes:
             continue
 
-        cats = classificar(r.get("items_description") or "", total)
+        cats = classificar(r.get("items_description") or "", val)
         if cats is None:
-            excluidas += 1
+            excluidos_itens += 1
             continue
+
+        inv_id = r.get("invoice_id") or ""
 
         # Soma categorias no mes
         sacc = serie_acc[mes]
         for k in CATEGORIES:
             sacc[k] += cats.get(k, 0.0)
-        sacc["nInvoices"] += 1
+        sacc["_invs"].add(inv_id)
         sacc["_emps"].add(dom)
 
         # Empresa
@@ -220,15 +234,14 @@ def build(rows: list[dict]) -> dict:
             "cs": r.get("angel_name") or "",
             "total": 0.0,
             "totais": {k: 0.0 for k in CATEGORIES},
-            "nInvoices": 0,
+            "_invs": set(),
             "porMes": defaultdict(lambda: {k: 0.0 for k in CATEGORIES}),
         })
         for k in CATEGORIES:
             v = cats.get(k, 0.0)
             emp["totais"][k] += v
             emp["porMes"][mes][k] += v
-        emp["nInvoices"] += 1
-        # total contratado (net): soma das positivas - desconto
+        emp["_invs"].add(inv_id)
         net = cats["plano"] + cats["integracao"] + cats["assistente"] + cats["filial"] + cats["outros"] - cats["desconto"]
         emp["total"] += net
 
@@ -249,7 +262,7 @@ def build(rows: list[dict]) -> dict:
             "outros": round(acc["outros"], 2),
             "desconto": round(acc["desconto"], 2),
             "total": round(_net(acc), 2),
-            "nInvoices": acc["nInvoices"],
+            "nInvoices": len(acc["_invs"]),
             "nEmpresas": len(acc["_emps"]),
         })
 
@@ -262,7 +275,7 @@ def build(rows: list[dict]) -> dict:
             "cs": e["cs"],
             "total": round(e["total"], 2),
             "totais": {k: round(v, 2) for k, v in e["totais"].items()},
-            "nInvoices": e["nInvoices"],
+            "nInvoices": len(e["_invs"]),
             "porMes": {m: {k: round(v, 2) for k, v in d.items()} for m, d in sorted(e["porMes"].items())},
         })
     empresas_list.sort(key=lambda x: x["total"], reverse=True)
@@ -271,7 +284,8 @@ def build(rows: list[dict]) -> dict:
     ultimo = serie[-1] if serie else None
     anterior = serie[-2] if len(serie) >= 2 else None
 
-    print(f"[build] {len(empresas_list)} empresas | {len(rows)} invoices | excluidas (Start/Light): {excluidas}")
+    n_invs = len({r.get("invoice_id") for r in rows if r.get("invoice_id")})
+    print(f"[build] {len(empresas_list)} empresas | {len(rows)} itens | {n_invs} invoices unicas | itens excluidos (Start/Light): {excluidos_itens}")
     print(f"[build] total T3+ desde jan/2025: R$ {total_geral:,.2f}")
     if ultimo:
         print(f"[build] {ultimo['mes']}: R$ {ultimo['total']:,.2f} "
@@ -287,8 +301,8 @@ def build(rows: list[dict]) -> dict:
         "resumo": {
             "totalGeral": total_geral,
             "nEmpresas": len(empresas_list),
-            "nInvoices": len(rows),
-            "nInvoicesExcluidas": excluidas,
+            "nInvoices": n_invs,
+            "nItensExcluidos": excluidos_itens,
             "mesAtual": ultimo["mes"] if ultimo else "",
             "mensalidadeMesAtual": ultimo["total"] if ultimo else 0.0,
             "mensalidadeMesAnterior": anterior["total"] if anterior else 0.0,
