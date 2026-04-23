@@ -227,11 +227,17 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
 // carrega dados.js com cache-bust agressivo — evita browser servir versao velha
 window._dadosError=null;
 (function(){
+    var v=Date.now()+'_'+Math.random().toString(36).substring(2,8);
     var s=document.createElement('script');
-    s.src='dados.js?v='+Date.now()+'_'+Math.random().toString(36).substring(2,8);
+    s.src='dados.js?v='+v;
     s.onload=function(){window._dadosLoaded=true};
     s.onerror=function(){window._dadosError='falha ao carregar dados.js'};
     document.head.appendChild(s);
+    var s2=document.createElement('script');
+    s2.src='invoices.js?v='+v;
+    s2.onload=function(){window._invoicesLoaded=true};
+    s2.onerror=function(){window._invoicesLoaded=true}; // invoices opcional
+    document.head.appendChild(s2);
 })();
 // captura qualquer erro de JS pra nao ficar silencioso
 window.addEventListener('error',function(e){
@@ -482,80 +488,77 @@ function renderCp(){
 }
 
 function renderCr(){
-    // Contas a receber: parcela-level. Filtros:
-    //  - Data a pagar (de/ate) -> filtra parcelas por dueAt (vencimento)
-    //  - Data da compra (de/ate) -> filtra pedidos por orderDate
-    //  - Empresa -> filtra por nome/companyId
+    // CR usa window.INVOICES (api vesti) como fonte unica.
+    // status da installment: 'paid' = paga; qualquer outro (normalmente
+    // 'created') = a receber. Valores da API sao em centavos.
+    var tb=document.getElementById('tbodyCr');
+    if(!window.INVOICES||!window.INVOICES.faturas){
+        tb.innerHTML='<tr><td colspan="10" class="empty" style="color:#E17055">invoices.js nao carregou — rode fetch_invoices.py</td></tr>';
+        ['crEmp','crPed','crPedPg','crPedAr','crRec','crAr','crTot'].forEach(function(id){document.getElementById(id).textContent='--'});
+        return;
+    }
     var dDe=document.getElementById('fDataDe').value;
     var dAte=document.getElementById('fDataAte').value;
     var pDe=document.getElementById('fPagoDe').value;
     var pAte=document.getElementById('fPagoAte').value;
     var q=(document.getElementById('fEmpresa').value||'').toLowerCase().trim();
-    var peds=(DADOS.pedidos||[]).filter(function(p){
-        var od=(p.orderDate||'').substring(0,10);
+    var faturas=(window.INVOICES.faturas||[]).filter(function(f){
+        var od=(f.orderDate||'').substring(0,10);
         if(pDe&&(!od||od<pDe))return false;
         if(pAte&&(!od||od>pAte))return false;
         if(q){
-            var hay=((p.nomeFantasia||'')+' '+(p.companyId||'')).toLowerCase();
+            var hay=((f.nomeFantasia||'')+' '+(f.companyId||'')).toLowerCase();
             if(hay.indexOf(q)<0)return false;
         }
         return true;
     });
-    function filtParc(parcelas){
-        if(!dDe&&!dAte)return parcelas;
-        return parcelas.filter(function(pc){
-            var due=(pc.dueAt||'').substring(0,10);
+    function filtParc(insts){
+        if(!dDe&&!dAte)return insts;
+        return insts.filter(function(i){
+            var due=(i.due||'').substring(0,10);
             if(dDe&&(!due||due<dDe))return false;
             if(dAte&&(!due||due>dAte))return false;
             return true;
         });
     }
-    // stats por parcela. Valor = grossValue (valor total da parcela que
-    // cai na conta StarkBank da VestiPago; a VP depois repassa o liquido
-    // a marca). "Paga" = parcela liquidada (dinheiro ja entrou na VP);
-    // "A receber" = PENDING (ainda vai entrar).
-    function pcStats(pedido,parcelas){
+    // agrupa: data(due) -> empresa -> pedido -> installments
+    var byDate={};
+    var empSet={};
+    faturas.forEach(function(f){
+        var insts=filtParc((f.purchase&&f.purchase.installments)||[]);
+        insts.forEach(function(i){
+            var d=(i.due||'').substring(0,10)||'(sem)';
+            var cid=f.companyId||'(sem)';
+            empSet[cid]=1;
+            var db=byDate[d]||(byDate[d]={date:d,byEmp:{}});
+            var e=db.byEmp[cid]||(db.byEmp[cid]={cid:cid,nome:f.nomeFantasia||cid,antec:false,pedsMap:{}});
+            if(f.antecipacaoEnabled)e.antec=true;
+            var op=e.pedsMap[f.orderId]||(e.pedsMap[f.orderId]={f:f,insts:[],instTotal:(f.purchase&&f.purchase.installmentCount)||0});
+            op.insts.push(i);
+        });
+    });
+    var dates=Object.keys(byDate).sort();
+    // totais gerais
+    function sumInsts(list){
         var s={n:0,nPg:0,nAr:0,vRec:0,vAr:0};
-        parcelas.forEach(function(pc){
+        list.forEach(function(i){
             s.n++;
-            var v=pc.grossValue||0;
-            var pago=(pc.status==='PAID')||!!pc.paidAt;
-            if(pago){s.nPg++;s.vRec+=v}
+            var v=(i.amount||0)/100;
+            if(i.status==='paid'){s.nPg++;s.vRec+=v}
             else{s.nAr++;s.vAr+=v}
         });
         return s;
     }
-    // achata em linhas {due, p, pc} agrupadas por data -> empresa
-    var byDate={};
-    var empSet={};
-    peds.forEach(function(p){
-        var pcs=filtParc(p.parcelas||[]);
-        pcs.forEach(function(pc){
-            var d=(pc.dueAt||'').substring(0,10)||'(sem)';
-            var cid=p.companyId||'(sem)';
-            empSet[cid]=1;
-            var db=byDate[d]||(byDate[d]={date:d,byEmp:{},pcs:[]});
-            db.pcs.push({p:p,pc:pc});
-            var e=db.byEmp[cid]||(db.byEmp[cid]={cid:cid,nome:p.nomeFantasia||cid,antec:false,pedsMap:{}});
-            if(p.antecipacaoEnabled)e.antec=true;
-            var op=e.pedsMap[p.orderId]||(e.pedsMap[p.orderId]={p:p,pcs:[]});
-            op.pcs.push(pc);
-        });
-    });
-    var dates=Object.keys(byDate).sort();
-    // totals gerais
-    var tot={n:0,nPg:0,nAr:0,vRec:0,vAr:0,nPed:0};
-    var pedSet={};
+    var allI=[];var pedSet={};
     dates.forEach(function(d){
-        byDate[d].pcs.forEach(function(x){
-            tot.n++;
-            var v=x.pc.grossValue||0;
-            var pago=(x.pc.status==='PAID')||!!x.pc.paidAt;
-            if(pago){tot.nPg++;tot.vRec+=v}else{tot.nAr++;tot.vAr+=v}
-            pedSet[x.p.orderId]=1;
+        Object.values(byDate[d].byEmp).forEach(function(e){
+            Object.values(e.pedsMap).forEach(function(op){
+                op.insts.forEach(function(i){allI.push(i)});
+                pedSet[op.f.orderId]=1;
+            });
         });
     });
-    tot.nPed=Object.keys(pedSet).length;
+    var tot=sumInsts(allI);
     document.getElementById('crEmp').textContent=fmtN(Object.keys(empSet).length);
     document.getElementById('crPed').textContent=fmtN(tot.n);
     document.getElementById('crPedPg').textContent=fmtN(tot.nPg);
@@ -564,21 +567,18 @@ function renderCr(){
     document.getElementById('crAr').textContent=fmtC(tot.vAr);
     document.getElementById('crTot').textContent=fmtC(tot.vRec+tot.vAr);
     document.getElementById('crCount').textContent=fmtN(tot.n)+' parcela(s) em '+fmtN(dates.length)+' dia(s)';
-    var tb=document.getElementById('tbodyCr');
-    if(!dates.length){tb.innerHTML='<tr><td colspan="10" class="empty">Nenhum pedido com os filtros atuais</td></tr>';return}
+    if(!dates.length){tb.innerHTML='<tr><td colspan="10" class="empty">Nenhuma parcela com os filtros atuais</td></tr>';return}
     var html=[];
     dates.forEach(function(date){
         var db=byDate[date];
-        // stats do dia
-        var dt={n:0,nPg:0,nAr:0,vRec:0,vAr:0,emp:{}};
-        db.pcs.forEach(function(x){
-            dt.n++;
-            var v=x.pc.grossValue||0;
-            var pago=(x.pc.status==='PAID')||!!x.pc.paidAt;
-            if(pago){dt.nPg++;dt.vRec+=v}else{dt.nAr++;dt.vAr+=v}
-            dt.emp[x.p.companyId]=1;
+        // stats do dia (soma de todos installments no dia)
+        var dayI=[];var dayEmp={};
+        Object.values(db.byEmp).forEach(function(e){
+            dayEmp[e.cid]=1;
+            Object.values(e.pedsMap).forEach(function(op){op.insts.forEach(function(i){dayI.push(i)})});
         });
-        var empCount=Object.keys(dt.emp).length;
+        var dt=sumInsts(dayI);
+        var empCount=Object.keys(dayEmp).length;
         var dKey='CRD:'+date;
         var dOpen=!!openSet[dKey];
         var dLabel=date==='(sem)'?'(sem data)':fmtD(date);
@@ -601,16 +601,9 @@ function renderCr(){
         });
         cids.forEach(function(cid){
             var e=db.byEmp[cid];
-            // stats empresa no dia
-            var es={n:0,nPg:0,nAr:0,vRec:0,vAr:0};
-            Object.values(e.pedsMap).forEach(function(op){
-                op.pcs.forEach(function(pc){
-                    es.n++;
-                    var v=pc.grossValue||0;
-                    var pago=(pc.status==='PAID')||!!pc.paidAt;
-                    if(pago){es.nPg++;es.vRec+=v}else{es.nAr++;es.vAr+=v}
-                });
-            });
+            var empI=[];
+            Object.values(e.pedsMap).forEach(function(op){op.insts.forEach(function(i){empI.push(i)})});
+            var es=sumInsts(empI);
             var cKey='CRC:'+date+'|'+cid;
             var cOpen=!!openSet[cKey];
             var antecBadge=e.antec?' <span class="badge advanced">ANTEC.</span>':'';
@@ -626,18 +619,20 @@ function renderCr(){
                 '<td class="money total">'+fmtC(es.vRec+es.vAr)+'</td>'+
             '</tr>');
             if(!cOpen)return;
-            // parcelas (agrupadas por pedido pra deixar legivel)
-            var ops=Object.values(e.pedsMap).sort(function(a,b){return (b.p.orderDate||'').localeCompare(a.p.orderDate||'')});
+            // installments (agrupadas por pedido pra deixar legivel)
+            var ops=Object.values(e.pedsMap).sort(function(a,b){return (b.f.orderDate||'').localeCompare(a.f.orderDate||'')});
             ops.forEach(function(op){
-                var p=op.p;
-                op.pcs.forEach(function(pc){
-                    var pago=(pc.status==='PAID')||!!pc.paidAt;
-                    var g=pc.grossValue||0;
+                var f=op.f,total=op.instTotal||op.insts.length;
+                // ordena installments por due
+                var sorted=op.insts.slice().sort(function(a,b){return (a.due||'').localeCompare(b.due||'')});
+                sorted.forEach(function(i,idx){
+                    var pago=(i.status==='paid');
+                    var g=(i.amount||0)/100;
                     html.push('<tr class="parc show" style="background:#FAFAFF">'+
                         '<td></td>'+
-                        '<td style="padding-left:80px;color:var(--tx)">Pedido #'+esc((p.orderNumber||p.orderId||'').toString())+' · parcela '+pc.installment+'/'+(p.installmentsTotal||'?')+' '+(pago?'<span class="badge paid">PAGA</span>':'<span class="badge pen">A RECEBER</span>')+' · <span style="color:var(--mut)">'+esc(p.customerName||'-')+'</span></td>'+
-                        '<td class="date">'+(pc.dueAt?fmtD(pc.dueAt):'-')+'</td>'+
-                        '<td class="date">'+(p.paidAt?fmtD(p.paidAt):'-')+'</td>'+
+                        '<td style="padding-left:80px;color:var(--tx)">Pedido #'+esc((f.orderNumber||f.orderId||'').toString())+' · parcela '+(idx+1)+'/'+total+' '+(pago?'<span class="badge paid">PAGA</span>':'<span class="badge pen">A RECEBER</span>')+' · <span style="color:var(--mut)">'+esc(f.customerName||'-')+'</span></td>'+
+                        '<td class="date">'+(i.due?fmtD(i.due):'-')+'</td>'+
+                        '<td class="date">'+(f.orderDate?fmtD(f.orderDate):'-')+'</td>'+
                         '<td class="money" style="color:var(--p)">1</td>'+
                         '<td class="money" style="color:var(--g)">'+(pago?1:0)+'</td>'+
                         '<td class="money" style="color:var(--r)">'+(pago?0:1)+'</td>'+

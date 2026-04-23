@@ -210,7 +210,8 @@ SELECT
     c.paymentSettings_provider                         AS company_provider,
     c.name                                             AS company_name,
     c.paymentSettings_customAntecipationFees_isEnabled AS antec_fee_enabled,
-    c.paymentSettings_customAntecipationFees_d1        AS antec_d1
+    c.paymentSettings_customAntecipationFees_d1        AS antec_d1,
+    c.paymentSettings_starkbank_workspaceId            AS workspace_id
 FROM (
     SELECT * FROM rec
     UNION ALL
@@ -333,6 +334,7 @@ def build(raw: list[dict]) -> dict:
                 "companyProvider": r.get("company_provider") or "",
                 "antecipacaoEnabled": (float(r.get("antec_d1") or 0) > 0) or bool(r.get("antec_fee_enabled")),
                 "antecipacaoD1": float(r.get("antec_d1") or 0),
+                "workspaceId": str(r.get("workspace_id") or "").strip(),
                 "parcelas": [],
             }
             by_order[oid] = ped
