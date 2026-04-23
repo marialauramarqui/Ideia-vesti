@@ -181,7 +181,7 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
                     <tr>
                         <th style="width:22px"></th>
                         <th>Data / Empresa / Pedido</th>
-                        <th>Data da compra</th>
+                        <th>Cliente pagou em</th>
                         <th class="r">Parcelas</th>
                         <th class="r">Valor total</th>
                         <th class="r">VestiPago</th>
@@ -421,7 +421,7 @@ function renderCp(){
         var dKey='D:'+date;
         var dOpen=!!openSet[dKey];
         var dLabel=date?fmtD(date):'(sem data)';
-        var ods=pags.map(function(x){return (x.orderDate||'').substring(0,10)}).filter(Boolean).sort();
+        var ods=pags.map(function(x){return (x.customerPaidAt||'').substring(0,10)}).filter(Boolean).sort();
         var pagoTxt=ods.length?(ods[0]===ods[ods.length-1]?fmtD(ods[0]):fmtD(ods[0])+' – '+fmtD(ods[ods.length-1])):'-';
         html.push('<tr class="ped'+(dOpen?' open':'')+'" onclick="toggleKey(\''+dKey+'\')">'+
             '<td class="chev">&rtrif;</td>'+
@@ -449,7 +449,7 @@ function renderCp(){
             var cKey='C:'+date+'|'+cid;
             var cOpen=!!openSet[cKey];
             var cLabel=cPags[0].nomeFantasia||cid;
-            var cOds=cPags.map(function(x){return (x.orderDate||'').substring(0,10)}).filter(Boolean).sort();
+            var cOds=cPags.map(function(x){return (x.customerPaidAt||'').substring(0,10)}).filter(Boolean).sort();
             var cPagoTxt=cOds.length?(cOds[0]===cOds[cOds.length-1]?fmtD(cOds[0]):fmtD(cOds[0])+' – '+fmtD(cOds[cOds.length-1])):'-';
             html.push('<tr class="parc show" onclick="event.stopPropagation();toggleKey(\''+cKey+'\')" style="cursor:pointer;'+(cOpen?'background:#E8E4FF;font-weight:600':'')+'">'+
                 '<td></td>'+
@@ -467,7 +467,7 @@ function renderCp(){
                 html.push('<tr class="parc show" style="background:#FAFAFF">'+
                     '<td></td>'+
                     '<td style="padding-left:80px;color:var(--tx)">Pedido #'+esc((p.orderNumber||p.orderId||'').toString())+' · parcela '+p.installment+'/'+(p.installmentsTotal||'?')+' · <span style="color:var(--mut)">'+esc(p.customerName||'-')+'</span></td>'+
-                    '<td class="date">'+(p.orderDate?fmtD(p.orderDate):'-')+'</td>'+
+                    '<td class="date">'+(p.customerPaidAt?fmtD(p.customerPaidAt):'-')+'</td>'+
                     '<td class="money" style="color:var(--p)">1</td>'+
                     '<td class="money" style="color:var(--mut)">'+fmtC(p.grossValue)+'</td>'+
                     '<td class="money" style="color:var(--b)">'+fmtC(p.vpValue)+'</td>'+
