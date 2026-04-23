@@ -194,7 +194,7 @@ def pagina_gerar(parceiros):
             )
             frequencia_label = st.selectbox(
                 "Frequência",
-                ["Diária", "Semanal", "Mensal", "Trimestral", "Semestral", "Anual"],
+                ["Semanal", "Mensal", "Trimestral", "Semestral", "Anual"],
                 index=0,
             )
             recurrence_beginning = st.date_input(
@@ -225,7 +225,6 @@ def pagina_gerar(parceiros):
         return
 
     freq_map = {
-        "Diária": "daily",
         "Semanal": "weekly",
         "Mensal": "monthly",
         "Trimestral": "quarterly",
