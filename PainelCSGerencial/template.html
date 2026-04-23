@@ -488,7 +488,7 @@ table.dt tr:hover td{background:#FAFAFA}
 <!-- ============ T3+ TAB ============ -->
 <div class="tab-panel" id="tab-t3plus">
     <div class="kpi-row">
-        <div class="kpi"><div class="ki" style="background:#E8EAF6">&#128176;</div><div class="kl">Receita mes atual</div><div class="kv" style="color:var(--p);font-size:20px" id="t3-kmes">R$ --</div><div class="ks" id="t3-kmes-s"></div></div>
+        <div class="kpi"><div class="ki" style="background:#E8EAF6">&#128176;</div><div class="kl">Mensalidade mes atual</div><div class="kv" style="color:var(--p);font-size:20px" id="t3-kmes">R$ --</div><div class="ks" id="t3-kmes-s"></div></div>
         <div class="kpi"><div class="ki" style="background:#E0F7F0">&#128200;</div><div class="kl">Mes anterior</div><div class="kv" style="color:var(--s);font-size:20px" id="t3-kprev">R$ --</div><div class="ks" id="t3-kprev-s"></div></div>
         <div class="kpi"><div class="ki" style="background:#FFF3E0">&#127970;</div><div class="kl">Empresas no mes</div><div class="kv" style="color:var(--w)" id="t3-kemp">--</div><div class="ks">clientes nao-Starter</div></div>
         <div class="kpi"><div class="ki" style="background:#F0EFFF">&#128202;</div><div class="kl">Total acumulado</div><div class="kv" style="color:var(--dk);font-size:20px" id="t3-ktotal">R$ --</div><div class="ks" id="t3-ktotal-s"></div></div>
@@ -501,14 +501,19 @@ table.dt tr:hover td{background:#FAFAFA}
         <button class="help-btn" onclick="document.getElementById('helpT3').classList.add('show')" title="Como funciona">?</button>
     </div>
     <div class="tbl-card">
-        <h4>Receita mensal &middot; <span id="t3-serie-count" style="color:var(--g);font-weight:500">--</span></h4>
-        <div style="max-height:260px;overflow-y:auto">
+        <h4>Mensalidade mensal por categoria &middot; <span id="t3-serie-count" style="color:var(--g);font-weight:500">--</span></h4>
+        <div style="max-height:320px;overflow-y:auto;overflow-x:auto">
             <table class="dt" id="tT3Serie">
                 <thead><tr>
                     <th>Mes</th>
-                    <th style="text-align:right">Receita</th>
+                    <th style="text-align:right" title="Mensalidade do plano principal">Plano</th>
+                    <th style="text-align:right" title="Filiais adicionais">Filial</th>
+                    <th style="text-align:right" title="Assistente do Vendedor">Assistente</th>
+                    <th style="text-align:right" title="Integracao ERP/plataforma">Integracao</th>
+                    <th style="text-align:right" title="Catalogo, Conecta, Portal, setup, juros, etc">Outros</th>
+                    <th style="text-align:right" title="Descontos concedidos (subtraido)">Desconto</th>
+                    <th style="text-align:right" title="Soma das categorias - desconto = o que o cliente paga no mes"><b>Total</b></th>
                     <th style="text-align:right">Empresas</th>
-                    <th style="text-align:right">Invoices</th>
                 </tr></thead>
                 <tbody></tbody>
             </table>
@@ -516,15 +521,19 @@ table.dt tr:hover td{background:#FAFAFA}
     </div>
     <div class="tbl-card" style="margin-top:16px">
         <h4>Empresas T3+ &middot; <span id="t3-tbl-count" style="color:var(--g);font-weight:500">--</span></h4>
-        <div style="max-height:520px;overflow-y:auto">
+        <div style="max-height:520px;overflow-y:auto;overflow-x:auto">
             <table class="dt" id="tT3Emp">
                 <thead><tr>
                     <th>Empresa</th>
                     <th>Canal</th>
                     <th>CS</th>
-                    <th style="text-align:right">Invoices</th>
-                    <th style="text-align:right">Receita total</th>
-                    <th style="text-align:right">No mes</th>
+                    <th style="text-align:right">Plano</th>
+                    <th style="text-align:right">Filial</th>
+                    <th style="text-align:right">Assistente</th>
+                    <th style="text-align:right">Integracao</th>
+                    <th style="text-align:right">Outros</th>
+                    <th style="text-align:right">Desconto</th>
+                    <th style="text-align:right"><b>Total</b></th>
                 </tr></thead>
                 <tbody></tbody>
             </table>
@@ -537,14 +546,23 @@ table.dt tr:hover td{background:#FAFAFA}
         <button class="close-btn" onclick="document.getElementById('helpT3').classList.remove('show')">&times;</button>
         <h3>T3+ - Como funciona</h3>
         <p><b>O que e?</b></p>
-        <p>Receita de <b>mensalidade Iugu</b> dos clientes cujo <b>Canal</b> (partner) <b>nao</b> seja <b>Starter</b>. Espelha a aba Faturamento do Painel CS no Fabric (Vestilake &gt; Paineis).</p>
-        <p><b>Fonte:</b></p>
+        <p>Mensalidade Iugu dos clientes T3+ (<b>Canal nao-Starter</b>), separada por categoria. Espelha a aba Faturamento do Painel CS (Vestilake &gt; Paineis).</p>
+        <p><b>Exclusoes:</b></p>
         <ul>
-            <li><code>dbo.iugu_invoices</code> (status = <code>paid</code>) ligadas ao dominio via <code>silver_companiesativos_iugu</code>.</li>
-            <li>Filtro: <code>ODBC_Domains.partner_id</code> diferente de <b>Starter</b>, Trial e Treino; nome sem "teste".</li>
-            <li>Agregado por mes da <code>created_at_iso_TIMESTAMP</code> da invoice (competencia).</li>
+            <li>Domínios com <code>partner_id</code> = Starter, Trial ou Treino.</li>
+            <li>Invoices cuja descricao aponte plano <b>Vesti Start</b> ou <b>Vesti Light</b> (e <b>Assinatura: Starter</b>).</li>
         </ul>
-        <p>Serie comeca em jan/2025. O mes corrente pode estar parcial (invoices ainda nao emitidas).</p>
+        <p><b>Categorias</b> (extraidas do <code>items_description</code> ou pelo plano):</p>
+        <ul>
+            <li><b>Plano</b> = Mensalidade do plano principal (Pro, Avançado, Profissional, Básico, Essencial, Conecta…).</li>
+            <li><b>Filial</b> = Filiais adicionais.</li>
+            <li><b>Assistente</b> = Assistente do Vendedor.</li>
+            <li><b>Integracao</b> = Integracao ERP/plataforma.</li>
+            <li><b>Outros</b> = Catalogo Digital, Portal Têxtil, setup, juros, multa, adicionais.</li>
+            <li><b>Desconto</b> = Descontos concedidos (subtraido do total).</li>
+            <li><b>Total</b> = <code>Plano + Filial + Assistente + Integracao + Outros - Desconto</code>. Eh o que o cliente <b>paga por mes</b>.</li>
+        </ul>
+        <p>Agregado por mes da <code>created_at_iso_TIMESTAMP</code>. Serie desde jan/2025. Mes corrente pode estar parcial.</p>
     </div>
 </div>
 <!-- MODAL AJUDA ONLOG -->
@@ -986,8 +1004,8 @@ function updateHome(){
     var t3v=document.getElementById('home-t3-val'),t3s=document.getElementById('home-t3-sub');
     if(t3v&&t3s){
         if(t3&&t3.resumo){
-            t3v.textContent='R$ '+(t3.resumo.receitaMesAtual||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-            var prev=t3.resumo.receitaMesAnterior||0,cur=t3.resumo.receitaMesAtual||0;
+            var cur=t3.resumo.mensalidadeMesAtual||0, prev=t3.resumo.mensalidadeMesAnterior||0;
+            t3v.textContent='R$ '+cur.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
             var pct=prev>0?((cur-prev)/prev*100):null;
             t3s.textContent=(t3.resumo.mesAtual?fmtM(t3.resumo.mesAtual):'--')+(pct!=null?(' ('+(pct>=0?'+':'')+pct.toFixed(1)+'% vs mes ant.)'):'');
         } else {t3v.textContent='R$ --';t3s.textContent='sem dados';}
@@ -1463,75 +1481,98 @@ function t3Init(){
 }
 function t3ClearFilters(){document.getElementById('t3FMes').value='';document.getElementById('t3FCanal').value='';document.getElementById('t3FCS').value='';updateT3()}
 function _t3FmtR(v){return 'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function _t3Net(o){return (o.plano||0)+(o.filial||0)+(o.assistente||0)+(o.integracao||0)+(o.outros||0)-(o.desconto||0)}
+function _t3EmptyCat(){return {plano:0,filial:0,assistente:0,integracao:0,outros:0,desconto:0}}
 function updateT3(){
     t3Init();
     var t3=(typeof T3PLUS_DATA!=='undefined'?T3PLUS_DATA:null);
     var tbS=document.querySelector('#tT3Serie tbody'),tbE=document.querySelector('#tT3Emp tbody');
     if(!t3||!t3.serie){
-        if(tbS)tbS.innerHTML='<tr><td colspan="4" style="text-align:center;color:#999;padding:24px">Sem dados T3+. Rode python fetch_t3plus.py</td></tr>';
+        if(tbS)tbS.innerHTML='<tr><td colspan="9" style="text-align:center;color:#999;padding:24px">Sem dados T3+. Rode python fetch_t3plus.py</td></tr>';
         if(tbE)tbE.innerHTML='';
         return;
     }
     var mesF=document.getElementById('t3FMes').value;
     var canalF=document.getElementById('t3FCanal').value;
     var csF=document.getElementById('t3FCS').value;
-    // Empresas filtradas
+    // Empresas filtradas por canal/cs
     var emps=(t3.empresas||[]).filter(function(e){
         if(canalF && e.canal!==canalF)return false;
         if(csF && e.cs!==csF)return false;
-        if(mesF && !(e.porMes&&e.porMes[mesF]>0))return false;
         return true;
     });
-    // Serie: se houver filtro de canal/cs, recalcular da base filtrada; senao usar serie pre-calc
-    var serie;
-    if(canalF||csF){
-        var acc={};
-        emps.forEach(function(e){Object.keys(e.porMes||{}).forEach(function(m){acc[m]=(acc[m]||{r:0,n:0,emps:{}});acc[m].r+=e.porMes[m];acc[m].n+=1;acc[m].emps[e.domainId]=1})});
-        serie=Object.keys(acc).sort().map(function(m){return {mes:m,receita:acc[m].r,nEmpresas:Object.keys(acc[m].emps).length,nInvoices:null}});
-    } else {
-        serie=(t3.serie||[]).slice();
-    }
-    if(mesF)serie=serie.filter(function(r){return r.mes===mesF});
-    // KPIs
-    var last=serie[serie.length-1]||{};
+    // Serie: recalcular a partir das empresas filtradas para refletir filtros canal/cs
+    var accByMes={};
+    emps.forEach(function(e){
+        Object.keys(e.porMes||{}).forEach(function(m){
+            if(!accByMes[m]){accByMes[m]=_t3EmptyCat();accByMes[m]._emps={};}
+            var c=e.porMes[m];
+            accByMes[m].plano+=c.plano||0;
+            accByMes[m].filial+=c.filial||0;
+            accByMes[m].assistente+=c.assistente||0;
+            accByMes[m].integracao+=c.integracao||0;
+            accByMes[m].outros+=c.outros||0;
+            accByMes[m].desconto+=c.desconto||0;
+            if(_t3Net(c)>0)accByMes[m]._emps[e.domainId]=1;
+        });
+    });
+    var serie=Object.keys(accByMes).sort().map(function(m){
+        var a=accByMes[m];
+        return {mes:m,plano:a.plano,filial:a.filial,assistente:a.assistente,integracao:a.integracao,outros:a.outros,desconto:a.desconto,total:_t3Net(a),nEmpresas:Object.keys(a._emps).length};
+    });
+    // Filtrar serie por mes (para card KPI e tabela)
+    var serieDisp=mesF?serie.filter(function(r){return r.mes===mesF}):serie;
+    // KPIs: mes atual = ultimo da serie completa (sem filtro de mes), vs anterior
+    var last=serie[serie.length-1]||_t3EmptyCat();
     var prev=serie.length>=2?serie[serie.length-2]:null;
-    var total=serie.reduce(function(a,b){return a+(b.receita||0)},0);
-    document.getElementById('t3-kmes').textContent=_t3FmtR(last.receita);
+    var totalAcum=serie.reduce(function(a,b){return a+(b.total||0)},0);
+    document.getElementById('t3-kmes').textContent=_t3FmtR(last.total);
     document.getElementById('t3-kmes-s').textContent=last.mes?fmtM(last.mes):'--';
-    document.getElementById('t3-kprev').textContent=prev?_t3FmtR(prev.receita):'--';
+    document.getElementById('t3-kprev').textContent=prev?_t3FmtR(prev.total):'--';
     document.getElementById('t3-kprev-s').textContent=prev?fmtM(prev.mes):'';
     document.getElementById('t3-kemp').textContent=(last.nEmpresas||0).toLocaleString('pt-BR');
-    document.getElementById('t3-ktotal').textContent=_t3FmtR(total);
+    document.getElementById('t3-ktotal').textContent=_t3FmtR(totalAcum);
     document.getElementById('t3-ktotal-s').textContent=serie.length+' mes(es)';
-    // Tabela serie
-    document.getElementById('t3-serie-count').textContent=serie.length+' mes(es)';
+    // Tabela serie (mais recente primeiro)
+    document.getElementById('t3-serie-count').textContent=serieDisp.length+' mes(es)';
     var esc=function(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
-    tbS.innerHTML=serie.slice().reverse().map(function(r){
+    tbS.innerHTML=serieDisp.slice().reverse().map(function(r){
         return '<tr>'+
-            '<td>'+fmtM(r.mes)+'</td>'+
-            '<td style="text-align:right;font-weight:700;color:var(--p)">'+_t3FmtR(r.receita)+'</td>'+
+            '<td><b>'+fmtM(r.mes)+'</b></td>'+
+            '<td style="text-align:right">'+_t3FmtR(r.plano)+'</td>'+
+            '<td style="text-align:right">'+_t3FmtR(r.filial)+'</td>'+
+            '<td style="text-align:right">'+_t3FmtR(r.assistente)+'</td>'+
+            '<td style="text-align:right">'+_t3FmtR(r.integracao)+'</td>'+
+            '<td style="text-align:right">'+_t3FmtR(r.outros)+'</td>'+
+            '<td style="text-align:right;color:#E17055">'+(r.desconto>0?'-'+_t3FmtR(r.desconto):'&mdash;')+'</td>'+
+            '<td style="text-align:right;font-weight:700;color:var(--p)">'+_t3FmtR(r.total)+'</td>'+
             '<td style="text-align:right">'+(r.nEmpresas||0).toLocaleString('pt-BR')+'</td>'+
-            '<td style="text-align:right;color:var(--g)">'+(r.nInvoices==null?'&mdash;':(r.nInvoices||0).toLocaleString('pt-BR'))+'</td>'+
         '</tr>';
-    }).join('')||'<tr><td colspan="4" style="text-align:center;color:#999;padding:16px">Sem dados no filtro</td></tr>';
-    // Tabela empresas (ordenar por receita no mes filtrado se houver, senao total)
-    var empOrdered=emps.slice().sort(function(a,b){
-        if(mesF)return ((b.porMes||{})[mesF]||0)-((a.porMes||{})[mesF]||0);
-        return (b.total||0)-(a.total||0);
-    });
-    document.getElementById('t3-tbl-count').textContent=empOrdered.length+' empresa(s)';
-    tbE.innerHTML=empOrdered.map(function(e){
+    }).join('')||'<tr><td colspan="9" style="text-align:center;color:#999;padding:16px">Sem dados no filtro</td></tr>';
+    // Tabela empresas: se mesF, usar porMes[mesF]; senao usar totais
+    var empView=emps.map(function(e){
+        var base=mesF?(e.porMes&&e.porMes[mesF]||_t3EmptyCat()):(e.totais||_t3EmptyCat());
+        return {
+            e:e,
+            plano:base.plano||0,filial:base.filial||0,assistente:base.assistente||0,
+            integracao:base.integracao||0,outros:base.outros||0,desconto:base.desconto||0,
+            total:_t3Net(base)
+        };
+    }).filter(function(x){return mesF?x.total>0:true}).sort(function(a,b){return b.total-a.total});
+    document.getElementById('t3-tbl-count').textContent=empView.length+' empresa(s)';
+    tbE.innerHTML=empView.map(function(x){
+        var e=x.e;
         var csEsc=(e.cs||'-').replace(/'/g,"\\'");
-        var noMes=mesF?((e.porMes||{})[mesF]||0):null;
+        var cell=function(v){return '<td style="text-align:right">'+(v>0?_t3FmtR(v):'<span style="color:#B2BEC3">&mdash;</span>')+'</td>'};
         return '<tr>'+
             '<td class="click" onclick="selectCo(\''+esc(e.empresa||'').replace(/'/g,"\\'")+'\')"><b>'+esc(e.empresa||'-')+'</b></td>'+
             '<td>'+esc(e.canal||'-')+'</td>'+
             '<td><span class="badge sm click" onclick="filterByCS(\''+csEsc+'\')">'+esc(e.cs||'-')+'</span></td>'+
-            '<td style="text-align:right;color:var(--g)">'+(e.nInvoices||0)+'</td>'+
-            '<td style="text-align:right;font-weight:700;color:var(--s)">'+_t3FmtR(e.total)+'</td>'+
-            '<td style="text-align:right;color:var(--p);font-weight:600">'+(noMes==null?'&mdash;':_t3FmtR(noMes))+'</td>'+
+            cell(x.plano)+cell(x.filial)+cell(x.assistente)+cell(x.integracao)+cell(x.outros)+
+            '<td style="text-align:right;color:#E17055">'+(x.desconto>0?'-'+_t3FmtR(x.desconto):'<span style="color:#B2BEC3">&mdash;</span>')+'</td>'+
+            '<td style="text-align:right;font-weight:700;color:var(--p)">'+_t3FmtR(x.total)+'</td>'+
         '</tr>';
-    }).join('')||'<tr><td colspan="6" style="text-align:center;color:#999;padding:16px">Nenhuma empresa no filtro</td></tr>';
+    }).join('')||'<tr><td colspan="10" style="text-align:center;color:#999;padding:16px">Nenhuma empresa no filtro</td></tr>';
 }
 function filterByCS(name){fCS.value=name;document.getElementById('fClear').style.display='inline-block';updateAll()}
 window.selectCo=selectCo;window.clearEmpresa=clearEmpresa;window.clearAll=clearAll;window.updateAll=updateAll;window.clearChartFilter=clearChartFilter;window.setChartFilter=setChartFilter;window.switchTab=switchTab;window.switchCsat=switchCsat;window.updateVp=updateVp;window.vpClearFilters=vpClearFilters;window.goBack=goBack;window.updateChurn=updateChurn;window.churnClearFilters=churnClearFilters;window.filterByCS=filterByCS;window.openChurnDetail=openChurnDetail;window.closeChurnDetail=closeChurnDetail;window.updateGmv=updateGmv;window.gmvClearFilters=gmvClearFilters;window.updateTop80=updateTop80;window.top80ClearFilters=top80ClearFilters;window.openTop80Detail=openTop80Detail;window.updateOnlog=updateOnlog;window.onlogClearFilters=onlogClearFilters;window.onlogSetDia=onlogSetDia;window.updateT3=updateT3;window.t3ClearFilters=t3ClearFilters;

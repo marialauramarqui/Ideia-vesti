@@ -1,9 +1,18 @@
 """
 T3+ = receita de mensalidade (iugu_invoices pagas) dos clientes cujo Partner
-NAO seja Starter (nem Trial/Treino). Logica espelha o painel CS no Fabric
-(Vestilake > Paineis > Painel CS / aba Faturamento).
+NAO seja Starter (nem Trial/Treino), EXCLUINDO planos Vesti Start e Vesti Light
+(e Starter). Categorias (espelha o Painel CS / aba Faturamento):
 
-Agrega por mes (created_at_iso_TIMESTAMP) e por empresa.
+  plano        - Mensalidade do plano principal
+  integracao   - Integração (ERP/plataforma)
+  assistente   - Assistente do Vendedor
+  filial       - Filiais adicionais
+  outros       - Catálogo Digital, Portal Têxtil, Conecta, setup, juros, etc
+  desconto     - Descontos concedidos (subtraido)
+  total        - plano + integracao + assistente + filial + outros - desconto
+                 (= o que o cliente paga por mes)
+
+Agrega por mes da invoice (created_at_iso_TIMESTAMP) e por empresa.
 Saida: t3plus_data.json
 
 Rodar:
@@ -11,6 +20,7 @@ Rodar:
 """
 
 import json
+import re
 import sys
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -21,9 +31,6 @@ from fetch_fabric import connect, load_config
 ROOT = Path(__file__).parent
 OUT_JSON = ROOT / "t3plus_data.json"
 
-# Partners excluidos do T3+:
-#   Starter = cliente starter (objetivo da feature)
-#   Trial / Treino = ja eram excluidos na base ativa
 STARTER_ID = "c2cda592-cd9f-4380-96df-316a51bfc6fb"
 TRIAL_ID = "25fec57c-620c-4ecd-ae7d-cd4fee27b158"
 TREINO_ID = "ff66c2f1-1f9f-456c-9308-028e48c89582"
@@ -57,7 +64,7 @@ SELECT
     inv.id                       AS invoice_id,
     inv.total_paid_cents         AS total_paid_cents,
     inv.total_cents              AS total_cents,
-    inv.status                   AS status,
+    inv.items_description        AS items_description,
     inv.created_at_iso_TIMESTAMP AS invoice_date
 FROM t3_domains d
 JOIN ranked_companies rc       ON rc.domain_id = d.id AND rc.rn = 1
@@ -66,7 +73,7 @@ LEFT JOIN dbo.ODBC_Angels   a  ON a.id = d.angel_id
 JOIN dbo.silver_companiesativos_iugu sc ON sc.domain_id = d.id
 JOIN (
     SELECT DISTINCT id, customer_id, total_cents, total_paid_cents,
-           status, created_at_iso_TIMESTAMP
+           status, items_description, created_at_iso_TIMESTAMP
     FROM dbo.iugu_invoices
     WHERE status = 'paid'
 ) inv ON inv.customer_id = sc.Customer_ID_Iugu
@@ -74,14 +81,7 @@ WHERE inv.created_at_iso_TIMESTAMP >= '2025-01-01'
 """
 
 
-def fetch_rows(conn) -> list[dict]:
-    print("[fabric] rodando query T3+ (invoices pagas de dominios nao-Starter)")
-    cur = conn.cursor()
-    cur.execute(SQL)
-    cols = [d[0] for d in cur.description]
-    rows = [dict(zip(cols, r)) for r in cur.fetchall()]
-    print(f"[fabric] {len(rows)} invoices T3+ retornados")
-    return rows
+CATEGORIES = ("plano", "integracao", "assistente", "filial", "outros", "desconto")
 
 
 def _cents_to_reais(c) -> float:
@@ -96,90 +96,202 @@ def _cents_to_reais(c) -> float:
 def _ym(dt) -> str:
     if dt is None:
         return ""
-    if hasattr(dt, "isoformat"):
-        s = dt.isoformat()
-    else:
-        s = str(dt)
-    return s[:7]  # YYYY-MM
+    s = dt.isoformat() if hasattr(dt, "isoformat") else str(dt)
+    return s[:7]
+
+
+def _brnum(s: str) -> float:
+    # "1.234,56" ou "1234,56" ou "1234.56" ou "1234" -> float
+    s = (s or "").strip().replace(" ", "")
+    if not s:
+        return 0.0
+    # se tem virgula como decimal, remove pontos (milhar) e troca virgula por ponto
+    if "," in s:
+        s = s.replace(".", "").replace(",", ".")
+    try:
+        return float(s)
+    except ValueError:
+        return 0.0
+
+
+_LABEL_RE = {
+    "plano":      re.compile(r"Mensalidade\s*R\$\s*([\d.,]*)", re.IGNORECASE),
+    "integracao": re.compile(r"Integra[cç][aã]o\s*R\$\s*([\d.,]*)", re.IGNORECASE),
+    "assistente": re.compile(r"Assistente\s+do\s+Vendedor\s*R\$\s*([\d.,]*)", re.IGNORECASE),
+    "filial":     re.compile(r"Filiais?\s*R\$\s*([\d.,]*)", re.IGNORECASE),
+    "desconto":   re.compile(r"Desconto\s+concedido\s*-\s*R\$\s*([\d.,]*)", re.IGNORECASE),
+}
+
+# Exclusao por descricao (planos que o time nao considera mensalidade T3+)
+_EXCLUIR_RE = re.compile(
+    r"(vesti\s*light|vesti\s*start\b|^\s*starter\b|assinatura:\s*starter\b|assinatura:\s*vesti\s*light|assinatura:\s*vesti\s*start)",
+    re.IGNORECASE,
+)
+
+
+def classificar(desc: str, total: float) -> dict | None:
+    """
+    Retorna dict com as categorias. None se invoice deve ser totalmente ignorada
+    (planos Start/Light/Starter por descricao).
+    """
+    out = {k: 0.0 for k in CATEGORIES}
+    d = (desc or "").strip()
+    d_low = d.lower()
+
+    # Descricao estruturada: "Mensalidade R$X; Integração R$Y; Assistente ...; Filiais ...; Desconto -R$D"
+    if "mensalidade" in d_low and ("integra" in d_low or "filiais" in d_low or "assistente" in d_low):
+        for k, rgx in _LABEL_RE.items():
+            m = rgx.search(d)
+            if m:
+                out[k] = _brnum(m.group(1))
+        # Sanity: se tudo zero, caiu em template mas sem valores -> fallback
+        if sum(out.values()) == 0:
+            out["plano"] = total
+        return out
+
+    # Exclusao de planos Start/Light
+    if _EXCLUIR_RE.search(d):
+        return None
+
+    # Classificacao por palavra-chave
+    if "filial" in d_low or "filiais" in d_low:
+        out["filial"] = total
+        return out
+    if "assistente" in d_low:
+        out["assistente"] = total
+        return out
+    if "integra" in d_low:
+        out["integracao"] = total
+        return out
+    if any(x in d_low for x in ("catálogo", "catalogo", "portal", "conecta", "setup", "juros", "multa", "adicional", "mes ", "mês ")):
+        out["outros"] = total
+        return out
+
+    # Default: assinatura de plano principal (Pro, Avançado, Profissional, Básico, Essencial...)
+    out["plano"] = total
+    return out
+
+
+def fetch_rows(conn) -> list[dict]:
+    print("[fabric] rodando query T3+ (invoices paid)")
+    cur = conn.cursor()
+    cur.execute(SQL)
+    cols = [d[0] for d in cur.description]
+    rows = [dict(zip(cols, r)) for r in cur.fetchall()]
+    print(f"[fabric] {len(rows)} invoices retornadas")
+    return rows
 
 
 def build(rows: list[dict]) -> dict:
-    # Agregados
-    por_mes: dict[str, float] = defaultdict(float)
-    por_mes_qtd: dict[str, int] = defaultdict(int)
-    por_mes_dominios: dict[str, set] = defaultdict(set)
-    empresas: dict[str, dict] = {}  # domain_id -> {nome, partner, ..., por_mes}
+    # Acumuladores
+    serie_acc: dict[str, dict] = defaultdict(lambda: {k: 0.0 for k in CATEGORIES} | {"nInvoices": 0, "_emps": set()})
+    empresas: dict[str, dict] = {}
+    excluidas = 0
+    erros = 0
 
     for r in rows:
         dom = str(r.get("domain_id") or "").strip()
         if not dom:
             continue
-        val = _cents_to_reais(r.get("total_paid_cents") or r.get("total_cents"))
-        if val <= 0:
+        total = _cents_to_reais(r.get("total_paid_cents") or r.get("total_cents"))
+        if total <= 0:
             continue
         mes = _ym(r.get("invoice_date"))
         if not mes:
             continue
-        por_mes[mes] += val
-        por_mes_qtd[mes] += 1
-        por_mes_dominios[mes].add(dom)
 
+        cats = classificar(r.get("items_description") or "", total)
+        if cats is None:
+            excluidas += 1
+            continue
+
+        # Soma categorias no mes
+        sacc = serie_acc[mes]
+        for k in CATEGORIES:
+            sacc[k] += cats.get(k, 0.0)
+        sacc["nInvoices"] += 1
+        sacc["_emps"].add(dom)
+
+        # Empresa
         emp = empresas.setdefault(dom, {
             "domainId": dom,
             "empresa": r.get("company_name") or r.get("social_name") or r.get("domain_name") or "",
             "canal": r.get("partner_name") or "",
             "cs": r.get("angel_name") or "",
             "total": 0.0,
+            "totais": {k: 0.0 for k in CATEGORIES},
             "nInvoices": 0,
-            "porMes": defaultdict(float),
+            "porMes": defaultdict(lambda: {k: 0.0 for k in CATEGORIES}),
         })
-        emp["total"] += val
+        for k in CATEGORIES:
+            v = cats.get(k, 0.0)
+            emp["totais"][k] += v
+            emp["porMes"][mes][k] += v
         emp["nInvoices"] += 1
-        emp["porMes"][mes] += val
+        # total contratado (net): soma das positivas - desconto
+        net = cats["plano"] + cats["integracao"] + cats["assistente"] + cats["filial"] + cats["outros"] - cats["desconto"]
+        emp["total"] += net
 
-    meses = sorted(por_mes.keys())
-    serie = [
-        {
+    # Serie ordenada
+    def _net(acc: dict) -> float:
+        return acc["plano"] + acc["integracao"] + acc["assistente"] + acc["filial"] + acc["outros"] - acc["desconto"]
+
+    meses = sorted(serie_acc.keys())
+    serie = []
+    for m in meses:
+        acc = serie_acc[m]
+        serie.append({
             "mes": m,
-            "receita": round(por_mes[m], 2),
-            "nInvoices": por_mes_qtd[m],
-            "nEmpresas": len(por_mes_dominios[m]),
-        }
-        for m in meses
-    ]
+            "plano": round(acc["plano"], 2),
+            "integracao": round(acc["integracao"], 2),
+            "assistente": round(acc["assistente"], 2),
+            "filial": round(acc["filial"], 2),
+            "outros": round(acc["outros"], 2),
+            "desconto": round(acc["desconto"], 2),
+            "total": round(_net(acc), 2),
+            "nInvoices": acc["nInvoices"],
+            "nEmpresas": len(acc["_emps"]),
+        })
 
     empresas_list = []
-    for dom, e in empresas.items():
+    for e in empresas.values():
         empresas_list.append({
             "domainId": e["domainId"],
             "empresa": e["empresa"],
             "canal": e["canal"],
             "cs": e["cs"],
             "total": round(e["total"], 2),
+            "totais": {k: round(v, 2) for k, v in e["totais"].items()},
             "nInvoices": e["nInvoices"],
-            "porMes": {m: round(v, 2) for m, v in sorted(e["porMes"].items())},
+            "porMes": {m: {k: round(v, 2) for k, v in d.items()} for m, d in sorted(e["porMes"].items())},
         })
     empresas_list.sort(key=lambda x: x["total"], reverse=True)
 
-    total_geral = round(sum(por_mes.values()), 2)
+    total_geral = round(sum(s["total"] for s in serie), 2)
     ultimo = serie[-1] if serie else None
     anterior = serie[-2] if len(serie) >= 2 else None
 
-    print(f"[build] {len(empresas_list)} empresas T3+ | {len(rows)} invoices | total R$ {total_geral:,.2f}")
+    print(f"[build] {len(empresas_list)} empresas | {len(rows)} invoices | excluidas (Start/Light): {excluidas}")
+    print(f"[build] total T3+ desde jan/2025: R$ {total_geral:,.2f}")
     if ultimo:
-        print(f"[build] ultimo mes ({ultimo['mes']}): R$ {ultimo['receita']:,.2f} ({ultimo['nEmpresas']} empresas)")
+        print(f"[build] {ultimo['mes']}: R$ {ultimo['total']:,.2f} "
+              f"(plano {ultimo['plano']:,.0f} / filial {ultimo['filial']:,.0f} / "
+              f"assist {ultimo['assistente']:,.0f} / integ {ultimo['integracao']:,.0f} / "
+              f"outros {ultimo['outros']:,.0f} - desc {ultimo['desconto']:,.0f})")
 
     return {
         "geradoEm": datetime.now(timezone.utc).isoformat(),
         "serie": serie,
         "empresas": empresas_list,
+        "categorias": list(CATEGORIES),
         "resumo": {
             "totalGeral": total_geral,
             "nEmpresas": len(empresas_list),
             "nInvoices": len(rows),
+            "nInvoicesExcluidas": excluidas,
             "mesAtual": ultimo["mes"] if ultimo else "",
-            "receitaMesAtual": ultimo["receita"] if ultimo else 0.0,
-            "receitaMesAnterior": anterior["receita"] if anterior else 0.0,
+            "mensalidadeMesAtual": ultimo["total"] if ultimo else 0.0,
+            "mensalidadeMesAnterior": anterior["total"] if anterior else 0.0,
         },
     }
 
