@@ -580,7 +580,7 @@ function renderCr(){
                 '<td></td>'+
                 '<td class="ind" style="padding-left:40px">'+(oOpen?'▾':'▸')+' Pedido #'+esc((p.orderNumber||p.orderId||'').toString())+' · <span style="color:var(--mut);font-weight:400">'+esc(p.customerName||'-')+'</span></td>'+
                 '<td>-</td>'+
-                '<td>'+(p.orderDate?fmtD(p.orderDate):'-')+'</td>'+
+                '<td>'+(p.paidAt?fmtD(p.paidAt):'-')+'</td>'+
                 '<td class="money" style="color:var(--p)">'+fmtN(s.n)+'</td>'+
                 '<td class="money" style="color:var(--g)">'+fmtN(s.nPg)+'</td>'+
                 '<td class="money" style="color:var(--r)">'+fmtN(s.nAr)+'</td>'+
@@ -596,7 +596,7 @@ function renderCr(){
                     '<td></td>'+
                     '<td style="padding-left:80px;color:var(--tx)">Parcela '+pc.installment+'/'+(p.installmentsTotal||'?')+' '+(pago?'<span class="badge paid">PAGA</span>':'<span class="badge pen">A RECEBER</span>')+'</td>'+
                     '<td class="date">'+(pc.dueAt?fmtD(pc.dueAt):'-')+'</td>'+
-                    '<td class="date">'+(p.orderDate?fmtD(p.orderDate):'-')+'</td>'+
+                    '<td class="date">'+(p.paidAt?fmtD(p.paidAt):'-')+'</td>'+
                     '<td class="money" style="color:var(--p)">1</td>'+
                     '<td class="money" style="color:var(--g)">'+(pago?1:0)+'</td>'+
                     '<td class="money" style="color:var(--r)">'+(pago?0:1)+'</td>'+
