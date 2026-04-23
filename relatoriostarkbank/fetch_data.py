@@ -374,9 +374,9 @@ def build(raw: list[dict]) -> dict:
     companies = sorted({p["companyId"] for p in pedidos if p["companyId"]})
 
     # --- Lista flat de pagamentos (1 por parcela) pro financeiro ---
-    # payDate:
-    #   - Fluxo: paidAt se ja pago, senao dueAt (projecao — dia do vencimento)
-    #   - Antecipacao: paidAt se ja pago, senao orderDate + 1 dia (projecao D+1)
+    # payDate = dueAt (dia em que StarkBank liquida a parcela). Se a
+    # parcela ja foi paga, usa paidAt real. Fallback: orderDate+1 pra
+    # antec quando dueAt vem vazio.
     from datetime import date as _date, timedelta as _td
     def _parse_day(s: str):
         try:
@@ -394,10 +394,12 @@ def build(raw: list[dict]) -> dict:
             due = (pc.get("dueAt") or "")[:10]
             if paid:
                 pay_date = paid
-            elif is_antec:
-                pay_date = (order_d + _td(days=1)).isoformat() if order_d else ""
-            else:
+            elif due:
                 pay_date = due
+            elif is_antec and order_d:
+                pay_date = (order_d + _td(days=1)).isoformat()
+            else:
+                pay_date = ""
             pagamentos.append({
                 "payDate": pay_date,
                 "isAntecipacao": is_antec,
