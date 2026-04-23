@@ -525,85 +525,127 @@ function renderCr(){
         });
         return s;
     }
-    // aggrega por empresa
-    var byEmp={};
+    // achata em linhas {due, p, pc} agrupadas por data -> empresa
+    var byDate={};
+    var empSet={};
     peds.forEach(function(p){
         var pcs=filtParc(p.parcelas||[]);
-        if(!pcs.length)return;
-        var cid=p.companyId||'(sem)';
-        var e=byEmp[cid]||(byEmp[cid]={cid:cid,nome:p.nomeFantasia||cid,peds:[],n:0,nPg:0,nAr:0,vRec:0,vAr:0,antec:false,dues:{}});
-        if(p.antecipacaoEnabled)e.antec=true;
-        pcs.forEach(function(pc){var d=(pc.dueAt||'').substring(0,10);if(d)e.dues[d]=1});
-        var s=pcStats(p,pcs);
-        e.peds.push({p:p,pcs:pcs,s:s});
-        e.n+=s.n;e.nPg+=s.nPg;e.nAr+=s.nAr;e.vRec+=s.vRec;e.vAr+=s.vAr;
+        pcs.forEach(function(pc){
+            var d=(pc.dueAt||'').substring(0,10)||'(sem)';
+            var cid=p.companyId||'(sem)';
+            empSet[cid]=1;
+            var db=byDate[d]||(byDate[d]={date:d,byEmp:{},pcs:[]});
+            db.pcs.push({p:p,pc:pc});
+            var e=db.byEmp[cid]||(db.byEmp[cid]={cid:cid,nome:p.nomeFantasia||cid,antec:false,pedsMap:{}});
+            if(p.antecipacaoEnabled)e.antec=true;
+            var op=e.pedsMap[p.orderId]||(e.pedsMap[p.orderId]={p:p,pcs:[]});
+            op.pcs.push(pc);
+        });
     });
-    var list=Object.values(byEmp).sort(function(a,b){return (b.vAr+b.vRec)-(a.vAr+a.vRec)});
-    var tot={nPed:0,n:0,nPg:0,nAr:0,vRec:0,vAr:0};
-    list.forEach(function(e){tot.nPed+=e.peds.length;tot.n+=e.n;tot.nPg+=e.nPg;tot.nAr+=e.nAr;tot.vRec+=e.vRec;tot.vAr+=e.vAr});
-    document.getElementById('crEmp').textContent=fmtN(list.length);
+    var dates=Object.keys(byDate).sort();
+    // totals gerais
+    var tot={n:0,nPg:0,nAr:0,vRec:0,vAr:0,nPed:0};
+    var pedSet={};
+    dates.forEach(function(d){
+        byDate[d].pcs.forEach(function(x){
+            tot.n++;
+            var v=x.pc.grossValue||0;
+            var pago=(x.pc.status==='PAID')||!!x.pc.paidAt;
+            if(pago){tot.nPg++;tot.vRec+=v}else{tot.nAr++;tot.vAr+=v}
+            pedSet[x.p.orderId]=1;
+        });
+    });
+    tot.nPed=Object.keys(pedSet).length;
+    document.getElementById('crEmp').textContent=fmtN(Object.keys(empSet).length);
     document.getElementById('crPed').textContent=fmtN(tot.n);
     document.getElementById('crPedPg').textContent=fmtN(tot.nPg);
     document.getElementById('crPedAr').textContent=fmtN(tot.nAr);
     document.getElementById('crRec').textContent=fmtC(tot.vRec);
     document.getElementById('crAr').textContent=fmtC(tot.vAr);
     document.getElementById('crTot').textContent=fmtC(tot.vRec+tot.vAr);
-    document.getElementById('crCount').textContent=fmtN(list.length)+' empresa(s) · '+fmtN(tot.nPed)+' pedido(s) · '+fmtN(tot.n)+' parcela(s)';
+    document.getElementById('crCount').textContent=fmtN(tot.n)+' parcela(s) em '+fmtN(dates.length)+' dia(s)';
     var tb=document.getElementById('tbodyCr');
-    if(!list.length){tb.innerHTML='<tr><td colspan="10" class="empty">Nenhum pedido com os filtros atuais</td></tr>';return}
+    if(!dates.length){tb.innerHTML='<tr><td colspan="10" class="empty">Nenhum pedido com os filtros atuais</td></tr>';return}
     var html=[];
-    list.forEach(function(e){
-        var eKey='E:'+e.cid;
-        var eOpen=!!openSet[eKey];
-        var dueList=Object.keys(e.dues).sort();
-        var dueTxt=dueList.length?(dueList.length===1?fmtD(dueList[0]):fmtD(dueList[0])+' – '+fmtD(dueList[dueList.length-1])):'-';
-        var antecBadge=e.antec?' <span class="badge advanced">ANTEC.</span>':'';
-        html.push('<tr class="ped'+(eOpen?' open':'')+'" onclick="toggleKey(\''+eKey+'\')">'+
+    dates.forEach(function(date){
+        var db=byDate[date];
+        // stats do dia
+        var dt={n:0,nPg:0,nAr:0,vRec:0,vAr:0,emp:{}};
+        db.pcs.forEach(function(x){
+            dt.n++;
+            var v=x.pc.grossValue||0;
+            var pago=(x.pc.status==='PAID')||!!x.pc.paidAt;
+            if(pago){dt.nPg++;dt.vRec+=v}else{dt.nAr++;dt.vAr+=v}
+            dt.emp[x.p.companyId]=1;
+        });
+        var empCount=Object.keys(dt.emp).length;
+        var dKey='CRD:'+date;
+        var dOpen=!!openSet[dKey];
+        var dLabel=date==='(sem)'?'(sem data)':fmtD(date);
+        html.push('<tr class="ped'+(dOpen?' open':'')+'" onclick="toggleKey(\''+dKey+'\')">'+
             '<td class="chev">&rtrif;</td>'+
-            '<td><strong>'+esc(e.nome)+'</strong>'+antecBadge+' <span class="mono" style="color:#8290a0;font-weight:400">'+esc(e.cid.substring(0,14))+(e.cid.length>14?'...':'')+'</span></td>'+
-            '<td>'+dueTxt+'</td><td>-</td>'+
-            '<td class="money" style="color:var(--p)">'+fmtN(e.n)+'</td>'+
-            '<td class="money" style="color:var(--g)">'+fmtN(e.nPg)+'</td>'+
-            '<td class="money" style="color:var(--r)">'+fmtN(e.nAr)+'</td>'+
-            '<td class="money" style="color:var(--g)">'+fmtC(e.vRec)+'</td>'+
-            '<td class="money" style="color:var(--r)">'+fmtC(e.vAr)+'</td>'+
-            '<td class="money total">'+fmtC(e.vRec+e.vAr)+'</td>'+
+            '<td><strong>'+dLabel+'</strong> <span style="color:var(--mut);font-weight:400">· '+fmtN(empCount)+' empresa(s) · '+fmtN(dt.n)+' parcela(s)</span></td>'+
+            '<td>'+dLabel+'</td><td>-</td>'+
+            '<td class="money" style="color:var(--p)">'+fmtN(dt.n)+'</td>'+
+            '<td class="money" style="color:var(--g)">'+fmtN(dt.nPg)+'</td>'+
+            '<td class="money" style="color:var(--r)">'+fmtN(dt.nAr)+'</td>'+
+            '<td class="money" style="color:var(--g)">'+fmtC(dt.vRec)+'</td>'+
+            '<td class="money" style="color:var(--r)">'+fmtC(dt.vAr)+'</td>'+
+            '<td class="money total">'+fmtC(dt.vRec+dt.vAr)+'</td>'+
         '</tr>');
-        if(!eOpen)return;
-        // pedidos dentro da empresa
-        e.peds.sort(function(a,b){return (b.p.orderDate||'').localeCompare(a.p.orderDate||'')});
-        e.peds.forEach(function(item){
-            var p=item.p,s=item.s;
-            var oKey='O:'+p.orderId;
-            var oOpen=!!openSet[oKey];
-            html.push('<tr class="parc show" onclick="event.stopPropagation();toggleKey(\''+oKey+'\')" style="cursor:pointer;'+(oOpen?'background:#E8E4FF;font-weight:600':'')+'">'+
+        if(!dOpen)return;
+        // empresas dentro do dia
+        var cids=Object.keys(db.byEmp).sort(function(a,b){
+            var na=(db.byEmp[a].nome||'').toLowerCase(),nb=(db.byEmp[b].nome||'').toLowerCase();
+            return na<nb?-1:na>nb?1:0;
+        });
+        cids.forEach(function(cid){
+            var e=db.byEmp[cid];
+            // stats empresa no dia
+            var es={n:0,nPg:0,nAr:0,vRec:0,vAr:0};
+            Object.values(e.pedsMap).forEach(function(op){
+                op.pcs.forEach(function(pc){
+                    es.n++;
+                    var v=pc.grossValue||0;
+                    var pago=(pc.status==='PAID')||!!pc.paidAt;
+                    if(pago){es.nPg++;es.vRec+=v}else{es.nAr++;es.vAr+=v}
+                });
+            });
+            var cKey='CRC:'+date+'|'+cid;
+            var cOpen=!!openSet[cKey];
+            var antecBadge=e.antec?' <span class="badge advanced">ANTEC.</span>':'';
+            html.push('<tr class="parc show" onclick="event.stopPropagation();toggleKey(\''+cKey+'\')" style="cursor:pointer;'+(cOpen?'background:#E8E4FF;font-weight:600':'')+'">'+
                 '<td></td>'+
-                '<td class="ind" style="padding-left:40px">'+(oOpen?'▾':'▸')+' Pedido #'+esc((p.orderNumber||p.orderId||'').toString())+' · <span style="color:var(--mut);font-weight:400">'+esc(p.customerName||'-')+'</span></td>'+
-                '<td>-</td>'+
-                '<td>'+(p.paidAt?fmtD(p.paidAt):'-')+'</td>'+
-                '<td class="money" style="color:var(--p)">'+fmtN(s.n)+'</td>'+
-                '<td class="money" style="color:var(--g)">'+fmtN(s.nPg)+'</td>'+
-                '<td class="money" style="color:var(--r)">'+fmtN(s.nAr)+'</td>'+
-                '<td class="money" style="color:var(--g)">'+fmtC(s.vRec)+'</td>'+
-                '<td class="money" style="color:var(--r)">'+fmtC(s.vAr)+'</td>'+
-                '<td class="money total">'+fmtC(s.vRec+s.vAr)+'</td>'+
+                '<td class="ind" style="padding-left:40px">'+(cOpen?'▾':'▸')+' '+esc(e.nome)+antecBadge+' <span class="mono" style="color:#8290a0;font-weight:400">'+esc(cid.substring(0,14))+(cid.length>14?'...':'')+'</span></td>'+
+                '<td>-</td><td>-</td>'+
+                '<td class="money" style="color:var(--p)">'+fmtN(es.n)+'</td>'+
+                '<td class="money" style="color:var(--g)">'+fmtN(es.nPg)+'</td>'+
+                '<td class="money" style="color:var(--r)">'+fmtN(es.nAr)+'</td>'+
+                '<td class="money" style="color:var(--g)">'+fmtC(es.vRec)+'</td>'+
+                '<td class="money" style="color:var(--r)">'+fmtC(es.vAr)+'</td>'+
+                '<td class="money total">'+fmtC(es.vRec+es.vAr)+'</td>'+
             '</tr>');
-            if(!oOpen)return;
-            item.pcs.forEach(function(pc){
-                var pago=(pc.status==='PAID')||!!pc.paidAt;
-                var g=pc.grossValue||0;
-                html.push('<tr class="parc show" style="background:#FAFAFF">'+
-                    '<td></td>'+
-                    '<td style="padding-left:80px;color:var(--tx)">Parcela '+pc.installment+'/'+(p.installmentsTotal||'?')+' '+(pago?'<span class="badge paid">PAGA</span>':'<span class="badge pen">A RECEBER</span>')+'</td>'+
-                    '<td class="date">'+(pc.dueAt?fmtD(pc.dueAt):'-')+'</td>'+
-                    '<td class="date">'+(p.paidAt?fmtD(p.paidAt):'-')+'</td>'+
-                    '<td class="money" style="color:var(--p)">1</td>'+
-                    '<td class="money" style="color:var(--g)">'+(pago?1:0)+'</td>'+
-                    '<td class="money" style="color:var(--r)">'+(pago?0:1)+'</td>'+
-                    '<td class="money" style="color:var(--g)">'+fmtC(pago?g:0)+'</td>'+
-                    '<td class="money" style="color:var(--r)">'+fmtC(pago?0:g)+'</td>'+
-                    '<td class="money total">'+fmtC(g)+'</td>'+
-                '</tr>');
+            if(!cOpen)return;
+            // parcelas (agrupadas por pedido pra deixar legivel)
+            var ops=Object.values(e.pedsMap).sort(function(a,b){return (b.p.orderDate||'').localeCompare(a.p.orderDate||'')});
+            ops.forEach(function(op){
+                var p=op.p;
+                op.pcs.forEach(function(pc){
+                    var pago=(pc.status==='PAID')||!!pc.paidAt;
+                    var g=pc.grossValue||0;
+                    html.push('<tr class="parc show" style="background:#FAFAFF">'+
+                        '<td></td>'+
+                        '<td style="padding-left:80px;color:var(--tx)">Pedido #'+esc((p.orderNumber||p.orderId||'').toString())+' · parcela '+pc.installment+'/'+(p.installmentsTotal||'?')+' '+(pago?'<span class="badge paid">PAGA</span>':'<span class="badge pen">A RECEBER</span>')+' · <span style="color:var(--mut)">'+esc(p.customerName||'-')+'</span></td>'+
+                        '<td class="date">'+(pc.dueAt?fmtD(pc.dueAt):'-')+'</td>'+
+                        '<td class="date">'+(p.paidAt?fmtD(p.paidAt):'-')+'</td>'+
+                        '<td class="money" style="color:var(--p)">1</td>'+
+                        '<td class="money" style="color:var(--g)">'+(pago?1:0)+'</td>'+
+                        '<td class="money" style="color:var(--r)">'+(pago?0:1)+'</td>'+
+                        '<td class="money" style="color:var(--g)">'+fmtC(pago?g:0)+'</td>'+
+                        '<td class="money" style="color:var(--r)">'+fmtC(pago?0:g)+'</td>'+
+                        '<td class="money total">'+fmtC(g)+'</td>'+
+                    '</tr>');
+                });
             });
         });
     });
