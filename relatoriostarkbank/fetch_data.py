@@ -153,7 +153,10 @@ pedidos AS (
         MAX(orderNumber)                AS order_number,
         MAX(customer_name)              AS customer_name,
         MAX(customer_doc)               AS customer_doc,
-        MAX(settings_createdAt_TIMESTAMP) AS order_date,
+        -- settings_createdAt_TIMESTAMP vem em UTC; converte pra BRT (-3h)
+        -- antes de truncar pra DATE — senão pedidos feitos depois das 21h BRT
+        -- aparecem no dia seguinte.
+        MAX(CONVERT(DATE, DATEADD(HOUR, -3, TRY_CAST(settings_createdAt_TIMESTAMP AS DATETIME2)))) AS order_date,
         MAX(summary_total)              AS summary_total
     FROM dbo.MongoDB_Pedidos_Geral
     WHERE payment_transaction_provider = 'STARKBANK'
@@ -340,6 +343,13 @@ def build(raw: list[dict]) -> dict:
     for ped in by_order.values():
         if not ped["parcelas"]:
             continue
+        # 2a verificacao: se qualquer parcela tem antecipationValue > 0,
+        # considera o pedido como antecipacao (mesmo que a flag da empresa
+        # esteja desligada — ex: Kelly Rodrigues com pedidos antigos cuja
+        # flag so foi ligada depois).
+        if not ped.get("antecipacaoEnabled"):
+            if any(float(p.get("antecipationValue") or 0) > 0 for p in ped["parcelas"]):
+                ped["antecipacaoEnabled"] = True
         parcelas = sorted(ped["parcelas"], key=lambda p: p["installment"])
         ped["parcelas"] = parcelas
         ped["nParcelas"] = len(parcelas)

@@ -29,15 +29,21 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);padding
 .top .info{margin-left:auto;text-align:right;font-size:12px;opacity:.9}
 .top .logout{margin-left:12px;padding:8px 14px;background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:8px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600}
 .top .logout:hover{background:rgba(255,255,255,.3)}
-.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px}
-.kpi{background:var(--card);border-radius:var(--rd);padding:18px 22px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-.kpi .lbl{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
-.kpi .val{font-size:22px;font-weight:800;margin-top:6px;color:var(--p)}
+.kpis{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:20px}
+.kpi{background:var(--card);border-radius:var(--rd);padding:14px 14px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.kpi .lbl{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.kpi .val{font-size:17px;font-weight:800;margin-top:6px;color:var(--p);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .kpi .ks{font-size:11px;color:var(--mut);margin-top:3px}
 .kpi.green .val{color:var(--g)}
 .kpi.blue .val{color:var(--b)}
 .kpi.orange .val{color:var(--y)}
 .kpi.red .val{color:var(--r)}
+.kpi.purple .val{color:#a55eea}
+.kpi.teal .val{color:#00cec9}
+.subtabs{display:flex;gap:6px;margin:-8px 0 16px;padding-left:4px}
+.subtab{padding:7px 16px;background:transparent;border:1.5px solid var(--bd);border-radius:8px;cursor:pointer;font:600 12px 'Inter',sans-serif;color:var(--mut)}
+.subtab.active{background:var(--g);color:#fff;border-color:var(--g)}
+@media(max-width:1400px){.kpis{grid-template-columns:repeat(4,1fr)}}
 .filters{display:flex;gap:12px;align-items:flex-end;background:var(--card);border-radius:var(--rd);padding:16px 20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.04);flex-wrap:wrap}
 .fg{display:flex;flex-direction:column;gap:4px}
 .fg label{font-size:11px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
@@ -112,8 +118,12 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
     </div>
 
     <div class="tabs">
-        <div class="tab active" data-tab="fluxo" onclick="switchTab('fluxo')">Fluxo</div>
-        <div class="tab" data-tab="antec" onclick="switchTab('antec')">Antecipação</div>
+        <div class="tab active" data-tab="cp" onclick="switchTab('cp')">CP · Contas a Pagar</div>
+        <div class="tab" data-tab="cr" onclick="switchTab('cr')">CR · Contas a Receber</div>
+    </div>
+    <div class="subtabs" id="subtabs">
+        <div class="subtab active" data-sub="fluxo" onclick="switchSub('fluxo')">Fluxo</div>
+        <div class="subtab" data-sub="antec" onclick="switchSub('antec')">Antecipação</div>
     </div>
 
     <div class="filters">
@@ -141,15 +151,26 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
         <button class="clear-btn" onclick="clearAllFilters()">Limpar</button>
     </div>
 
-    <div class="kpis">
-        <div class="kpi"><div class="lbl">Dias a pagar</div><div class="val" id="kDays">--</div><div class="ks">datas distintas</div></div>
-        <div class="kpi orange"><div class="lbl">Empresas</div><div class="val" id="kEmp">--</div><div class="ks">a pagar no periodo</div></div>
-        <div class="kpi blue"><div class="lbl">Parcelas</div><div class="val" id="kParc">--</div><div class="ks">total no periodo</div></div>
-        <div class="kpi red"><div class="lbl">Taxas totais</div><div class="val" id="kFees">R$ --</div><div class="ks" id="kFeesPct">VP + antifraude + antec.</div></div>
-        <div class="kpi green"><div class="lbl">Total liquido a pagar</div><div class="val" id="kNet">R$ --</div><div class="ks">soma netValue</div></div>
+    <div class="kpis" id="kpisCp">
+        <div class="kpi orange"><div class="lbl">Empresas</div><div class="val" id="kEmp">--</div><div class="ks">no periodo</div></div>
+        <div class="kpi blue"><div class="lbl">Parcelas</div><div class="val" id="kParc">--</div><div class="ks">total</div></div>
+        <div class="kpi"><div class="lbl">Taxa VestiPago</div><div class="val" id="kFeeVp">R$ --</div><div class="ks" id="kFeeVpPct">--</div></div>
+        <div class="kpi orange"><div class="lbl">Taxa Antifraude</div><div class="val" id="kFeeAf">R$ --</div><div class="ks" id="kFeeAfPct">--</div></div>
+        <div class="kpi red"><div class="lbl">Taxa Antecipação</div><div class="val" id="kFeeAn">R$ --</div><div class="ks" id="kFeeAnPct">--</div></div>
+        <div class="kpi green"><div class="lbl">Líquido a pagar</div><div class="val" id="kNet">R$ --</div><div class="ks">soma netValue</div></div>
+        <div class="kpi purple"><div class="lbl">Valor bruto</div><div class="val" id="kGross">R$ --</div><div class="ks">soma grossValue</div></div>
+    </div>
+    <div class="kpis" id="kpisCr" style="display:none">
+        <div class="kpi orange"><div class="lbl">Empresas</div><div class="val" id="crEmp">--</div><div class="ks">no periodo</div></div>
+        <div class="kpi blue"><div class="lbl">Pedidos</div><div class="val" id="crPed">--</div><div class="ks">total</div></div>
+        <div class="kpi green"><div class="lbl">Pedidos pagos</div><div class="val" id="crPedPg">--</div><div class="ks">cliente quitou</div></div>
+        <div class="kpi red"><div class="lbl">Pedidos a receber</div><div class="val" id="crPedAr">--</div><div class="ks">cliente pendente</div></div>
+        <div class="kpi green"><div class="lbl">Total recebido</div><div class="val" id="crRec">R$ --</div><div class="ks">grossValue pago</div></div>
+        <div class="kpi red"><div class="lbl">Total a receber</div><div class="val" id="crAr">R$ --</div><div class="ks">grossValue pendente</div></div>
+        <div class="kpi purple"><div class="lbl">Total geral</div><div class="val" id="crTot">R$ --</div><div class="ks">soma bruto</div></div>
     </div>
 
-    <div class="tbl-card">
+    <div class="tbl-card" id="cardCp">
         <div class="tbl-head">
             <h3 id="hTbl">Pagamentos em fluxo</h3>
             <span class="count" id="tblCount">--</span>
@@ -170,6 +191,29 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
                     </tr>
                 </thead>
                 <tbody id="tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="tbl-card" id="cardCr" style="display:none">
+        <div class="tbl-head">
+            <h3>Contas a receber por empresa</h3>
+            <span class="count" id="crCount">--</span>
+        </div>
+        <div class="tbl-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Empresa</th>
+                        <th class="r">Pedidos</th>
+                        <th class="r">Pagos</th>
+                        <th class="r">A receber</th>
+                        <th class="r">Valor recebido</th>
+                        <th class="r">Valor a receber</th>
+                        <th class="r">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyCr"></tbody>
             </table>
         </div>
     </div>
@@ -241,7 +285,8 @@ function fmtDT(s){if(!s)return '-';var d=String(s).substring(0,10);if(d.length<1
 function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 
 var DADOS=null;
-var TAB='fluxo';
+var TAB='cp';      // 'cp' | 'cr'
+var SUB='fluxo';   // 'fluxo' | 'antec' (so usado quando TAB='cp')
 var openSet={}; // chaves: 'D:yyyy-mm-dd' (dia), 'C:yyyy-mm-dd|companyId' (empresa)
 
 function init(){
@@ -277,7 +322,19 @@ function clearAllFilters(){
 function switchTab(which){
     TAB=which;
     document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.dataset.tab===which)});
-    document.getElementById('hTbl').textContent = (which==='antec')?'Pagamentos de antecipação':'Pagamentos em fluxo';
+    var isCr=(which==='cr');
+    document.getElementById('subtabs').style.display = isCr?'none':'flex';
+    document.getElementById('kpisCp').style.display  = isCr?'none':'grid';
+    document.getElementById('kpisCr').style.display  = isCr?'grid':'none';
+    document.getElementById('cardCp').style.display  = isCr?'none':'block';
+    document.getElementById('cardCr').style.display  = isCr?'block':'none';
+    openSet={};
+    render();
+}
+function switchSub(which){
+    SUB=which;
+    document.querySelectorAll('.subtab').forEach(function(t){t.classList.toggle('active',t.dataset.sub===which)});
+    document.getElementById('hTbl').textContent=(which==='antec')?'Pagamentos de antecipação':'Pagamentos em fluxo';
     openSet={};
     render();
 }
@@ -285,7 +342,7 @@ function switchTab(which){
 function toggleKey(k){openSet[k]=!openSet[k];render();}
 
 function getFiltered(){
-    var isAntec = (TAB==='antec');
+    var isAntec = (SUB==='antec');
     var dDe=document.getElementById('fDataDe').value;
     var dAte=document.getElementById('fDataAte').value;
     var pDe=document.getElementById('fPagoDe').value;
@@ -323,6 +380,11 @@ function sumTotals(rows){
 }
 
 function render(){
+    if(TAB==='cr'){ renderCr(); return; }
+    renderCp();
+}
+
+function renderCp(){
     var rows=getFiltered();
     var tot=sumTotals(rows);
 
@@ -331,13 +393,17 @@ function render(){
     rows.forEach(function(p){var k=p.payDate||'';(byDate[k]=byDate[k]||[]).push(p)});
     var dates=Object.keys(byDate).sort();
 
-    document.getElementById('kDays').textContent=fmtN(dates.length);
     document.getElementById('kEmp').textContent=fmtN(tot.empCount);
     document.getElementById('kParc').textContent=fmtN(tot.n);
-    document.getElementById('kFees').textContent=fmtC(tot.vp+tot.af+tot.antec);
-    var feesPct=tot.gross>0?((tot.vp+tot.af+tot.antec)/tot.gross*100):0;
-    document.getElementById('kFeesPct').textContent='VP + antifraude + antec. ('+feesPct.toFixed(2).replace('.',',')+'% do bruto)';
+    function pct(v){return tot.gross>0?(v/tot.gross*100).toFixed(2).replace('.',',')+'% bruto':'--'}
+    document.getElementById('kFeeVp').textContent=fmtC(tot.vp);
+    document.getElementById('kFeeVpPct').textContent=pct(tot.vp);
+    document.getElementById('kFeeAf').textContent=fmtC(tot.af);
+    document.getElementById('kFeeAfPct').textContent=pct(tot.af);
+    document.getElementById('kFeeAn').textContent=fmtC(tot.antec);
+    document.getElementById('kFeeAnPct').textContent=pct(tot.antec);
     document.getElementById('kNet').textContent=fmtC(tot.net);
+    document.getElementById('kGross').textContent=fmtC(tot.gross);
     document.getElementById('tblCount').textContent=fmtN(tot.n)+' parcela(s) em '+fmtN(dates.length)+' dia(s)';
 
     var tb=document.getElementById('tbody');
@@ -408,6 +474,57 @@ function render(){
         });
     });
     tb.innerHTML=html.join('');
+}
+
+function renderCr(){
+    // Contas a receber: agrupa pedidos por empresa; separa pagos (cliente
+    // ja quitou) vs a receber (cliente ainda nao pagou o pedido). Usa os
+    // mesmos filtros de empresa e de "data da compra" da barra.
+    var pDe=document.getElementById('fPagoDe').value;
+    var pAte=document.getElementById('fPagoAte').value;
+    var q=(document.getElementById('fEmpresa').value||'').toLowerCase().trim();
+    var peds=(DADOS.pedidos||[]).filter(function(p){
+        var od=(p.orderDate||'').substring(0,10);
+        if(pDe&&(!od||od<pDe))return false;
+        if(pAte&&(!od||od>pAte))return false;
+        if(q){
+            var hay=((p.nomeFantasia||'')+' '+(p.companyId||'')).toLowerCase();
+            if(hay.indexOf(q)<0)return false;
+        }
+        return true;
+    });
+    var byEmp={};
+    peds.forEach(function(p){
+        var cid=p.companyId||'(sem)';
+        var e=byEmp[cid]||(byEmp[cid]={cid:cid,nome:p.nomeFantasia||cid,nPed:0,nPg:0,nAr:0,vRec:0,vAr:0});
+        e.nPed++;
+        if(p.isPaid){e.nPg++;e.vRec+=p.totalGross||0}
+        else{e.nAr++;e.vAr+=p.totalGross||0}
+    });
+    var list=Object.values(byEmp).sort(function(a,b){return (b.vAr+b.vRec)-(a.vAr+a.vRec)});
+    var tot={nPed:0,nPg:0,nAr:0,vRec:0,vAr:0};
+    list.forEach(function(e){tot.nPed+=e.nPed;tot.nPg+=e.nPg;tot.nAr+=e.nAr;tot.vRec+=e.vRec;tot.vAr+=e.vAr});
+    document.getElementById('crEmp').textContent=fmtN(list.length);
+    document.getElementById('crPed').textContent=fmtN(tot.nPed);
+    document.getElementById('crPedPg').textContent=fmtN(tot.nPg);
+    document.getElementById('crPedAr').textContent=fmtN(tot.nAr);
+    document.getElementById('crRec').textContent=fmtC(tot.vRec);
+    document.getElementById('crAr').textContent=fmtC(tot.vAr);
+    document.getElementById('crTot').textContent=fmtC(tot.vRec+tot.vAr);
+    document.getElementById('crCount').textContent=fmtN(list.length)+' empresa(s) · '+fmtN(tot.nPed)+' pedido(s)';
+    var tb=document.getElementById('tbodyCr');
+    if(!list.length){tb.innerHTML='<tr><td colspan="7" class="empty">Nenhum pedido com os filtros atuais</td></tr>';return}
+    tb.innerHTML=list.map(function(e){
+        return '<tr>'+
+            '<td><strong>'+esc(e.nome)+'</strong> <span class="mono" style="color:#8290a0">'+esc(e.cid.substring(0,14))+(e.cid.length>14?'...':'')+'</span></td>'+
+            '<td class="money" style="color:var(--p)">'+fmtN(e.nPed)+'</td>'+
+            '<td class="money" style="color:var(--g)">'+fmtN(e.nPg)+'</td>'+
+            '<td class="money" style="color:var(--r)">'+fmtN(e.nAr)+'</td>'+
+            '<td class="money" style="color:var(--g)">'+fmtC(e.vRec)+'</td>'+
+            '<td class="money" style="color:var(--r)">'+fmtC(e.vAr)+'</td>'+
+            '<td class="money total">'+fmtC(e.vRec+e.vAr)+'</td>'+
+        '</tr>';
+    }).join('');
 }
 </script>
 </body>
