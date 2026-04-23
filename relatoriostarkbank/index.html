@@ -451,7 +451,7 @@ function renderCp(){
             var cPagoTxt=cOds.length?(cOds[0]===cOds[cOds.length-1]?fmtD(cOds[0]):fmtD(cOds[0])+' – '+fmtD(cOds[cOds.length-1])):'-';
             html.push('<tr class="parc show" onclick="event.stopPropagation();toggleKey(\''+cKey+'\')" style="cursor:pointer;'+(cOpen?'background:#E8E4FF;font-weight:600':'')+'">'+
                 '<td></td>'+
-                '<td class="ind" style="padding-left:40px">'+(cOpen?'▾':'▸')+' '+esc(cLabel)+' <span class="mono" style="color:#8290a0;font-weight:400">'+esc(cid.substring(0,14))+(cid.length>14?'...':'')+'</span></td>'+
+                '<td class="ind" style="padding-left:40px">'+(cOpen?'▾':'▸')+' '+esc(cLabel)+(cPags[0].isAntecipacao?' <span class="badge advanced">ANTEC.</span>':'')+' <span class="mono" style="color:#8290a0;font-weight:400">'+esc(cid.substring(0,14))+(cid.length>14?'...':'')+'</span></td>'+
                 '<td>'+cPagoTxt+'</td>'+
                 '<td class="money" style="color:var(--p)">'+fmtN(ct.n)+'</td>'+
                 '<td class="money" style="color:var(--mut)">'+fmtC(ct.gross)+'</td>'+
@@ -529,7 +529,9 @@ function renderCr(){
         var pcs=filtParc(p.parcelas||[]);
         if(!pcs.length)return;
         var cid=p.companyId||'(sem)';
-        var e=byEmp[cid]||(byEmp[cid]={cid:cid,nome:p.nomeFantasia||cid,peds:[],n:0,nPg:0,nAr:0,vRec:0,vAr:0});
+        var e=byEmp[cid]||(byEmp[cid]={cid:cid,nome:p.nomeFantasia||cid,peds:[],n:0,nPg:0,nAr:0,vRec:0,vAr:0,antec:false,dues:{}});
+        if(p.antecipacaoEnabled)e.antec=true;
+        pcs.forEach(function(pc){var d=(pc.dueAt||'').substring(0,10);if(d)e.dues[d]=1});
         var s=pcStats(p,pcs);
         e.peds.push({p:p,pcs:pcs,s:s});
         e.n+=s.n;e.nPg+=s.nPg;e.nAr+=s.nAr;e.vRec+=s.vRec;e.vAr+=s.vAr;
@@ -551,10 +553,13 @@ function renderCr(){
     list.forEach(function(e){
         var eKey='E:'+e.cid;
         var eOpen=!!openSet[eKey];
+        var dueList=Object.keys(e.dues).sort();
+        var dueTxt=dueList.length?(dueList.length===1?fmtD(dueList[0]):fmtD(dueList[0])+' – '+fmtD(dueList[dueList.length-1])):'-';
+        var antecBadge=e.antec?' <span class="badge advanced">ANTEC.</span>':'';
         html.push('<tr class="ped'+(eOpen?' open':'')+'" onclick="toggleKey(\''+eKey+'\')">'+
             '<td class="chev">&rtrif;</td>'+
-            '<td><strong>'+esc(e.nome)+'</strong> <span class="mono" style="color:#8290a0;font-weight:400">'+esc(e.cid.substring(0,14))+(e.cid.length>14?'...':'')+'</span></td>'+
-            '<td>-</td><td>-</td>'+
+            '<td><strong>'+esc(e.nome)+'</strong>'+antecBadge+' <span class="mono" style="color:#8290a0;font-weight:400">'+esc(e.cid.substring(0,14))+(e.cid.length>14?'...':'')+'</span></td>'+
+            '<td>'+dueTxt+'</td><td>-</td>'+
             '<td class="money" style="color:var(--p)">'+fmtN(e.n)+'</td>'+
             '<td class="money" style="color:var(--g)">'+fmtN(e.nPg)+'</td>'+
             '<td class="money" style="color:var(--r)">'+fmtN(e.nAr)+'</td>'+
