@@ -128,11 +128,11 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
 
     <div class="filters">
         <div class="fg">
-            <label>Data a pagar (de)</label>
+            <label id="lblDataDe">Data a pagar (de)</label>
             <input type="date" id="fDataDe">
         </div>
         <div class="fg">
-            <label>Data a pagar (até)</label>
+            <label id="lblDataAte">Data a pagar (até)</label>
             <input type="date" id="fDataAte">
         </div>
         <div class="fg">
@@ -331,6 +331,8 @@ function switchTab(which){
     document.getElementById('kpisCr').style.display  = isCr?'grid':'none';
     document.getElementById('cardCp').style.display  = isCr?'none':'block';
     document.getElementById('cardCr').style.display  = isCr?'block':'none';
+    document.getElementById('lblDataDe').textContent  = isCr?'Data de recebimento (de)':'Data a pagar (de)';
+    document.getElementById('lblDataAte').textContent = isCr?'Data de recebimento (até)':'Data a pagar (até)';
     openSet={};
     render();
 }
