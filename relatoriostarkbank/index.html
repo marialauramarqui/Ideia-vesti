@@ -480,10 +480,12 @@ function renderCp(){
 }
 
 function renderCr(){
-    // Contas a receber: parcela-level. Agrupa por empresa (linha pai,
-    // clicavel) -> pedido (linha filho, clicavel) -> parcelas individuais.
-    // "Paga" = parcela tem paidAt (liquidada pela StarkBank para a empresa);
-    // "A receber" = parcela ainda sem paidAt.
+    // Contas a receber: parcela-level. Filtros:
+    //  - Data a pagar (de/ate) -> filtra parcelas por dueAt (vencimento)
+    //  - Data da compra (de/ate) -> filtra pedidos por orderDate
+    //  - Empresa -> filtra por nome/companyId
+    var dDe=document.getElementById('fDataDe').value;
+    var dAte=document.getElementById('fDataAte').value;
     var pDe=document.getElementById('fPagoDe').value;
     var pAte=document.getElementById('fPagoAte').value;
     var q=(document.getElementById('fEmpresa').value||'').toLowerCase().trim();
@@ -497,6 +499,15 @@ function renderCr(){
         }
         return true;
     });
+    function filtParc(parcelas){
+        if(!dDe&&!dAte)return parcelas;
+        return parcelas.filter(function(pc){
+            var due=(pc.dueAt||'').substring(0,10);
+            if(dDe&&(!due||due<dDe))return false;
+            if(dAte&&(!due||due>dAte))return false;
+            return true;
+        });
+    }
     // stats por parcela. "Paga" = parcela ja liquidada pela StarkBank
     // para a empresa (status=PAID ou paidAt preenchido). "A receber" =
     // parcela ainda nao liquidada (status=PENDING/vazio).
@@ -514,10 +525,12 @@ function renderCr(){
     // aggrega por empresa
     var byEmp={};
     peds.forEach(function(p){
+        var pcs=filtParc(p.parcelas||[]);
+        if(!pcs.length)return;
         var cid=p.companyId||'(sem)';
         var e=byEmp[cid]||(byEmp[cid]={cid:cid,nome:p.nomeFantasia||cid,peds:[],n:0,nPg:0,nAr:0,vRec:0,vAr:0});
-        var s=pcStats(p,p.parcelas||[]);
-        e.peds.push({p:p,s:s});
+        var s=pcStats(p,pcs);
+        e.peds.push({p:p,pcs:pcs,s:s});
         e.n+=s.n;e.nPg+=s.nPg;e.nAr+=s.nAr;e.vRec+=s.vRec;e.vAr+=s.vAr;
     });
     var list=Object.values(byEmp).sort(function(a,b){return (b.vAr+b.vRec)-(a.vAr+a.vRec)});
@@ -568,7 +581,7 @@ function renderCr(){
                 '<td class="money total">'+fmtC(s.vRec+s.vAr)+'</td>'+
             '</tr>');
             if(!oOpen)return;
-            (p.parcelas||[]).forEach(function(pc){
+            item.pcs.forEach(function(pc){
                 var pago=(pc.status==='PAID')||!!pc.paidAt;
                 var g=pc.grossValue||0;
                 html.push('<tr class="parc show" style="background:#FAFAFF">'+
