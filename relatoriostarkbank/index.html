@@ -497,13 +497,17 @@ function renderCr(){
         }
         return true;
     });
-    // stats por parcela: pc.paidAt -> pago; senao a receber
-    function pcStats(parcelas){
+    // stats por parcela. "Pago pelo cliente" = pedido.isPaid (credito:
+    // cliente quita upfront) OU parcela com paidAt proprio (boleto
+    // parcela-a-parcela). Senao, a receber.
+    function pcStats(pedido,parcelas){
+        var ordPaid=!!pedido.isPaid;
         var s={n:0,nPg:0,nAr:0,vRec:0,vAr:0};
         parcelas.forEach(function(pc){
             s.n++;
             var g=pc.grossValue||0;
-            if(pc.paidAt){s.nPg++;s.vRec+=g}
+            var pago=ordPaid||!!pc.paidAt;
+            if(pago){s.nPg++;s.vRec+=g}
             else{s.nAr++;s.vAr+=g}
         });
         return s;
@@ -513,7 +517,7 @@ function renderCr(){
     peds.forEach(function(p){
         var cid=p.companyId||'(sem)';
         var e=byEmp[cid]||(byEmp[cid]={cid:cid,nome:p.nomeFantasia||cid,peds:[],n:0,nPg:0,nAr:0,vRec:0,vAr:0});
-        var s=pcStats(p.parcelas||[]);
+        var s=pcStats(p,p.parcelas||[]);
         e.peds.push({p:p,s:s});
         e.n+=s.n;e.nPg+=s.nPg;e.nAr+=s.nAr;e.vRec+=s.vRec;e.vAr+=s.vAr;
     });
@@ -566,7 +570,7 @@ function renderCr(){
             '</tr>');
             if(!oOpen)return;
             (p.parcelas||[]).forEach(function(pc){
-                var pago=!!pc.paidAt;
+                var pago=!!p.isPaid||!!pc.paidAt;
                 var g=pc.grossValue||0;
                 html.push('<tr class="parc show" style="background:#FAFAFF">'+
                     '<td></td>'+
