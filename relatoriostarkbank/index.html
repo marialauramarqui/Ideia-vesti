@@ -575,6 +575,12 @@ function renderCr(){
     var byDate={};
     var empSet={};
     faturas.forEach(function(f){
+        // numero global da parcela no pedido (ordenado por due) — independente
+        // do date-group, pra uma mesma parcela nao virar "1/6" em dois dias.
+        var all=((f.purchase&&f.purchase.installments)||[]).slice().sort(function(a,b){return (a.due||'').localeCompare(b.due||'')});
+        var instNum={};
+        all.forEach(function(ix,idx){if(ix.id)instNum[ix.id]=idx+1});
+        f._instNum=instNum;
         var insts=filtParc((f.purchase&&f.purchase.installments)||[]);
         insts.forEach(function(i){
             var d=isoBRTDate(i.due)||'(sem)';
@@ -703,9 +709,10 @@ function renderCr(){
                     var pago=(i.status==='paid');
                     var g=(i.amount||0)/100;
                     var fee=(i.fee||0)/100;
+                    var num=(f._instNum && f._instNum[i.id]) || (idx+1);
                     html.push('<tr class="parc show" style="background:#FAFAFF">'+
                         '<td></td>'+
-                        '<td style="padding-left:120px;color:var(--tx)">parcela '+(idx+1)+'/'+total+' '+(pago?'<span class="badge paid">PAGA</span>':'<span class="badge pen">A RECEBER</span>')+'</td>'+
+                        '<td style="padding-left:120px;color:var(--tx)">parcela '+num+'/'+total+' '+(pago?'<span class="badge paid">PAGA</span>':'<span class="badge pen">A RECEBER</span>')+'</td>'+
                         '<td class="date">'+(i.due?fmtD(i.due):'-')+'</td>'+
                         '<td class="date">'+(f.orderDate?fmtD(f.orderDate):'-')+'</td>'+
                         '<td class="money" style="color:var(--p)">1</td>'+
