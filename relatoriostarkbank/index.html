@@ -314,11 +314,8 @@ function init(){
         if(p.nomeFantasia&&p.companyId)o.label=p.companyId;
         dl.appendChild(o);
     });
-    // Abre filtrando no dia atual
-    var today=new Date();
-    var todayStr=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
-    document.getElementById('fDataDe').value=todayStr;
-    document.getElementById('fDataAte').value=todayStr;
+    // Sem filtro default: mostra todas as datas (pagas em datas passadas + a receber futuras).
+    // A linha do dia atual ganha destaque visual em renderCr.
     ['fDataDe','fDataAte','fPagoDe','fPagoAte'].forEach(function(id){document.getElementById(id).addEventListener('change',render)});
     document.getElementById('fEmpresa').addEventListener('input',render);
     render();
