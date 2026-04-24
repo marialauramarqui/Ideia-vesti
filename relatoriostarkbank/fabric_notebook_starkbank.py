@@ -24,7 +24,8 @@ from pyspark.sql.types import (StructType, StructField, StringType, IntegerType,
 from delta.tables import DeltaTable
 
 INVOICES_URL = "https://raw.githubusercontent.com/vesti-mobi/Ideia-vesti/main/relatoriostarkbank/invoices.js"
-SCHEMA = "dbo"
+# Lakehouse sem schemas custom: tabelas ficam na raiz com prefixo.
+# O `dbo/` que aparece na UI eh do SQL Analytics Endpoint, nao do Spark.
 PREFIX = "starkbank_"
 
 # -------- 1) baixa invoices.js e parseia ----------
@@ -201,16 +202,15 @@ df_i = (df_i
 # (menu "..." em Schemas > New schema). Fabric nao permite CREATE SCHEMA via spark.sql.
 
 # snapshots (append-only, cada run adiciona uma "foto")
-df_p.write.mode("append").format("delta").saveAsTable(f"{SCHEMA}.{PREFIX}purchases_snapshots")
-df_i.write.mode("append").format("delta").saveAsTable(f"{SCHEMA}.{PREFIX}installments_snapshots")
+df_p.write.mode("append").format("delta").saveAsTable(f"{PREFIX}purchases_snapshots")
+df_i.write.mode("append").format("delta").saveAsTable(f"{PREFIX}installments_snapshots")
 
 # current (MERGE: mantem so o estado mais recente por id)
 def merge_current(df, table, key):
-    full = f"{SCHEMA}.{table}"
-    if not spark.catalog.tableExists(full):
-        df.write.format("delta").saveAsTable(full)
+    if not spark.catalog.tableExists(table):
+        df.write.format("delta").saveAsTable(table)
         return
-    tgt = DeltaTable.forName(spark, full)
+    tgt = DeltaTable.forName(spark, table)
     (tgt.alias("t")
         .merge(df.alias("s"), f"t.{key} = s.{key}")
         .whenMatchedUpdateAll()
