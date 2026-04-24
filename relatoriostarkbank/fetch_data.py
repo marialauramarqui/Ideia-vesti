@@ -232,10 +232,23 @@ def _to_float(v, default: float = 0.0) -> float:
         return default
 
 
+from datetime import timezone as _tz, timedelta as _td2
+_BRT = _tz(_td2(hours=-3))
+
+
 def _iso_or_empty(v) -> str:
     if v is None:
         return ""
     if hasattr(v, "isoformat"):
+        # Fabric armazena timestamps em UTC (naive). Converte pra America/Sao_Paulo
+        # (BRT, -03:00) antes de truncar pra que parcelas pagas a noite nao pulem
+        # pro dia seguinte no dashboard.
+        try:
+            if getattr(v, "tzinfo", None) is None:
+                v = v.replace(tzinfo=_tz.utc)
+            v = v.astimezone(_BRT)
+        except Exception:
+            pass
         s = v.isoformat()
     else:
         s = str(v)
