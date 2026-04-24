@@ -195,8 +195,9 @@ df_i = (df_i
         .withColumn("api_updated", F.to_timestamp("api_updated"))
         .withColumn("gerado_em",   F.to_timestamp("gerado_em")))
 
-# -------- 3) schema + tabelas ----------
-spark.sql(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA}")
+# -------- 3) tabelas ----------
+# OBS: o schema `starkbank` precisa ser criado antes, pela UI do Lakehouse
+# (menu "..." em Schemas > New schema). Fabric nao permite CREATE SCHEMA via spark.sql.
 
 # snapshots (append-only, cada run adiciona uma "foto")
 df_p.write.mode("append").format("delta").saveAsTable(f"{SCHEMA}.purchases_snapshots")
