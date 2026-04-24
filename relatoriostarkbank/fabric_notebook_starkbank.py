@@ -24,7 +24,8 @@ from pyspark.sql.types import (StructType, StructField, StringType, IntegerType,
 from delta.tables import DeltaTable
 
 INVOICES_URL = "https://raw.githubusercontent.com/vesti-mobi/Ideia-vesti/main/relatoriostarkbank/invoices.js"
-SCHEMA = "starkbank"
+SCHEMA = "dbo"
+PREFIX = "starkbank_"
 
 # -------- 1) baixa invoices.js e parseia ----------
 raw = urllib.request.urlopen(INVOICES_URL, timeout=60).read().decode("utf-8")
@@ -200,8 +201,8 @@ df_i = (df_i
 # (menu "..." em Schemas > New schema). Fabric nao permite CREATE SCHEMA via spark.sql.
 
 # snapshots (append-only, cada run adiciona uma "foto")
-df_p.write.mode("append").format("delta").saveAsTable(f"{SCHEMA}.purchases_snapshots")
-df_i.write.mode("append").format("delta").saveAsTable(f"{SCHEMA}.installments_snapshots")
+df_p.write.mode("append").format("delta").saveAsTable(f"{SCHEMA}.{PREFIX}purchases_snapshots")
+df_i.write.mode("append").format("delta").saveAsTable(f"{SCHEMA}.{PREFIX}installments_snapshots")
 
 # current (MERGE: mantem so o estado mais recente por id)
 def merge_current(df, table, key):
@@ -216,8 +217,8 @@ def merge_current(df, table, key):
         .whenNotMatchedInsertAll()
         .execute())
 
-merge_current(df_p, "purchases",    "purchase_id")
-merge_current(df_i, "installments", "installment_id")
+merge_current(df_p, f"{PREFIX}purchases",    "purchase_id")
+merge_current(df_i, f"{PREFIX}installments", "installment_id")
 
 print(f"[ok] snap={snap.isoformat()} geradoEm={gerado_em} "
       f"purchases={df_p.count()} installments={df_i.count()}")
