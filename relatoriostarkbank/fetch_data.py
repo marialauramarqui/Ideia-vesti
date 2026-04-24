@@ -128,15 +128,16 @@ WITH rec AS (
         r.payment_method                         AS payment_method,
         r.payment_transaction_provider           AS provider,
         r.payment_isPaid                         AS is_paid,
-        -- paidAt/dueAt sao armazenados em UTC; converte UTC->BRT pra nao
-        -- jogar pagamentos noturnos pro dia seguinte no CP.
-        DATEADD(HOUR, -3, TRY_CAST(r.payment_paidAt AS DATETIME2))             AS paid_at,
+        -- Os campos paidAt/dueAt do Mongo ja estao em BRT (nao UTC).
+        -- Evidencia: Starkbank.purchase.created='2026-04-24T03:45:07Z' (UTC)
+        -- == Mongo.payment_paidAt='2026-04-24T00:45:20' (naive BRT).
+        r.payment_paidAt                         AS paid_at,
         r.payment_transaction_installments       AS installments_total,
         r.payment_transaction_netValue           AS tx_net_value,
         r.payment_receivables__id                AS rec_id,
         r.payment_receivables_installment        AS rec_installment,
-        DATEADD(HOUR, -3, TRY_CAST(r.payment_receivables_dueAt AS DATETIME2))  AS rec_due_at,
-        DATEADD(HOUR, -3, TRY_CAST(r.payment_receivables_paidAt AS DATETIME2)) AS rec_paid_at,
+        r.payment_receivables_dueAt              AS rec_due_at,
+        r.payment_receivables_paidAt             AS rec_paid_at,
         r.payment_receivables_status             AS rec_status,
         r.payment_receivables_netValue           AS rec_net_value,
         r.payment_receivables_grossValue         AS rec_gross_value,
@@ -175,13 +176,13 @@ only_pedidos AS (
         p.payment_method                         AS payment_method,
         p.payment_transaction_provider           AS provider,
         p.payment_isPaid                         AS is_paid,
-        DATEADD(HOUR, -3, TRY_CAST(p.payment_paidAt AS DATETIME2))             AS paid_at,
+        p.payment_paidAt                         AS paid_at,
         p.payment_transaction_installments       AS installments_total,
         p.payment_transaction_netValue           AS tx_net_value,
         p.payment_receivables__id                AS rec_id,
         p.payment_receivables_installment        AS rec_installment,
-        DATEADD(HOUR, -3, TRY_CAST(p.payment_receivables_dueAt AS DATETIME2))  AS rec_due_at,
-        DATEADD(HOUR, -3, TRY_CAST(p.payment_receivables_paidAt AS DATETIME2)) AS rec_paid_at,
+        p.payment_receivables_dueAt              AS rec_due_at,
+        p.payment_receivables_paidAt             AS rec_paid_at,
         p.payment_receivables_status             AS rec_status,
         p.payment_receivables_netValue           AS rec_net_value,
         p.payment_receivables_grossValue         AS rec_gross_value,
@@ -234,44 +235,14 @@ def _to_float(v, default: float = 0.0) -> float:
         return default
 
 
-from datetime import timezone as _tz, timedelta as _td2, datetime as _dt2
-_BRT = _tz(_td2(hours=-3))
-
-
 def _iso_or_empty(v) -> str:
-    """Retorna timestamp ISO truncado em segundos, convertido UTC -> BRT.
-
-    Fabric armazena os paid_at/due_at como VARCHAR ISO em UTC (ex:
-    '2026-04-24T02:30:00Z'). Sem conversao, o truncamento [:10] joga pagamentos
-    feitos a noite BRT pro dia seguinte. Esta funcao detecta datetime-like
-    (objeto ou string com 'T') e converte. Strings date-only ('2026-04-24')
-    passam intactas.
-    """
     if v is None:
         return ""
-    dt = None
-    # objeto datetime/date
     if hasattr(v, "isoformat"):
-        try:
-            if getattr(v, "tzinfo", None) is None and hasattr(v, "hour"):
-                dt = v.replace(tzinfo=_tz.utc)
-            else:
-                dt = v
-            dt = dt.astimezone(_BRT) if hasattr(dt, "hour") else dt
-        except Exception:
-            dt = v
-        s = dt.isoformat()
+        s = v.isoformat()
     else:
         s = str(v)
-        # string ISO com timezone (ex: "2026-04-24T02:30:00Z"): parse + converte
-        if "T" in s and len(s) >= 11:
-            try:
-                parsed = _dt2.fromisoformat(s.replace("Z", "+00:00"))
-                if parsed.tzinfo is None:
-                    parsed = parsed.replace(tzinfo=_tz.utc)
-                s = parsed.astimezone(_BRT).isoformat()
-            except Exception:
-                pass
+    # Aceita strings tipo "2026-05-18T03:00:00Z" e datas simples "2026-04-16"
     return s[:19] if len(s) >= 19 else s
 
 
