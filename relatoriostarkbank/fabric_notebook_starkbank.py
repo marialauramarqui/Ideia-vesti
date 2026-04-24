@@ -38,25 +38,48 @@ purchases, installments = [], []
 for f in payload.get("faturas", []):
     p = f.get("purchase") or {}
     purchases.append({
-        "purchase_id":         p.get("purchaseId"),
-        "workspace_id":        f.get("workspaceId"),
-        "transaction_id":      f.get("transactionId"),
-        "order_id":            f.get("orderId"),
-        "order_number":        f.get("orderNumber"),
-        "company_id":          f.get("companyId"),
-        "nome_fantasia":       f.get("nomeFantasia"),
-        "customer_name":       f.get("customerName"),
-        "order_date":          f.get("orderDate"),
-        "antecipacao_enabled": bool(f.get("antecipacaoEnabled")),
-        "purchase_status":     p.get("status"),
-        "amount_cents":        int(p.get("amount") or 0),
-        "fee_cents":           int(p.get("fee") or 0),
-        "installment_count":   int(p.get("installmentCount") or 0),
-        "card_ending":         p.get("cardEnding"),
-        "holder_name":         p.get("holderName"),
-        "api_created":         p.get("created"),
-        "gerado_em":           gerado_em,
-        "snapshot_at":         snap,
+        "purchase_id":          p.get("purchaseId"),
+        "workspace_id":         f.get("workspaceId"),
+        "transaction_id":       f.get("transactionId"),
+        "order_id":             f.get("orderId"),
+        "order_number":         f.get("orderNumber"),
+        "company_id":           f.get("companyId"),
+        "nome_fantasia":        f.get("nomeFantasia"),
+        "customer_name":        f.get("customerName"),
+        "order_date":           f.get("orderDate"),
+        "antecipacao_enabled":  bool(f.get("antecipacaoEnabled")),
+        "purchase_status":      p.get("status"),
+        "amount_cents":         int(p.get("amount") or 0),
+        "fee_cents":            int(p.get("fee") or 0),
+        "currency_code":        p.get("currencyCode"),
+        "installment_count":    int(p.get("installmentCount") or 0),
+        "funding_type":         p.get("fundingType"),
+        "network":              p.get("network"),
+        "card_id":              p.get("cardId"),
+        "card_ending":          p.get("cardEnding"),
+        "holder_id":            p.get("holderId"),
+        "holder_name":          p.get("holderName"),
+        "holder_email":         p.get("holderEmail"),
+        "holder_phone":         p.get("holderPhone"),
+        "billing_city":         p.get("billingCity"),
+        "billing_state_code":   p.get("billingStateCode"),
+        "billing_country_code": p.get("billingCountryCode"),
+        "billing_zip_code":     p.get("billingZipCode"),
+        "billing_street1":      p.get("billingStreetLine1"),
+        "billing_street2":      p.get("billingStreetLine2"),
+        "challenge_mode":       p.get("challengeMode"),
+        "challenge_url":        p.get("challengeUrl"),
+        "end_to_end_id":        p.get("endToEndId"),
+        "soft_descriptor":      p.get("softDescriptor"),
+        "source":               p.get("source"),
+        "tags":                 json.dumps(p.get("tags") or []),
+        "transaction_ids":      json.dumps(p.get("transactionIds") or []),
+        "metadata_json":        json.dumps(p.get("metadata") or {}),
+        "created":              p.get("created"),
+        "api_created":          p.get("apiCreated") or p.get("created"),
+        "api_updated":          p.get("apiUpdated"),
+        "gerado_em":            gerado_em,
+        "snapshot_at":          snap,
     })
     insts = sorted(p.get("installments") or [], key=lambda x: x.get("due") or "")
     for n, i in enumerate(insts, start=1):
@@ -67,8 +90,15 @@ for f in payload.get("faturas", []):
             "amount_cents":       int(i.get("amount") or 0),
             "fee_cents":          int(i.get("fee") or 0),
             "due":                i.get("due"),
+            "nominal_due":        i.get("nominalDue"),
             "status":             i.get("status"),
+            "funding_type":       i.get("fundingType"),
+            "network":            i.get("network"),
+            "is_protected":       bool(i.get("isProtected")),
+            "tags":               json.dumps(i.get("tags") or []),
             "transaction_ids":    json.dumps(i.get("transactionIds") or []),
+            "api_created":        i.get("apiCreated"),
+            "api_updated":        i.get("apiUpdated"),
             "gerado_em":          gerado_em,
             "snapshot_at":        snap,
         })
@@ -78,12 +108,17 @@ df_i = spark.createDataFrame(installments)
 
 # casts de tipo
 df_p = (df_p
+        .withColumn("created",     F.to_timestamp("created"))
         .withColumn("api_created", F.to_timestamp("api_created"))
+        .withColumn("api_updated", F.to_timestamp("api_updated"))
         .withColumn("order_date",  F.to_date("order_date"))
         .withColumn("gerado_em",   F.to_timestamp("gerado_em"))
         .withColumn("snapshot_at", F.to_timestamp("snapshot_at")))
 df_i = (df_i
         .withColumn("due",         F.to_timestamp("due"))
+        .withColumn("nominal_due", F.to_timestamp("nominal_due"))
+        .withColumn("api_created", F.to_timestamp("api_created"))
+        .withColumn("api_updated", F.to_timestamp("api_updated"))
         .withColumn("gerado_em",   F.to_timestamp("gerado_em"))
         .withColumn("snapshot_at", F.to_timestamp("snapshot_at")))
 
