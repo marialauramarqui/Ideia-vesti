@@ -427,9 +427,11 @@ function renderCp(){
         var dLabel=date?fmtD(date):'(sem data)';
         var ods=pags.map(function(x){return (x.customerPaidAt||'').substring(0,10)}).filter(Boolean).sort();
         var pagoTxt=ods.length?(ods[0]===ods[ods.length-1]?fmtD(ods[0]):fmtD(ods[0])+' – '+fmtD(ods[ods.length-1])):'-';
+        var pedSet={}; pags.forEach(function(x){if(x.orderId)pedSet[x.orderId]=1});
+        var pedCount=Object.keys(pedSet).length;
         html.push('<tr class="ped'+(dOpen?' open':'')+'" onclick="toggleKey(\''+dKey+'\')">'+
             '<td class="chev">&rtrif;</td>'+
-            '<td><strong>'+dLabel+'</strong> <span style="color:var(--mut);font-weight:400">· '+fmtN(t.empCount)+' empresa(s) · '+fmtN(t.n)+' parcela(s)</span></td>'+
+            '<td><strong>'+dLabel+'</strong> <span style="color:var(--mut);font-weight:400">· '+fmtN(t.empCount)+' empresa(s) · '+fmtN(pedCount)+' pedido(s) · '+fmtN(t.n)+' parcela(s)</span></td>'+
             '<td>'+pagoTxt+'</td>'+
             '<td class="money" style="color:var(--p)">'+fmtN(t.n)+'</td>'+
             '<td class="money" style="color:var(--mut)">'+fmtC(t.gross)+'</td>'+
@@ -594,9 +596,12 @@ function renderCr(){
         var isHoje=(date===hojeISO);
         var hojeBadge=isHoje?' <span class="badge advanced" style="background:#FFE4B5;color:#8B4513">HOJE</span>':'';
         var resumo='<span style="color:var(--g)">'+fmtN(dt.nPg)+' pagas</span> · <span style="color:var(--r)">'+fmtN(dt.nAr)+' a receber</span>';
+        var pedIds={};
+        Object.values(db.byEmp).forEach(function(e){Object.keys(e.pedsMap).forEach(function(oid){pedIds[oid]=1})});
+        var pedCount=Object.keys(pedIds).length;
         html.push('<tr class="ped'+(dOpen?' open':'')+'"'+(isHoje?' style="background:#FFF9E6"':'')+' onclick="toggleKey(\''+dKey+'\')">'+
             '<td class="chev">&rtrif;</td>'+
-            '<td><strong>'+dLabel+'</strong>'+hojeBadge+' <span style="color:var(--mut);font-weight:400">· '+fmtN(empCount)+' empresa(s) · '+fmtN(dt.n)+' parcelas ('+resumo+'<span style="color:var(--mut)">)</span></span></td>'+
+            '<td><strong>'+dLabel+'</strong>'+hojeBadge+' <span style="color:var(--mut);font-weight:400">· '+fmtN(empCount)+' empresa(s) · '+fmtN(pedCount)+' pedido(s) · '+fmtN(dt.n)+' parcelas ('+resumo+'<span style="color:var(--mut)">)</span></span></td>'+
             '<td>'+dLabel+'</td><td>-</td>'+
             '<td class="money" style="color:var(--p)">'+fmtN(dt.n)+'</td>'+
             '<td class="money" style="color:var(--g)">'+fmtN(dt.nPg)+'</td>'+
