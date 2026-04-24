@@ -164,10 +164,9 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
         <div class="kpi orange"><div class="lbl">Empresas</div><div class="val" id="crEmp">--</div><div class="ks">no periodo</div></div>
         <div class="kpi blue"><div class="lbl">Pedidos</div><div class="val" id="crPed">--</div><div class="ks">total</div></div>
         <div class="kpi green"><div class="lbl">Pedidos pagos</div><div class="val" id="crPedPg">--</div><div class="ks">cliente quitou</div></div>
-        <div class="kpi red"><div class="lbl">Pedidos a receber</div><div class="val" id="crPedAr">--</div><div class="ks">cliente pendente</div></div>
-        <div class="kpi green"><div class="lbl">Pago à VP</div><div class="val" id="crRec">R$ --</div><div class="ks">bruto já liquidado</div></div>
-        <div class="kpi red"><div class="lbl">A pagar à VP</div><div class="val" id="crAr">R$ --</div><div class="ks">bruto pendente</div></div>
-        <div class="kpi purple"><div class="lbl">Total geral</div><div class="val" id="crTot">R$ --</div><div class="ks">bruto total</div></div>
+        <div class="kpi purple"><div class="lbl">Valor bruto</div><div class="val" id="crGross">R$ --</div><div class="ks">amount total</div></div>
+        <div class="kpi orange"><div class="lbl">Taxas</div><div class="val" id="crFee">R$ --</div><div class="ks">fees Starkbank</div></div>
+        <div class="kpi blue"><div class="lbl">Valor líquido</div><div class="val" id="crLiq">R$ --</div><div class="ks">cai na Starkbank</div></div>
     </div>
 
     <div class="tbl-card" id="cardCp">
@@ -212,10 +211,9 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
                         <th class="r">Parcelas</th>
                         <th class="r">Pagas</th>
                         <th class="r">A receber</th>
-                        <th class="r">Pago à VP</th>
+                        <th class="r">Valor bruto</th>
                         <th class="r">Taxas</th>
                         <th class="r">Valor líquido</th>
-                        <th class="r">Total bruto</th>
                     </tr>
                 </thead>
                 <tbody id="tbodyCr"></tbody>
@@ -509,8 +507,8 @@ function renderCr(){
     // 'created') = a receber. Valores da API sao em centavos.
     var tb=document.getElementById('tbodyCr');
     if(!window.INVOICES||!window.INVOICES.faturas){
-        tb.innerHTML='<tr><td colspan="11" class="empty" style="color:#E17055">invoices.js nao carregou — rode fetch_invoices.py</td></tr>';
-        ['crEmp','crPed','crPedPg','crPedAr','crRec','crAr','crTot'].forEach(function(id){document.getElementById(id).textContent='--'});
+        tb.innerHTML='<tr><td colspan="10" class="empty" style="color:#E17055">invoices.js nao carregou — rode fetch_invoices.py</td></tr>';
+        ['crEmp','crPed','crPedPg','crGross','crFee','crLiq'].forEach(function(id){document.getElementById(id).textContent='--'});
         return;
     }
     try{
@@ -590,12 +588,11 @@ function renderCr(){
     document.getElementById('crEmp').textContent=fmtN(Object.keys(empSet).length);
     document.getElementById('crPed').textContent=fmtN(tot.n);
     document.getElementById('crPedPg').textContent=fmtN(tot.nPg);
-    document.getElementById('crPedAr').textContent=fmtN(tot.nAr);
-    document.getElementById('crRec').textContent=fmtC(tot.vRec);
-    document.getElementById('crAr').textContent=fmtC(tot.vAr);
-    document.getElementById('crTot').textContent=fmtC(tot.vRec+tot.vAr);
+    document.getElementById('crGross').textContent=fmtC(tot.vRec+tot.vAr);
+    document.getElementById('crFee').textContent=fmtC(tot.fee);
+    document.getElementById('crLiq').textContent=fmtC(tot.liq);
     document.getElementById('crCount').textContent=fmtN(tot.n)+' parcela(s) em '+fmtN(dates.length)+' dia(s)';
-    if(!dates.length){tb.innerHTML='<tr><td colspan="11" class="empty">Nenhuma parcela com os filtros atuais</td></tr>';return}
+    if(!dates.length){tb.innerHTML='<tr><td colspan="10" class="empty">Nenhuma parcela com os filtros atuais</td></tr>';return}
     var html=[];
     dates.forEach(function(date){
         var db=byDate[date];
@@ -624,10 +621,9 @@ function renderCr(){
             '<td class="money" style="color:var(--p)">'+fmtN(dt.n)+'</td>'+
             '<td class="money" style="color:var(--g)">'+fmtN(dt.nPg)+'</td>'+
             '<td class="money" style="color:var(--r)">'+fmtN(dt.nAr)+'</td>'+
-            '<td class="money" style="color:var(--g)">'+fmtC(dt.vRec)+'</td>'+
+            '<td class="money" style="color:var(--mut)">'+fmtC(dt.vRec+dt.vAr)+'</td>'+
             '<td class="money" style="color:var(--y)">'+fmtC(dt.fee)+'</td>'+
-            '<td class="money" style="color:var(--b)">'+fmtC(dt.liq)+'</td>'+
-            '<td class="money total">'+fmtC(dt.vRec+dt.vAr)+'</td>'+
+            '<td class="money total">'+fmtC(dt.liq)+'</td>'+
         '</tr>');
         if(!dOpen)return;
         // empresas dentro do dia
@@ -650,10 +646,9 @@ function renderCr(){
                 '<td class="money" style="color:var(--p)">'+fmtN(es.n)+'</td>'+
                 '<td class="money" style="color:var(--g)">'+fmtN(es.nPg)+'</td>'+
                 '<td class="money" style="color:var(--r)">'+fmtN(es.nAr)+'</td>'+
-                '<td class="money" style="color:var(--g)">'+fmtC(es.vRec)+'</td>'+
+                '<td class="money" style="color:var(--mut)">'+fmtC(es.vRec+es.vAr)+'</td>'+
                 '<td class="money" style="color:var(--y)">'+fmtC(es.fee)+'</td>'+
-                '<td class="money" style="color:var(--b)">'+fmtC(es.liq)+'</td>'+
-                '<td class="money total">'+fmtC(es.vRec+es.vAr)+'</td>'+
+                '<td class="money total">'+fmtC(es.liq)+'</td>'+
             '</tr>');
             if(!cOpen)return;
             // installments (agrupadas por pedido pra deixar legivel)
@@ -674,10 +669,9 @@ function renderCr(){
                         '<td class="money" style="color:var(--p)">1</td>'+
                         '<td class="money" style="color:var(--g)">'+(pago?1:0)+'</td>'+
                         '<td class="money" style="color:var(--r)">'+(pago?0:1)+'</td>'+
-                        '<td class="money" style="color:var(--g)">'+fmtC(pago?g:0)+'</td>'+
+                        '<td class="money" style="color:var(--mut)">'+fmtC(g)+'</td>'+
                         '<td class="money" style="color:var(--y)">'+fmtC(fee)+'</td>'+
-                        '<td class="money" style="color:var(--b)">'+fmtC(g-fee)+'</td>'+
-                        '<td class="money total">'+fmtC(g)+'</td>'+
+                        '<td class="money total">'+fmtC(g-fee)+'</td>'+
                     '</tr>');
                 });
             });
