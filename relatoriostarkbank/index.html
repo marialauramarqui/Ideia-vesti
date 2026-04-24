@@ -213,7 +213,8 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
                         <th class="r">Pagas</th>
                         <th class="r">A receber</th>
                         <th class="r">Pago à VP</th>
-                        <th class="r">A pagar à VP</th>
+                        <th class="r">Taxas</th>
+                        <th class="r">Valor líquido</th>
                         <th class="r">Total bruto</th>
                     </tr>
                 </thead>
@@ -508,7 +509,7 @@ function renderCr(){
     // 'created') = a receber. Valores da API sao em centavos.
     var tb=document.getElementById('tbodyCr');
     if(!window.INVOICES||!window.INVOICES.faturas){
-        tb.innerHTML='<tr><td colspan="10" class="empty" style="color:#E17055">invoices.js nao carregou — rode fetch_invoices.py</td></tr>';
+        tb.innerHTML='<tr><td colspan="11" class="empty" style="color:#E17055">invoices.js nao carregou — rode fetch_invoices.py</td></tr>';
         ['crEmp','crPed','crPedPg','crPedAr','crRec','crAr','crTot'].forEach(function(id){document.getElementById(id).textContent='--'});
         return;
     }
@@ -565,13 +566,15 @@ function renderCr(){
     var dates=Object.keys(byDate).sort();
     // totais gerais
     function sumInsts(list){
-        var s={n:0,nPg:0,nAr:0,vRec:0,vAr:0};
+        var s={n:0,nPg:0,nAr:0,vRec:0,vAr:0,fee:0};
         list.forEach(function(i){
             s.n++;
             var v=(i.amount||0)/100;
+            s.fee+=(i.fee||0)/100;
             if(i.status==='paid'){s.nPg++;s.vRec+=v}
             else{s.nAr++;s.vAr+=v}
         });
+        s.liq=s.vRec+s.vAr-s.fee;
         return s;
     }
     var allI=[];var pedSet={};
@@ -592,7 +595,7 @@ function renderCr(){
     document.getElementById('crAr').textContent=fmtC(tot.vAr);
     document.getElementById('crTot').textContent=fmtC(tot.vRec+tot.vAr);
     document.getElementById('crCount').textContent=fmtN(tot.n)+' parcela(s) em '+fmtN(dates.length)+' dia(s)';
-    if(!dates.length){tb.innerHTML='<tr><td colspan="10" class="empty">Nenhuma parcela com os filtros atuais</td></tr>';return}
+    if(!dates.length){tb.innerHTML='<tr><td colspan="11" class="empty">Nenhuma parcela com os filtros atuais</td></tr>';return}
     var html=[];
     dates.forEach(function(date){
         var db=byDate[date];
@@ -622,7 +625,8 @@ function renderCr(){
             '<td class="money" style="color:var(--g)">'+fmtN(dt.nPg)+'</td>'+
             '<td class="money" style="color:var(--r)">'+fmtN(dt.nAr)+'</td>'+
             '<td class="money" style="color:var(--g)">'+fmtC(dt.vRec)+'</td>'+
-            '<td class="money" style="color:var(--r)">'+fmtC(dt.vAr)+'</td>'+
+            '<td class="money" style="color:var(--y)">'+fmtC(dt.fee)+'</td>'+
+            '<td class="money" style="color:var(--b)">'+fmtC(dt.liq)+'</td>'+
             '<td class="money total">'+fmtC(dt.vRec+dt.vAr)+'</td>'+
         '</tr>');
         if(!dOpen)return;
@@ -647,7 +651,8 @@ function renderCr(){
                 '<td class="money" style="color:var(--g)">'+fmtN(es.nPg)+'</td>'+
                 '<td class="money" style="color:var(--r)">'+fmtN(es.nAr)+'</td>'+
                 '<td class="money" style="color:var(--g)">'+fmtC(es.vRec)+'</td>'+
-                '<td class="money" style="color:var(--r)">'+fmtC(es.vAr)+'</td>'+
+                '<td class="money" style="color:var(--y)">'+fmtC(es.fee)+'</td>'+
+                '<td class="money" style="color:var(--b)">'+fmtC(es.liq)+'</td>'+
                 '<td class="money total">'+fmtC(es.vRec+es.vAr)+'</td>'+
             '</tr>');
             if(!cOpen)return;
@@ -660,6 +665,7 @@ function renderCr(){
                 sorted.forEach(function(i,idx){
                     var pago=(i.status==='paid');
                     var g=(i.amount||0)/100;
+                    var fee=(i.fee||0)/100;
                     html.push('<tr class="parc show" style="background:#FAFAFF">'+
                         '<td></td>'+
                         '<td style="padding-left:80px;color:var(--tx)">Pedido #'+esc((f.orderNumber||f.orderId||'').toString())+' · parcela '+(idx+1)+'/'+total+' '+(pago?'<span class="badge paid">PAGA</span>':'<span class="badge pen">A RECEBER</span>')+' · <span style="color:var(--mut)">'+esc(f.customerName||'-')+'</span></td>'+
@@ -669,7 +675,8 @@ function renderCr(){
                         '<td class="money" style="color:var(--g)">'+(pago?1:0)+'</td>'+
                         '<td class="money" style="color:var(--r)">'+(pago?0:1)+'</td>'+
                         '<td class="money" style="color:var(--g)">'+fmtC(pago?g:0)+'</td>'+
-                        '<td class="money" style="color:var(--r)">'+fmtC(pago?0:g)+'</td>'+
+                        '<td class="money" style="color:var(--y)">'+fmtC(fee)+'</td>'+
+                        '<td class="money" style="color:var(--b)">'+fmtC(g-fee)+'</td>'+
                         '<td class="money total">'+fmtC(g)+'</td>'+
                     '</tr>');
                 });
