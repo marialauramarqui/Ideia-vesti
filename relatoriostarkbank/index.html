@@ -199,6 +199,7 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
         <div class="tbl-head">
             <h3>Contas a receber por empresa</h3>
             <span class="count" id="crCount">--</span>
+            <span class="count" id="crStamp" style="margin-left:auto;color:var(--mut)">--</span>
         </div>
         <div class="tbl-wrap">
             <table>
@@ -497,6 +498,16 @@ function renderCr(){
         ['crEmp','crPed','crPedPg','crPedAr','crRec','crAr','crTot'].forEach(function(id){document.getElementById(id).textContent='--'});
         return;
     }
+    try{
+        var ge=window.INVOICES.geradoEm;
+        if(ge){
+            var dt=new Date(ge);
+            var s='Atualizado em '+dt.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+            var mins=Math.round((Date.now()-dt.getTime())/60000);
+            if(!isNaN(mins))s+=' · há '+(mins<60?mins+' min':Math.floor(mins/60)+'h'+(mins%60)+'m');
+            var el=document.getElementById('crStamp'); if(el)el.textContent=s;
+        }
+    }catch(e){}
     var dDe=document.getElementById('fDataDe').value;
     var dAte=document.getElementById('fDataAte').value;
     var pDe=document.getElementById('fPagoDe').value;
@@ -582,9 +593,13 @@ function renderCr(){
         var dKey='CRD:'+date;
         var dOpen=!!openSet[dKey];
         var dLabel=date==='(sem)'?'(sem data)':fmtD(date);
-        html.push('<tr class="ped'+(dOpen?' open':'')+'" onclick="toggleKey(\''+dKey+'\')">'+
+        var hojeISO=new Date().toISOString().substring(0,10);
+        var isHoje=(date===hojeISO);
+        var hojeBadge=isHoje?' <span class="badge advanced" style="background:#FFE4B5;color:#8B4513">HOJE</span>':'';
+        var resumo='<span style="color:var(--g)">'+fmtN(dt.nPg)+' pagas</span> · <span style="color:var(--r)">'+fmtN(dt.nAr)+' a receber</span>';
+        html.push('<tr class="ped'+(dOpen?' open':'')+'"'+(isHoje?' style="background:#FFF9E6"':'')+' onclick="toggleKey(\''+dKey+'\')">'+
             '<td class="chev">&rtrif;</td>'+
-            '<td><strong>'+dLabel+'</strong> <span style="color:var(--mut);font-weight:400">· '+fmtN(empCount)+' empresa(s) · '+fmtN(dt.n)+' parcela(s)</span></td>'+
+            '<td><strong>'+dLabel+'</strong>'+hojeBadge+' <span style="color:var(--mut);font-weight:400">· '+fmtN(empCount)+' empresa(s) · '+fmtN(dt.n)+' parcelas ('+resumo+'<span style="color:var(--mut)">)</span></span></td>'+
             '<td>'+dLabel+'</td><td>-</td>'+
             '<td class="money" style="color:var(--p)">'+fmtN(dt.n)+'</td>'+
             '<td class="money" style="color:var(--g)">'+fmtN(dt.nPg)+'</td>'+
@@ -609,7 +624,7 @@ function renderCr(){
             var antecBadge=e.antec?' <span class="badge advanced">ANTEC.</span>':'';
             html.push('<tr class="parc show" onclick="event.stopPropagation();toggleKey(\''+cKey+'\')" style="cursor:pointer;'+(cOpen?'background:#E8E4FF;font-weight:600':'')+'">'+
                 '<td></td>'+
-                '<td class="ind" style="padding-left:40px">'+(cOpen?'▾':'▸')+' '+esc(e.nome)+antecBadge+' <span class="mono" style="color:#8290a0;font-weight:400">'+esc(cid.substring(0,14))+(cid.length>14?'...':'')+'</span></td>'+
+                '<td class="ind" style="padding-left:40px">'+(cOpen?'▾':'▸')+' '+esc(e.nome)+antecBadge+' <span style="color:var(--mut);font-weight:400">· '+fmtN(es.n)+' parcelas (<span style="color:var(--g)">'+fmtN(es.nPg)+' pagas</span>, <span style="color:var(--r)">'+fmtN(es.nAr)+' a receber</span>)</span> <span class="mono" style="color:#8290a0;font-weight:400">'+esc(cid.substring(0,14))+(cid.length>14?'...':'')+'</span></td>'+
                 '<td>-</td><td>-</td>'+
                 '<td class="money" style="color:var(--p)">'+fmtN(es.n)+'</td>'+
                 '<td class="money" style="color:var(--g)">'+fmtN(es.nPg)+'</td>'+
