@@ -128,16 +128,16 @@ WITH rec AS (
         r.payment_method                         AS payment_method,
         r.payment_transaction_provider           AS provider,
         r.payment_isPaid                         AS is_paid,
-        -- Os campos paidAt/dueAt do Mongo ja estao em BRT (nao UTC).
-        -- Evidencia: Starkbank.purchase.created='2026-04-24T03:45:07Z' (UTC)
-        -- == Mongo.payment_paidAt='2026-04-24T00:45:20' (naive BRT).
-        r.payment_paidAt                         AS paid_at,
+        -- Mongo armazena os timestamps em UTC naive. Confirmado comparando
+        -- com Starkbank API: pedido 80149 UTC 01:42 vs Mongo 01:42 (~10s de
+        -- diferenca apenas). Converte pra BRT antes de truncar ao dia.
+        DATEADD(HOUR, -3, TRY_CAST(r.payment_paidAt AS DATETIME2))             AS paid_at,
         r.payment_transaction_installments       AS installments_total,
         r.payment_transaction_netValue           AS tx_net_value,
         r.payment_receivables__id                AS rec_id,
         r.payment_receivables_installment        AS rec_installment,
-        r.payment_receivables_dueAt              AS rec_due_at,
-        r.payment_receivables_paidAt             AS rec_paid_at,
+        DATEADD(HOUR, -3, TRY_CAST(r.payment_receivables_dueAt AS DATETIME2))  AS rec_due_at,
+        DATEADD(HOUR, -3, TRY_CAST(r.payment_receivables_paidAt AS DATETIME2)) AS rec_paid_at,
         r.payment_receivables_status             AS rec_status,
         r.payment_receivables_netValue           AS rec_net_value,
         r.payment_receivables_grossValue         AS rec_gross_value,
@@ -176,13 +176,13 @@ only_pedidos AS (
         p.payment_method                         AS payment_method,
         p.payment_transaction_provider           AS provider,
         p.payment_isPaid                         AS is_paid,
-        p.payment_paidAt                         AS paid_at,
+        DATEADD(HOUR, -3, TRY_CAST(p.payment_paidAt AS DATETIME2))             AS paid_at,
         p.payment_transaction_installments       AS installments_total,
         p.payment_transaction_netValue           AS tx_net_value,
         p.payment_receivables__id                AS rec_id,
         p.payment_receivables_installment        AS rec_installment,
-        p.payment_receivables_dueAt              AS rec_due_at,
-        p.payment_receivables_paidAt             AS rec_paid_at,
+        DATEADD(HOUR, -3, TRY_CAST(p.payment_receivables_dueAt AS DATETIME2))  AS rec_due_at,
+        DATEADD(HOUR, -3, TRY_CAST(p.payment_receivables_paidAt AS DATETIME2)) AS rec_paid_at,
         p.payment_receivables_status             AS rec_status,
         p.payment_receivables_netValue           AS rec_net_value,
         p.payment_receivables_grossValue         AS rec_gross_value,
