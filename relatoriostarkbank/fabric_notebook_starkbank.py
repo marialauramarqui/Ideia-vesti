@@ -19,6 +19,8 @@ Uso:
 import urllib.request, json, re
 from datetime import datetime, timezone
 from pyspark.sql import functions as F
+from pyspark.sql.types import (StructType, StructField, StringType, IntegerType,
+                               LongType, BooleanType, TimestampType, DateType)
 from delta.tables import DeltaTable
 
 INVOICES_URL = "https://raw.githubusercontent.com/vesti-mobi/Ideia-vesti/main/relatoriostarkbank/invoices.js"
@@ -103,24 +105,95 @@ for f in payload.get("faturas", []):
             "snapshot_at":        snap,
         })
 
-df_p = spark.createDataFrame(purchases)
-df_i = spark.createDataFrame(installments)
+# schema explicito resolve CANNOT_DETERMINE_TYPE quando colunas vem todas vazias
+# (ex: holder_email ainda None ate o proximo cron regerar invoices.js).
+# Campos de data ficam string aqui e viram timestamp/date via to_timestamp()
+# depois, pra aceitar "" ou None sem quebrar o cast.
+SCHEMA_P = StructType([
+    StructField("purchase_id",          StringType()),
+    StructField("workspace_id",         StringType()),
+    StructField("transaction_id",       StringType()),
+    StructField("order_id",             StringType()),
+    StructField("order_number",         LongType()),
+    StructField("company_id",           StringType()),
+    StructField("nome_fantasia",        StringType()),
+    StructField("customer_name",        StringType()),
+    StructField("order_date",           StringType()),
+    StructField("antecipacao_enabled",  BooleanType()),
+    StructField("purchase_status",      StringType()),
+    StructField("amount_cents",         LongType()),
+    StructField("fee_cents",            LongType()),
+    StructField("currency_code",        StringType()),
+    StructField("installment_count",    IntegerType()),
+    StructField("funding_type",         StringType()),
+    StructField("network",              StringType()),
+    StructField("card_id",              StringType()),
+    StructField("card_ending",          StringType()),
+    StructField("holder_id",            StringType()),
+    StructField("holder_name",          StringType()),
+    StructField("holder_email",         StringType()),
+    StructField("holder_phone",         StringType()),
+    StructField("billing_city",         StringType()),
+    StructField("billing_state_code",   StringType()),
+    StructField("billing_country_code", StringType()),
+    StructField("billing_zip_code",     StringType()),
+    StructField("billing_street1",      StringType()),
+    StructField("billing_street2",      StringType()),
+    StructField("challenge_mode",       StringType()),
+    StructField("challenge_url",        StringType()),
+    StructField("end_to_end_id",        StringType()),
+    StructField("soft_descriptor",      StringType()),
+    StructField("source",               StringType()),
+    StructField("tags",                 StringType()),
+    StructField("transaction_ids",      StringType()),
+    StructField("metadata_json",        StringType()),
+    StructField("created",              StringType()),
+    StructField("api_created",          StringType()),
+    StructField("api_updated",          StringType()),
+    StructField("gerado_em",            StringType()),
+    StructField("snapshot_at",          TimestampType()),
+])
+SCHEMA_I = StructType([
+    StructField("installment_id",     StringType()),
+    StructField("purchase_id",        StringType()),
+    StructField("installment_number", IntegerType()),
+    StructField("amount_cents",       LongType()),
+    StructField("fee_cents",          LongType()),
+    StructField("due",                StringType()),
+    StructField("nominal_due",        StringType()),
+    StructField("status",             StringType()),
+    StructField("funding_type",       StringType()),
+    StructField("network",            StringType()),
+    StructField("is_protected",       BooleanType()),
+    StructField("tags",               StringType()),
+    StructField("transaction_ids",    StringType()),
+    StructField("api_created",        StringType()),
+    StructField("api_updated",        StringType()),
+    StructField("gerado_em",          StringType()),
+    StructField("snapshot_at",        TimestampType()),
+])
 
-# casts de tipo
+# normaliza tipos das listas antes de criar DF (int vs None etc.)
+def _norm(rows, schema):
+    allowed = {fld.name for fld in schema.fields}
+    return [{k: v for k, v in r.items() if k in allowed} for r in rows]
+
+df_p = spark.createDataFrame(_norm(purchases,    SCHEMA_P), schema=SCHEMA_P)
+df_i = spark.createDataFrame(_norm(installments, SCHEMA_I), schema=SCHEMA_I)
+
+# casts de data/timestamp (feitos agora que o DF ja esta tipado)
 df_p = (df_p
         .withColumn("created",     F.to_timestamp("created"))
         .withColumn("api_created", F.to_timestamp("api_created"))
         .withColumn("api_updated", F.to_timestamp("api_updated"))
         .withColumn("order_date",  F.to_date("order_date"))
-        .withColumn("gerado_em",   F.to_timestamp("gerado_em"))
-        .withColumn("snapshot_at", F.to_timestamp("snapshot_at")))
+        .withColumn("gerado_em",   F.to_timestamp("gerado_em")))
 df_i = (df_i
         .withColumn("due",         F.to_timestamp("due"))
         .withColumn("nominal_due", F.to_timestamp("nominal_due"))
         .withColumn("api_created", F.to_timestamp("api_created"))
         .withColumn("api_updated", F.to_timestamp("api_updated"))
-        .withColumn("gerado_em",   F.to_timestamp("gerado_em"))
-        .withColumn("snapshot_at", F.to_timestamp("snapshot_at")))
+        .withColumn("gerado_em",   F.to_timestamp("gerado_em")))
 
 # -------- 3) schema + tabelas ----------
 spark.sql(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA}")
