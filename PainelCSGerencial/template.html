@@ -1486,23 +1486,35 @@ function onlogQuinzenaInit(){
     document.getElementById('olFQzNum').value=hoje.getDate()<=15?'1':'2';
 }
 function _lastDayOfMonth(y,m){return new Date(y,m,0).getDate()} // m=1..12
+function _olDbg(msg){
+    var b=document.getElementById('ol-dbg');
+    if(!b){b=document.createElement('div');b.id='ol-dbg';b.style.cssText='position:fixed;bottom:8px;right:8px;background:#2D3436;color:#FFEAA7;padding:8px 12px;border-radius:6px;font:12px monospace;z-index:9999;max-width:480px;white-space:pre-wrap';document.body.appendChild(b)}
+    b.textContent='[onlog] '+msg;
+    console.log('[onlog]',msg);
+}
 function onlogQuinzenaApply(){
-    var mesSel=document.getElementById('olFQzMes');
-    var numSel=document.getElementById('olFQzNum');
-    if(!mesSel.value){
-        var h=new Date();mesSel.value=h.getFullYear()+'-'+String(h.getMonth()+1).padStart(2,'0');
-    }
-    if(!numSel.value)numSel.value='1';
-    var mes=mesSel.value,num=numSel.value;
-    var y=parseInt(mes.slice(0,4),10),mo=parseInt(mes.slice(5,7),10);
-    var de,ate;
-    if(num==='1'){de=mes+'-01';ate=mes+'-15'}
-    else{de=mes+'-16';ate=mes+'-'+String(_lastDayOfMonth(y,mo)).padStart(2,'0')}
-    document.getElementById('olFDe').value=de;
-    document.getElementById('olFAte').value=ate;
-    document.getElementById('olFDia').value='';
-    updateOnlog();
-    _onlogRefreshDiff();
+    try{
+        var mesSel=document.getElementById('olFQzMes');
+        var numSel=document.getElementById('olFQzNum');
+        if(!mesSel||!numSel){_olDbg('ERRO: dropdowns nao encontrados');return}
+        if(!mesSel.value){
+            var h=new Date();mesSel.value=h.getFullYear()+'-'+String(h.getMonth()+1).padStart(2,'0');
+        }
+        if(!numSel.value)numSel.value='1';
+        var mes=mesSel.value,num=numSel.value;
+        var y=parseInt(mes.slice(0,4),10),mo=parseInt(mes.slice(5,7),10);
+        var de,ate;
+        if(num==='1'){de=mes+'-01';ate=mes+'-15'}
+        else{de=mes+'-16';ate=mes+'-'+String(_lastDayOfMonth(y,mo)).padStart(2,'0')}
+        document.getElementById('olFDe').value=de;
+        document.getElementById('olFAte').value=ate;
+        document.getElementById('olFDia').value='';
+        _olDbg('quinzena aplicada: '+de+' a '+ate+' - chamando updateOnlog');
+        updateOnlog();
+        _onlogRefreshDiff();
+        var nRows=document.querySelectorAll('#tOnlog tbody tr').length;
+        _olDbg('quinzena '+de+' a '+ate+' OK - '+nRows+' linha(s) na tabela');
+    }catch(e){_olDbg('ERRO: '+e.message);console.error(e);throw e}
 }
 
 // === ONLOG DIFF (planilha do Diogo) ===
@@ -1528,9 +1540,15 @@ function onlogClearDiff(){
 }
 
 function onlogUploadDiogo(input){
-    var file=input.files&&input.files[0];if(!file)return;
+    var file=input.files&&input.files[0];if(!file){_olDbg('upload: nenhum arquivo');return}
     var st=document.getElementById('ol-diff-status');
-    st.textContent='Lendo '+file.name+'...';
+    if(st)st.textContent='Lendo '+file.name+'...';
+    _olDbg('upload: lendo '+file.name+' ('+file.size+' bytes), XLSX='+(typeof XLSX));
+    if(typeof XLSX==='undefined'){
+        if(st)st.textContent='ERRO: biblioteca XLSX nao carregou (CDN bloqueado?). Recarregue a pagina.';
+        _olDbg('XLSX undefined - CDN bloqueado?');
+        return;
+    }
     var reader=new FileReader();
     reader.onload=function(e){
         try{
@@ -1538,13 +1556,16 @@ function onlogUploadDiogo(input){
             var ws=wb.Sheets[wb.SheetNames[0]];
             var rows=XLSX.utils.sheet_to_json(ws,{defval:null,raw:true});
             _onlogDiogoRows=rows;
-            st.textContent=rows.length+' linhas lidas. Comparando...';
+            if(st)st.textContent=rows.length+' linhas lidas. Comparando...';
+            _olDbg('upload OK: '+rows.length+' linhas. Chamando _onlogRefreshDiff');
             _onlogRefreshDiff();
         }catch(err){
-            st.textContent='Erro ao ler planilha: '+err.message;
+            if(st)st.textContent='Erro ao ler planilha: '+err.message;
+            _olDbg('ERRO no parse: '+err.message);
             console.error(err);
         }
     };
+    reader.onerror=function(){_olDbg('FileReader erro')};
     reader.readAsArrayBuffer(file);
 }
 
