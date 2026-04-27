@@ -1594,9 +1594,30 @@ function _onlogRefreshDiff(){
     var de=document.getElementById('olFDe').value;
     var ate=document.getElementById('olFAte').value;
     if(!de||!ate){
-        document.getElementById('ol-diff-status').textContent='Selecione a quinzena primeiro (filtros De/Ate).';
-        document.getElementById('ol-diff-results').style.display='none';
-        return;
+        // auto-detectar quinzena pela menor/maior data da planilha
+        var minD=null,maxD=null;
+        _onlogDiogoRows.forEach(function(r){
+            var d=r.Data;var s='';
+            if(d instanceof Date)s=d.toISOString().slice(0,10);
+            else if(typeof d==='string')s=d.slice(0,10);
+            if(!s)return;
+            if(!minD||s<minD)minD=s;
+            if(!maxD||s>maxD)maxD=s;
+        });
+        if(!minD||!maxD){
+            document.getElementById('ol-diff-status').textContent='Nao consegui ler datas da planilha. Selecione a quinzena manualmente (De/Ate).';
+            document.getElementById('ol-diff-results').style.display='none';
+            return;
+        }
+        // arredondar pra quinzena: se min<=15, comeca dia 1; se min>=16, comeca dia 16
+        var y=parseInt(minD.slice(0,4),10),mo=parseInt(minD.slice(5,7),10),dia=parseInt(minD.slice(8,10),10);
+        var mes=minD.slice(0,7);
+        if(dia<=15){de=mes+'-01';ate=mes+'-15';document.getElementById('olFQzNum').value='1';}
+        else{de=mes+'-16';ate=mes+'-'+String(_lastDayOfMonth(y,mo)).padStart(2,'0');document.getElementById('olFQzNum').value='2';}
+        document.getElementById('olFQzMes').value=mes;
+        document.getElementById('olFDe').value=de;
+        document.getElementById('olFAte').value=ate;
+        updateOnlog();
     }
     // Lado A: planilha agregada por codigoVolume
     var planilha=_onlogDiogoAggregate(_onlogDiogoRows,de,ate);
