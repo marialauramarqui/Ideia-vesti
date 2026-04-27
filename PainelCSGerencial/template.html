@@ -6,15 +6,15 @@
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Painel CS Gerencial (build onlog-v3)</title>
+<title>Painel CS Gerencial (build onlog-v4)</title>
 <script>
-window.__BUILD__='onlog-quinzena-v3-'+Date.now();
-console.log('BUILD onlog-quinzena-v3 carregado');
+window.__BUILD__='onlog-quinzena-v4-'+Date.now();
+console.log('BUILD onlog-quinzena-v4 carregado');
 window.addEventListener('load',function(){
     var b=document.createElement('div');
     b.id='ol-dbg';
     b.style.cssText='position:fixed;bottom:8px;right:8px;background:#2D3436;color:#FFEAA7;padding:8px 12px;border-radius:6px;font:12px monospace;z-index:9999;max-width:480px;white-space:pre-wrap;cursor:pointer';
-    b.textContent='[onlog] build v3 carregado - clique pra fechar';
+    b.textContent='[onlog] build v4 carregado - clique pra fechar';
     b.onclick=function(){b.style.display='none'};
     document.body.appendChild(b);
     // Garantir bind dos handlers, caso onchange inline falhe por algum motivo
@@ -1500,9 +1500,19 @@ function onlogQuinzenaInit(){
     meses[mAtual]=1;
     var arr=Object.keys(meses).sort().reverse();
     arr.forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=fmtM(m);sel.appendChild(o)});
-    // default: quinzena atual
+    // default: quinzena atual - ja aplica
     sel.value=mAtual;
     document.getElementById('olFQzNum').value=hoje.getDate()<=15?'1':'2';
+    // aplica imediatamente (sem chamar updateOnlog pra evitar recursao - so seta as datas)
+    var num=document.getElementById('olFQzNum').value;
+    var de,ate;
+    if(num==='1'){de=mAtual+'-01';ate=mAtual+'-15'}
+    else{
+        var y2=parseInt(mAtual.slice(0,4),10),mo2=parseInt(mAtual.slice(5,7),10);
+        de=mAtual+'-16';ate=mAtual+'-'+String(_lastDayOfMonth(y2,mo2)).padStart(2,'0');
+    }
+    document.getElementById('olFDe').value=de;
+    document.getElementById('olFAte').value=ate;
 }
 function _lastDayOfMonth(y,m){return new Date(y,m,0).getDate()} // m=1..12
 function _olDbg(msg){
