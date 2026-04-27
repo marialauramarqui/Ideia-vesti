@@ -6,8 +6,27 @@
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Painel CS Gerencial (build onlog-v2)</title>
-<script>window.__BUILD__='onlog-quinzena-v2-'+Date.now();console.log('BUILD onlog-quinzena-v2 carregado');</script>
+<title>Painel CS Gerencial (build onlog-v3)</title>
+<script>
+window.__BUILD__='onlog-quinzena-v3-'+Date.now();
+console.log('BUILD onlog-quinzena-v3 carregado');
+window.addEventListener('load',function(){
+    var b=document.createElement('div');
+    b.id='ol-dbg';
+    b.style.cssText='position:fixed;bottom:8px;right:8px;background:#2D3436;color:#FFEAA7;padding:8px 12px;border-radius:6px;font:12px monospace;z-index:9999;max-width:480px;white-space:pre-wrap;cursor:pointer';
+    b.textContent='[onlog] build v3 carregado - clique pra fechar';
+    b.onclick=function(){b.style.display='none'};
+    document.body.appendChild(b);
+    // Garantir bind dos handlers, caso onchange inline falhe por algum motivo
+    var qm=document.getElementById('olFQzMes');
+    var qn=document.getElementById('olFQzNum');
+    var fl=document.getElementById('olDiogoFile');
+    if(qm)qm.addEventListener('change',function(){console.log('[onlog] olFQzMes change');if(typeof onlogQuinzenaApply==='function')onlogQuinzenaApply()});
+    if(qn)qn.addEventListener('change',function(){console.log('[onlog] olFQzNum change');if(typeof onlogQuinzenaApply==='function')onlogQuinzenaApply()});
+    if(fl)fl.addEventListener('change',function(){console.log('[onlog] olDiogoFile change');if(typeof onlogUploadDiogo==='function')onlogUploadDiogo(fl)});
+    console.log('[onlog] handlers extra registrados:',{qm:!!qm,qn:!!qn,fl:!!fl});
+});
+</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
