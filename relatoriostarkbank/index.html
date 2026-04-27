@@ -364,6 +364,12 @@ function switchSub(which){
 
 function toggleKey(k){openSet[k]=!openSet[k];render();}
 
+// Marcas de teste — sempre removidas do dashboard, independente de status/valor.
+function isTestMarca(nome){
+    var s=(nome||'').toLowerCase();
+    return s.indexOf('andressa vesti')>=0;
+}
+
 function getFiltered(){
     var isAntec = (SUB==='antec');
     var dDe=document.getElementById('fDataDe').value;
@@ -372,6 +378,7 @@ function getFiltered(){
     var pAte=document.getElementById('fPagoAte').value;
     var q=(document.getElementById('fEmpresa').value||'').toLowerCase().trim();
     return (DADOS.pagamentos||[]).filter(function(p){
+        if(isTestMarca(p.nomeFantasia)) return false;
         if(!!p.isAntecipacao !== isAntec) return false;
         var d=(p.payDate||'').substring(0,10);
         if(dDe&&(!d||d<dDe))return false;
@@ -553,6 +560,7 @@ function renderCr(){
     var pAte=document.getElementById('fPagoAte').value;
     var q=(document.getElementById('fEmpresa').value||'').toLowerCase().trim();
     var faturas=(window.INVOICES.faturas||[]).filter(function(f){
+        if(isTestMarca(f.nomeFantasia)) return false;
         // Data da compra no CR = purchase.created da API Starkbank (UTC->BRT).
         // Fallback pro orderDate (Mongo) se created nao existir.
         var od=isoBRTDate((f.purchase&&f.purchase.created)||f.orderDate);
