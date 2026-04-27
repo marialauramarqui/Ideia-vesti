@@ -553,7 +553,9 @@ function renderCr(){
     var pAte=document.getElementById('fPagoAte').value;
     var q=(document.getElementById('fEmpresa').value||'').toLowerCase().trim();
     var faturas=(window.INVOICES.faturas||[]).filter(function(f){
-        var od=(f.orderDate||'').substring(0,10);
+        // Data da compra no CR = purchase.created da API Starkbank (UTC->BRT).
+        // Fallback pro orderDate (Mongo) se created nao existir.
+        var od=isoBRTDate((f.purchase&&f.purchase.created)||f.orderDate);
         if(pDe&&(!od||od<pDe))return false;
         if(pAte&&(!od||od>pAte))return false;
         if(q){
@@ -684,7 +686,11 @@ function renderCr(){
             '</tr>');
             if(!cOpen)return;
             // pedidos dentro da empresa (nivel intermediario; clique expande parcelas)
-            var ops=Object.values(e.pedsMap).sort(function(a,b){return (b.f.orderDate||'').localeCompare(a.f.orderDate||'')});
+            var ops=Object.values(e.pedsMap).sort(function(a,b){
+                var ad=(a.f.purchase&&a.f.purchase.created)||a.f.orderDate||'';
+                var bd=(b.f.purchase&&b.f.purchase.created)||b.f.orderDate||'';
+                return bd.localeCompare(ad);
+            });
             ops.forEach(function(op){
                 var f=op.f,total=op.instTotal||op.insts.length;
                 var os=sumInsts(op.insts);
@@ -694,7 +700,7 @@ function renderCr(){
                     '<td></td>'+
                     '<td style="padding-left:80px;color:var(--tx)">'+(pOpen?'▾':'▸')+' Pedido #'+esc((f.orderNumber||f.orderId||'').toString())+' · <span style="color:var(--mut);font-weight:400">'+esc(f.customerName||'-')+' · '+fmtN(os.n)+'/'+fmtN(total)+' parcelas ('+fmtN(os.nPg)+' pagas, '+fmtN(os.nAr)+' a receber)</span></td>'+
                     '<td>-</td>'+
-                    '<td class="date">'+(f.orderDate?fmtD(f.orderDate):'-')+'</td>'+
+                    '<td class="date">'+fmtD((f.purchase&&f.purchase.created)||f.orderDate||'')+'</td>'+
                     '<td class="money" style="color:var(--p)">'+fmtN(os.n)+'</td>'+
                     '<td class="money" style="color:var(--g)">'+fmtN(os.nPg)+'</td>'+
                     '<td class="money" style="color:var(--r)">'+fmtN(os.nAr)+'</td>'+
@@ -714,7 +720,7 @@ function renderCr(){
                         '<td></td>'+
                         '<td style="padding-left:120px;color:var(--tx)">parcela '+num+'/'+total+' '+(pago?'<span class="badge paid">PAGA</span>':'<span class="badge pen">A RECEBER</span>')+'</td>'+
                         '<td class="date">'+(i.due?fmtD(i.due):'-')+'</td>'+
-                        '<td class="date">'+(f.orderDate?fmtD(f.orderDate):'-')+'</td>'+
+                        '<td class="date">'+fmtD((f.purchase&&f.purchase.created)||f.orderDate||'')+'</td>'+
                         '<td class="money" style="color:var(--p)">1</td>'+
                         '<td class="money" style="color:var(--g)">'+(pago?1:0)+'</td>'+
                         '<td class="money" style="color:var(--r)">'+(pago?0:1)+'</td>'+
