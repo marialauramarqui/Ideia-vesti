@@ -366,8 +366,8 @@ function toggleKey(k){openSet[k]=!openSet[k];render();}
 
 // Marcas de teste — sempre removidas do dashboard, independente de status/valor.
 function isTestMarca(nome){
-    var s=(nome||'').toLowerCase();
-    return s.indexOf('andressa vesti')>=0;
+    var s=(nome||'').toLowerCase().trim();
+    return s==='andressa vesti';
 }
 
 function getFiltered(){
