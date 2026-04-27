@@ -1483,9 +1483,13 @@ function onlogQuinzenaInit(){
 }
 function _lastDayOfMonth(y,m){return new Date(y,m,0).getDate()} // m=1..12
 function onlogQuinzenaApply(){
-    var mes=document.getElementById('olFQzMes').value;
-    var num=document.getElementById('olFQzNum').value;
-    if(!mes||!num){updateOnlog();_onlogRefreshDiff();return}
+    var mesSel=document.getElementById('olFQzMes');
+    var numSel=document.getElementById('olFQzNum');
+    if(!mesSel.value){
+        var h=new Date();mesSel.value=h.getFullYear()+'-'+String(h.getMonth()+1).padStart(2,'0');
+    }
+    if(!numSel.value)numSel.value='1';
+    var mes=mesSel.value,num=numSel.value;
     var y=parseInt(mes.slice(0,4),10),mo=parseInt(mes.slice(5,7),10);
     var de,ate;
     if(num==='1'){de=mes+'-01';ate=mes+'-15'}
