@@ -640,31 +640,34 @@ function renderCr(){
     document.getElementById('crFee').textContent=fmtC(tot.fee);
     document.getElementById('crLiq').textContent=fmtC(tot.liq);
 
-    // === KPIs Saldo Stark (CR Stark = Fluxo + Antecipação combinados) ===
-    // Entradas[d] = sum(grossValue) de TODOS pagamentos CP por customerPaidAt=d
-    //               (fluxo + antec combinados). Bate com a planilha de auditoria.
-    // Saidas[d]   = sum(amount/100) das parcelas com due=d e status=paid (CR
-    //               liquidações Stark). Bate com a planilha de auditoria.
-    // Saldo[d]    = Saldo[d-1] + Entradas[d] - Saidas[d]   (acumulado dia-a-dia)
+    // === KPIs Saldo Stark — 100% via API (endpoint recebiveis) ===
+    // Fonte: invoices.js (gerado por fetch_invoices.py via /workspace/{ws}/purchase/{id})
     //
-    // Respeita o filtro de Data de Recebimento (dDe/dAte):
-    //   - Entradas/Saídas KPI = soma do range filtrado (ou hoje se sem filtro)
-    //   - Saldo KPI = saldo cumulativo no ultimo dia do range (ou hoje)
+    // Entradas[d] = Σ (purchase.amount/100) com isoBRTDate(purchase.created)==d
+    //   → vendas confirmadas na Stark no dia d (todas 13 workspaces, exceto teste)
+    //
+    // Saidas[d] = Σ (installment.amount/100) com isoBRTDate(installment.due)==d
+    //             AND installment.status=='paid'
+    //   → liquidacoes Stark no dia d
+    //
+    // Saldo[d] = Saldo[d-1] + Entradas[d] - Saidas[d]   (cumulativo)
+    //
+    // KPI exibe: entradas/saidas somadas no range filtrado (dDe/dAte ou pDe/pAte
+    // ou hoje), saldo no fim do range (cumulativo desde inicio dos dados).
     var entradasByDay={}, saidasByDay={};
-    if(window.DADOS&&window.DADOS.pagamentos){
-        window.DADOS.pagamentos.forEach(function(p){
-            if(isTestMarca(p.nomeFantasia))return;
-            var d=(p.customerPaidAt||'').substring(0,10); if(!d)return;
-            entradasByDay[d]=(entradasByDay[d]||0)+(p.grossValue||0);
-        });
-    }
     (window.INVOICES.faturas||[]).forEach(function(f){
         if(isTestMarca(f.nomeFantasia))return;
-        ((f.purchase&&f.purchase.installments)||[]).forEach(function(i){
-            var d=isoBRTDate(i.due); if(!d)return;
-            if(i.status==='paid'){
-                saidasByDay[d]=(saidasByDay[d]||0)+(i.amount||0)/100;
-            }
+        var p = f.purchase || {};
+        // Entrada: pelo purchase.created (data da compra no Stark, BRT)
+        var dCriado = isoBRTDate(p.created);
+        if(dCriado){
+            entradasByDay[dCriado] = (entradasByDay[dCriado]||0) + (p.amount||0)/100;
+        }
+        // Saidas: pela due date das installments paid
+        (p.installments||[]).forEach(function(i){
+            if(i.status!=='paid')return;
+            var d = isoBRTDate(i.due); if(!d)return;
+            saidasByDay[d] = (saidasByDay[d]||0) + (i.amount||0)/100;
         });
     });
     var uniqDays=[...new Set(Object.keys(entradasByDay).concat(Object.keys(saidasByDay)))].sort();
