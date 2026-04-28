@@ -1634,13 +1634,19 @@ function onlogConfRender(){
     var totalPa=rTot.totalPaVesti||0;
     var totalGeral=rTot.totalGeralPostagem||0;
     var totalCobrar=rTot.totalCobrarMarcas||0;
+    var totalCobrarPed=rTot.totalCobrarPedidos||0;
+    var totalCobrarPa=rTot.totalCobrarPa||0;
     document.getElementById('ol-conf-saldo').innerHTML=
         '<b>Conferencia financeira:</b><br>'+
-        '&bull; Postagem dos '+(rTot.nPlanilha||0)+' pedidos com pedido vinculado: <b>'+fmtBRL(totalPedidos)+'</b><br>'+
+        '<u>Custo (pagar pra Onlog)</u><br>'+
+        '&bull; Postagem dos '+(rTot.nPlanilha||0)+' pedidos com CodigoVolume: <b>'+fmtBRL(totalPedidos)+'</b><br>'+
         '&bull; Postagem das '+(rTot.nPaVesti||0)+' PA VESTI (avulsas): <b>'+fmtBRL(totalPa)+'</b><br>'+
-        '&bull; <b>Total que a Vesti deve pagar a Onlog: '+fmtBRL(totalGeral)+'</b> <span style="color:var(--g)">(comparar com o que o Diogo cobra)</span><br>'+
-        '&bull; A cobrar das marcas (postagem dos pedidos &times; 1.10): <b style="color:var(--s)">'+fmtBRL(totalCobrar)+'</b><br>'+
-        '&bull; <b>Margem da Vesti</b> (cobrado das marcas - pago a Onlog): <b style="color:var(--p)">'+fmtBRL(totalCobrar-totalGeral)+'</b> <span style="color:var(--g)">(10% das postagens com pedido, menos o custo das PA)</span>';
+        '&bull; <b>Total que a Vesti deve pagar a Onlog: '+fmtBRL(totalGeral)+'</b> <span style="color:var(--g)">(comparar com o valor cobrado pelo Diogo)</span><br>'+
+        '<br><u>Receita (cobrar das marcas, postagem &times; 1.10)</u><br>'+
+        '&bull; Pedidos do site: <b style="color:var(--s)">'+fmtBRL(totalCobrarPed)+'</b><br>'+
+        '&bull; PA VESTI (precisa identificar marca manualmente): <b style="color:var(--s)">'+fmtBRL(totalCobrarPa)+'</b><br>'+
+        '&bull; <b>Total a cobrar das marcas: '+fmtBRL(totalCobrar)+'</b><br>'+
+        '<br>&bull; <b>Margem real da Vesti</b> (receita - custo): <b style="color:var(--p);font-size:15px">'+fmtBRL(totalCobrar-totalGeral)+'</b>';
 }
 
 // === CHURN VESTIPAGO DATA ===

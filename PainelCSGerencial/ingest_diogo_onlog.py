@@ -343,6 +343,8 @@ def main() -> None:
         key=lambda x: -x["cobrar"]
     )
 
+    total_geral = round(total_pedidos_planilha + pa_total, 2)
+    total_cobrar = round(total_geral * 1.10, 2)
     out = {
         "quinzena": {"de": de, "ate": ate},
         "geradoEm": datetime.now().isoformat(),
@@ -357,8 +359,10 @@ def main() -> None:
             "nFabric": len(fabric),
             "totalPedidosPostagem": total_pedidos_planilha,
             "totalPaVesti": pa_total,
-            "totalGeralPostagem": round(total_pedidos_planilha + pa_total, 2),
-            "totalCobrarMarcas": round(total_pedidos_planilha * 1.10, 2),
+            "totalGeralPostagem": total_geral,
+            "totalCobrarPedidos": round(total_pedidos_planilha * 1.10, 2),
+            "totalCobrarPa": round(pa_total * 1.10, 2),
+            "totalCobrarMarcas": total_cobrar,
             "nPaVesti": len(pa_vesti),
         },
         "paVesti": pa_vesti,
