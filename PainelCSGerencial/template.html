@@ -508,6 +508,25 @@ table.dt tr:hover td{background:#FAFAFA}
                 </table>
             </div>
         </details>
+        <details>
+            <summary style="cursor:pointer;font-weight:700;padding:6px 0;color:var(--p)">Postagens Avulsas (PA VESTI) - geradas manualmente fora do site - <span id="ol-conf-pa-c">0</span></summary>
+            <div style="max-height:300px;overflow:auto;margin-top:6px">
+                <table class="dt" id="tConfPA">
+                    <thead><tr><th>Data</th><th>Operador</th><th>Cod.Interno</th><th>NF</th><th>Cliente</th><th>Destino</th><th>Status</th><th style="text-align:right">Postagem</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </details>
+        <details>
+            <summary style="cursor:pointer;font-weight:700;padding:6px 0;color:var(--s)">Cobranca por Marca (Postagem &times; 1.10) - <span id="ol-conf-cob-c">0</span></summary>
+            <div style="max-height:380px;overflow:auto;margin-top:6px">
+                <table class="dt" id="tConfCob">
+                    <thead><tr><th>Marca</th><th>DomainID</th><th style="text-align:right">Pedidos</th><th style="text-align:right">Postagem (custo Vesti)</th><th style="text-align:right">A Cobrar (Postagem x 1.10)</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </details>
+        <div id="ol-conf-saldo" style="margin-top:14px;padding:12px 16px;background:#FFF;border-left:4px solid var(--p);border-radius:8px;font-size:13px"></div>
     </div>
     <div class="tbl-card">
         <h4 id="ol-tbl-title">Pedidos Onlog &middot; <span id="ol-tbl-count" style="color:var(--g);font-weight:500">--</span></h4>
@@ -1569,6 +1588,59 @@ function onlogConfRender(){
             '<td style="text-align:right">'+fmtBRL(p.valor)+'</td>'+
         '</tr>';
     }).join(''):'<tr><td colspan="7" style="text-align:center;color:#999;padding:14px">Nenhum.</td></tr>';
+
+    // PA VESTI (postagens avulsas)
+    var paList=d.paVesti||[];
+    var paTotal=paList.reduce(function(s,p){return s+(p.postagem||0)},0);
+    document.getElementById('ol-conf-pa-c').textContent=paList.length+' - R$ '+paTotal.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    tb=document.querySelector('#tConfPA tbody');
+    tb.innerHTML=paList.length?paList.map(function(p){
+        return '<tr>'+
+            '<td style="white-space:nowrap;color:var(--g)">'+esc(p.data)+'</td>'+
+            '<td style="font-size:11px">'+esc(p.operador||'')+(p.modalidade?' / '+esc(p.modalidade):'')+'</td>'+
+            '<td style="font-family:monospace;font-size:11px">'+esc(p.codigoInterno||'')+'</td>'+
+            '<td style="font-family:monospace;font-size:11px">'+esc(p.numeroNF||'')+'</td>'+
+            '<td>'+esc(p.cliente||'')+'</td>'+
+            '<td>'+esc((p.cidade||'')+'/'+(p.uf||''))+'</td>'+
+            '<td style="font-size:11px;color:var(--g)">'+esc(p.status||'')+'</td>'+
+            '<td style="text-align:right">'+fmtBRL(p.postagem)+'</td>'+
+        '</tr>';
+    }).join(''):'<tr><td colspan="8" style="text-align:center;color:#999;padding:14px">Nenhum.</td></tr>';
+
+    // Cobranca por Marca
+    var cob=d.cobrancaPorMarca||[];
+    var cobTotal=cob.reduce(function(s,c){return s+(c.cobrar||0)},0);
+    document.getElementById('ol-conf-cob-c').textContent=cob.length+' marcas - a cobrar R$ '+cobTotal.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    tb=document.querySelector('#tConfCob tbody');
+    tb.innerHTML=cob.length?cob.map(function(c){
+        return '<tr>'+
+            '<td><b>'+esc(c.marca||'(sem nome)')+'</b></td>'+
+            '<td style="font-family:monospace;color:var(--g);font-size:11px">'+esc(c.domainId)+'</td>'+
+            '<td style="text-align:right">'+(c.nPedidos||0)+'</td>'+
+            '<td style="text-align:right;color:#0984E3">'+fmtBRL(c.postagem)+'</td>'+
+            '<td style="text-align:right;color:var(--s);font-weight:700">'+fmtBRL(c.cobrar)+'</td>'+
+        '</tr>';
+    }).join('')+
+    '<tr style="background:#F0EFFF;font-weight:700;border-top:2px solid var(--p)">'+
+        '<td colspan="2" style="text-align:right">TOTAL</td>'+
+        '<td style="text-align:right">'+cob.reduce(function(s,c){return s+(c.nPedidos||0)},0)+'</td>'+
+        '<td style="text-align:right;color:#0984E3">'+fmtBRL(cob.reduce(function(s,c){return s+(c.postagem||0)},0))+'</td>'+
+        '<td style="text-align:right;color:var(--s)">'+fmtBRL(cobTotal)+'</td>'+
+    '</tr>':'<tr><td colspan="5" style="text-align:center;color:#999;padding:14px">Sem dados.</td></tr>';
+
+    // Saldo / conferencia financeira
+    var rTot=d.resumo||{};
+    var totalPedidos=rTot.totalPedidosPostagem||0;
+    var totalPa=rTot.totalPaVesti||0;
+    var totalGeral=rTot.totalGeralPostagem||0;
+    var totalCobrar=rTot.totalCobrarMarcas||0;
+    document.getElementById('ol-conf-saldo').innerHTML=
+        '<b>Conferencia financeira:</b><br>'+
+        '&bull; Postagem dos '+(rTot.nPlanilha||0)+' pedidos com pedido vinculado: <b>'+fmtBRL(totalPedidos)+'</b><br>'+
+        '&bull; Postagem das '+(rTot.nPaVesti||0)+' PA VESTI (avulsas): <b>'+fmtBRL(totalPa)+'</b><br>'+
+        '&bull; <b>Total que a Vesti deve pagar a Onlog: '+fmtBRL(totalGeral)+'</b> <span style="color:var(--g)">(comparar com o que o Diogo cobra)</span><br>'+
+        '&bull; A cobrar das marcas (postagem dos pedidos &times; 1.10): <b style="color:var(--s)">'+fmtBRL(totalCobrar)+'</b><br>'+
+        '&bull; <b>Margem da Vesti</b> (cobrado das marcas - pago a Onlog): <b style="color:var(--p)">'+fmtBRL(totalCobrar-totalGeral)+'</b> <span style="color:var(--g)">(10% das postagens com pedido, menos o custo das PA)</span>';
 }
 
 // === CHURN VESTIPAGO DATA ===

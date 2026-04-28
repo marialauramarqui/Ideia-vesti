@@ -100,12 +100,16 @@ def detect_quinzena(rows: list[dict]) -> tuple[str, str]:
     return f"{mes}-16", f"{mes}-{monthrange(y, mo)[1]:02d}"
 
 
-def aggregate_planilha(rows: list[dict], de: str, ate: str) -> dict:
+def aggregate_planilha(rows: list[dict], de: str, ate: str) -> tuple[dict, list]:
+    """Retorna (pedidos_por_codigovolume, pa_vesti_avulsas).
+
+    PA VESTI = linhas sem CodigoVolume (sem NumeroPedido) - postagens manuais
+    geradas pela equipe Vesti direto no painel Onlog/Jadlog.
+    """
     by = {}
+    pa = []
     for r in rows:
         cv = str(r.get("CodigoVolume") or "").strip()
-        if not cv or "_" not in cv:
-            continue
         d = r.get("Data")
         d_str = ""
         if isinstance(d, datetime):
@@ -115,6 +119,24 @@ def aggregate_planilha(rows: list[dict], de: str, ate: str) -> dict:
         if de and d_str and d_str < de:
             continue
         if ate and d_str and d_str > ate:
+            continue
+        v = parse_val_br(r.get("ValorPostagem"))
+        if not cv or "_" not in cv:
+            # PA VESTI - postagem avulsa sem pedido vinculado
+            if v is not None and (r.get("Destinatario") or r.get("CodigoInterno")):
+                pa.append({
+                    "data": d_str,
+                    "operador": r.get("Operador") or "",
+                    "modalidade": r.get("Modalidade") or "",
+                    "codigoInterno": r.get("CodigoInterno") or "",
+                    "numeroNF": str(r.get("NumeroNF") or ""),
+                    "remetente": r.get("Remetente") or "",
+                    "cliente": r.get("Destinatario") or "",
+                    "cidade": r.get("CidadeDestinatario") or "",
+                    "uf": r.get("UFDestinatario") or "",
+                    "status": r.get("Status") or "",
+                    "postagem": round(v, 2),
+                })
             continue
         if cv not in by:
             dom, order = cv.split("_", 1)
@@ -129,10 +151,9 @@ def aggregate_planilha(rows: list[dict], de: str, ate: str) -> dict:
                 "data": d_str,
                 "postagem": 0.0,
             }
-        v = parse_val_br(r.get("ValorPostagem"))
         if v is not None:
             by[cv]["postagem"] += v
-    return by
+    return by, pa
 
 
 def filter_fabric(pedidos: list[dict], de: str, ate: str) -> dict:
@@ -271,8 +292,10 @@ def main() -> None:
     print(f"      quinzena: {de} a {ate}")
 
     print(f"[2/4] Agregando planilha (CodigoVolume)")
-    planilha = aggregate_planilha(raw, de, ate)
-    print(f"      {len(planilha)} pedidos unicos")
+    planilha, pa_vesti = aggregate_planilha(raw, de, ate)
+    pa_total = round(sum(p["postagem"] for p in pa_vesti), 2)
+    print(f"      {len(planilha)} pedidos unicos com CodigoVolume")
+    print(f"      {len(pa_vesti)} postagens avulsas PA VESTI (sem pedido) - total R$ {pa_total:,.2f}")
 
     print(f"[3/4] Lendo Fabric (onlog_data.json)")
     onlog_data = json.loads(ONLOG_JSON.read_text(encoding="utf-8"))
@@ -290,6 +313,36 @@ def main() -> None:
     print(f"      OK={ok}  Divergencias={len(dif)} ({n_dif_uniq} pedidos)")
     print(f"      So planilha={len(only_p)}  So Fabric={len(only_f)}")
 
+    # totais financeiros
+    total_pedidos_planilha = round(sum(p["postagem"] for p in planilha.values()), 2)
+    # cobranca por marca (postagem * 1.10) - so para pedidos com domainId valido
+    cobranca_marca = {}
+    for p in planilha.values():
+        dom = p["domainId"]
+        cobranca_marca.setdefault(dom, {"domainId": dom, "nPedidos": 0, "postagem": 0.0, "cobrar": 0.0})
+        cobranca_marca[dom]["nPedidos"] += 1
+        cobranca_marca[dom]["postagem"] += p["postagem"]
+        cobranca_marca[dom]["cobrar"] += p["postagem"] * 1.10
+    # Anexar nome da marca via companies_data.json
+    companies_path = ROOT / "companies_data.json"
+    if companies_path.exists():
+        cs = json.loads(companies_path.read_text(encoding="utf-8"))
+        nome_por_dom = {}
+        for c in cs:
+            d = str(c.get("domain_id") or "")
+            if not d:
+                continue
+            if c.get("isMatriz") or d not in nome_por_dom:
+                nome_por_dom[d] = c.get("nome_fantasia") or c.get("name") or ""
+        for dom, info in cobranca_marca.items():
+            info["marca"] = nome_por_dom.get(dom, "")
+    cobranca_lista = sorted(
+        [{"domainId": d, "marca": v.get("marca", ""), "nPedidos": v["nPedidos"],
+          "postagem": round(v["postagem"], 2), "cobrar": round(v["cobrar"], 2)}
+         for d, v in cobranca_marca.items()],
+        key=lambda x: -x["cobrar"]
+    )
+
     out = {
         "quinzena": {"de": de, "ate": ate},
         "geradoEm": datetime.now().isoformat(),
@@ -302,7 +355,14 @@ def main() -> None:
             "soFabric": len(only_f),
             "nPlanilha": len(planilha),
             "nFabric": len(fabric),
+            "totalPedidosPostagem": total_pedidos_planilha,
+            "totalPaVesti": pa_total,
+            "totalGeralPostagem": round(total_pedidos_planilha + pa_total, 2),
+            "totalCobrarMarcas": round(total_pedidos_planilha * 1.10, 2),
+            "nPaVesti": len(pa_vesti),
         },
+        "paVesti": pa_vesti,
+        "cobrancaPorMarca": cobranca_lista,
         "divergencias": dif,
         "soPlanilha": [{
             "codigoVolume": p["codigoVolume"],

@@ -3,7 +3,7 @@
     "de": "2026-04-01",
     "ate": "2026-04-15"
   },
-  "geradoEm": "2026-04-28T16:54:05.016008",
+  "geradoEm": "2026-04-28T17:26:03.476095",
   "planilhaArquivo": "Vesti Abril.xlsx",
   "resumo": {
     "ok": 202,
@@ -12,90 +12,373 @@
     "soPlanilha": 15,
     "soFabric": 21,
     "nPlanilha": 217,
-    "nFabric": 288
+    "nFabric": 288,
+    "totalPedidosPostagem": 10480.14,
+    "totalPaVesti": 705.85,
+    "totalGeralPostagem": 11185.99,
+    "totalCobrarMarcas": 11528.15,
+    "nPaVesti": 18
   },
+  "paVesti": [
+    {
+      "data": "2026-04-06",
+      "operador": "ONLOG RED",
+      "modalidade": "ECONOPACK",
+      "codigoInterno": "AA0096260575",
+      "numeroNF": "795075",
+      "remetente": "VESTI",
+      "cliente": "TICIANA GOMES",
+      "cidade": "ITAPETININGA",
+      "uf": "SP",
+      "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
+      "postagem": 29.51
+    },
+    {
+      "data": "2026-04-06",
+      "operador": "ONLOG RED",
+      "modalidade": "ECONOPACK",
+      "codigoInterno": "AA0096260854",
+      "numeroNF": "796150",
+      "remetente": "VESTI",
+      "cliente": "PAULA MEDEIRA",
+      "cidade": "ROLANTE",
+      "uf": "RS",
+      "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
+      "postagem": 31.41
+    },
+    {
+      "data": "2026-04-06",
+      "operador": "ONLOG RED",
+      "modalidade": "FASTPACK",
+      "codigoInterno": "AA0096261060",
+      "numeroNF": "797016",
+      "remetente": "VESTI",
+      "cliente": "ELISABETH GOMES ANDRADE",
+      "cidade": "AMERICANA",
+      "uf": "SP",
+      "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
+      "postagem": 21.97
+    },
+    {
+      "data": "2026-04-06",
+      "operador": "ONLOG RED",
+      "modalidade": "ECONOPACK",
+      "codigoInterno": "AA0096261259",
+      "numeroNF": "797972",
+      "remetente": "VESTI",
+      "cliente": "LARISSA SANTOS",
+      "cidade": "ITABORAED",
+      "uf": "RJ",
+      "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
+      "postagem": 27.17
+    },
+    {
+      "data": "2026-04-07",
+      "operador": "JADLOG",
+      "modalidade": "PACKAGE",
+      "codigoInterno": "AA0096283084",
+      "numeroNF": "872",
+      "remetente": "VESTI",
+      "cliente": "ANDREA LIMA",
+      "cidade": "ARACAJU",
+      "uf": "SE",
+      "status": "ENTREGUE",
+      "postagem": 68.81
+    },
+    {
+      "data": "2026-04-13",
+      "operador": "JADLOG",
+      "modalidade": "PACKAGE",
+      "codigoInterno": "AA0096712816",
+      "numeroNF": "2815",
+      "remetente": "PA VESTI",
+      "cliente": "ADELMA MARIA DA SILVA",
+      "cidade": "VILA VELHA",
+      "uf": "ES",
+      "status": "ENTREGUE",
+      "postagem": 55.69
+    },
+    {
+      "data": "2026-04-15",
+      "operador": "ONLOG RED",
+      "modalidade": "ECONOPACK",
+      "codigoInterno": "AA0096828863",
+      "numeroNF": "000000848",
+      "remetente": "PA VESTI",
+      "cliente": "HAROLDO SILIS",
+      "cidade": "CAMPOS BELOS",
+      "uf": "GO",
+      "status": "OBJETO SAIU PARA ENTREGA AO DESTINATÁRIO",
+      "postagem": 52.39
+    },
+    {
+      "data": "2026-04-15",
+      "operador": "ONLOG RED",
+      "modalidade": "ECONOPACK",
+      "codigoInterno": "AA0096829213",
+      "numeroNF": "000000804",
+      "remetente": "PA VESTI",
+      "cliente": "ELLEN BIONDI",
+      "cidade": "CAMAÇARI",
+      "uf": "BA",
+      "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
+      "postagem": 35.71
+    },
+    {
+      "data": "2026-04-15",
+      "operador": "JADLOG",
+      "modalidade": "PACKAGE",
+      "codigoInterno": "AA0096852091",
+      "numeroNF": "000000849",
+      "remetente": "PA VESTI",
+      "cliente": "GISLAINE JAMILLE VIEIRA BROGNOLI FRANCO",
+      "cidade": "BELO HORIZONTE",
+      "uf": "MG",
+      "status": "ENTREGUE",
+      "postagem": 24.43
+    },
+    {
+      "data": "2026-04-15",
+      "operador": "JADLOG",
+      "modalidade": "PACKAGE",
+      "codigoInterno": "AA0096852587",
+      "numeroNF": "3345",
+      "remetente": "PA VESTI",
+      "cliente": "TAIANE TRUGILLO",
+      "cidade": "CAMPINAS",
+      "uf": "SP",
+      "status": "ENTREGUE",
+      "postagem": 88.25
+    },
+    {
+      "data": "2026-04-15",
+      "operador": "JADLOG",
+      "modalidade": "PACKAGE",
+      "codigoInterno": "AA0096853117",
+      "numeroNF": "3346",
+      "remetente": "PA VESTI",
+      "cliente": "JULIANE ASSUNCAO",
+      "cidade": "MANAUS",
+      "uf": "AM",
+      "status": "TRANSFERIDO PARA UNIDADE",
+      "postagem": 40.63
+    },
+    {
+      "data": "2026-04-15",
+      "operador": "JADLOG",
+      "modalidade": "PACKAGE",
+      "codigoInterno": "AA0096853847",
+      "numeroNF": "3348",
+      "remetente": "PA VESTI",
+      "cliente": "LEILIANE MORAES",
+      "cidade": "BELÉM",
+      "uf": "PA",
+      "status": "IMPREVISTO - TEMPORAL",
+      "postagem": 51.52
+    },
+    {
+      "data": "2026-04-15",
+      "operador": "JADLOG",
+      "modalidade": "PACKAGE",
+      "codigoInterno": "AA0096854738",
+      "numeroNF": "000003172",
+      "remetente": "PA VESTI",
+      "cliente": "THAIS DAYANNE",
+      "cidade": "BRASÍLIA",
+      "uf": "DF",
+      "status": "ENTREGUE",
+      "postagem": 33.05
+    },
+    {
+      "data": "2026-04-15",
+      "operador": "JADLOG",
+      "modalidade": "PACKAGE",
+      "codigoInterno": "AA0096855278",
+      "numeroNF": "000004105",
+      "remetente": "PA VESTI",
+      "cliente": "ISNALDABATISTA",
+      "cidade": "BRASÍLIA",
+      "uf": "DF",
+      "status": "ENTREGUE",
+      "postagem": 24.69
+    },
+    {
+      "data": "2026-04-15",
+      "operador": "JADLOG",
+      "modalidade": "PACKAGE",
+      "codigoInterno": "AA0096855601",
+      "numeroNF": "000000801",
+      "remetente": "PA VESTI",
+      "cliente": "ELISANGELA STEIMBACH MATTOS",
+      "cidade": "PALHOÇA",
+      "uf": "SC",
+      "status": "ENTREGUE",
+      "postagem": 42.4
+    },
+    {
+      "data": "2026-04-07",
+      "operador": "ONLOG RED",
+      "modalidade": "FASTPACK",
+      "codigoInterno": "AA0096360033",
+      "numeroNF": "1481737",
+      "remetente": "PA VESTI",
+      "cliente": "LARA SAKAMOTO",
+      "cidade": "RIBEIRÃO PRETO",
+      "uf": "SP",
+      "status": "OBJETO ENTREGUE NA CAIXA DE CORREIOS INTELIGENTE",
+      "postagem": 30.12
+    },
+    {
+      "data": "2026-04-15",
+      "operador": "ONLOG RED",
+      "modalidade": "FASTPACK",
+      "codigoInterno": "AA0096827800",
+      "numeroNF": "000003831",
+      "remetente": "PA VESTI",
+      "cliente": "CAROLINA RODRIGUES",
+      "cidade": "RIBEIRÃO PRETO",
+      "uf": "SP",
+      "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
+      "postagem": 29.15
+    },
+    {
+      "data": "2026-04-15",
+      "operador": "ONLOG RED",
+      "modalidade": "ECONOPACK",
+      "codigoInterno": "AA0096828359",
+      "numeroNF": "4147206",
+      "remetente": "PA VESTI",
+      "cliente": "EDILMA SANTANA",
+      "cidade": "CACHOEIRO DE ITAPEMIRIM",
+      "uf": "ES",
+      "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
+      "postagem": 18.95
+    }
+  ],
+  "cobrancaPorMarca": [
+    {
+      "domainId": "14035",
+      "marca": "Anne Blánc",
+      "nPedidos": 111,
+      "postagem": 5213.38,
+      "cobrar": 5734.72
+    },
+    {
+      "domainId": "1355848",
+      "marca": "Arary",
+      "nPedidos": 41,
+      "postagem": 1847.83,
+      "cobrar": 2032.61
+    },
+    {
+      "domainId": "1942933",
+      "marca": "Mi&co",
+      "nPedidos": 23,
+      "postagem": 1295.99,
+      "cobrar": 1425.59
+    },
+    {
+      "domainId": "157680",
+      "marca": "Le Ricard Online",
+      "nPedidos": 14,
+      "postagem": 793.41,
+      "cobrar": 872.75
+    },
+    {
+      "domainId": "15",
+      "marca": "Murano Jeans",
+      "nPedidos": 2,
+      "postagem": 193.22,
+      "cobrar": 212.54
+    },
+    {
+      "domainId": "1976316",
+      "marca": "Ain Roupas",
+      "nPedidos": 2,
+      "postagem": 178.81,
+      "cobrar": 196.69
+    },
+    {
+      "domainId": "1805647",
+      "marca": "CVL Moda - CD Nova Friburgo",
+      "nPedidos": 6,
+      "postagem": 166.33,
+      "cobrar": 182.96
+    },
+    {
+      "domainId": "1514922",
+      "marca": " Era Uma Vez",
+      "nPedidos": 2,
+      "postagem": 161.07,
+      "cobrar": 177.18
+    },
+    {
+      "domainId": "1956465",
+      "marca": "Porã",
+      "nPedidos": 4,
+      "postagem": 136.65,
+      "cobrar": 150.32
+    },
+    {
+      "domainId": "1266888",
+      "marca": "Aline Confecções",
+      "nPedidos": 3,
+      "postagem": 131.7,
+      "cobrar": 144.87
+    },
+    {
+      "domainId": "1737229",
+      "marca": "KAESSI",
+      "nPedidos": 4,
+      "postagem": 114.08,
+      "cobrar": 125.49
+    },
+    {
+      "domainId": "1528187",
+      "marca": "SANDY",
+      "nPedidos": 1,
+      "postagem": 68.72,
+      "cobrar": 75.59
+    },
+    {
+      "domainId": "1298864",
+      "marca": "SEJAKAYLA",
+      "nPedidos": 1,
+      "postagem": 61.67,
+      "cobrar": 67.84
+    },
+    {
+      "domainId": "1993619",
+      "marca": "MELIFER",
+      "nPedidos": 1,
+      "postagem": 55.75,
+      "cobrar": 61.33
+    },
+    {
+      "domainId": "1672566",
+      "marca": "STRANGER",
+      "nPedidos": 1,
+      "postagem": 40.15,
+      "cobrar": 44.16
+    },
+    {
+      "domainId": "1439966",
+      "marca": "Liberô Style",
+      "nPedidos": 1,
+      "postagem": 21.38,
+      "cobrar": 23.52
+    }
+  ],
   "divergencias": [],
   "soPlanilha": [
     {
-      "codigoVolume": "157680_7716",
-      "orderNumber": "7716",
-      "cliente": "DANNA MUSYKANT",
-      "cidade": "CACHOEIRINHA",
-      "uf": "RS",
-      "status": "ENTREGUE",
-      "postagem": 104.19
-    },
-    {
-      "codigoVolume": "1355848_3944",
-      "orderNumber": "3944",
-      "cliente": "CASSIANA ZULETA",
-      "cidade": "ITABERE1",
+      "codigoVolume": "1355848_3920",
+      "orderNumber": "3920",
+      "cliente": "ELAINE APARECIDA GASPAR GARCIA",
+      "cidade": "SÃO CARLOS",
       "uf": "SP",
       "status": "ENTREGUE",
-      "postagem": 36.71
-    },
-    {
-      "codigoVolume": "1355848_3928",
-      "orderNumber": "3928",
-      "cliente": "SABRINA VIEIRA",
-      "cidade": "SOROCABA",
-      "uf": "SP",
-      "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
-      "postagem": 21.28
-    },
-    {
-      "codigoVolume": "1355848_3932",
-      "orderNumber": "3932",
-      "cliente": "PATRICIA MANZATTI",
-      "cidade": "GUARARAPES",
-      "uf": "SP",
-      "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
-      "postagem": 26.09
-    },
-    {
-      "codigoVolume": "157680_7779",
-      "orderNumber": "7779",
-      "cliente": "LUCYANNA LINHARES PINHEIRO",
-      "cidade": "PONTE NOVA",
-      "uf": "MG",
-      "status": "ENTREGUE",
-      "postagem": 77.44
-    },
-    {
-      "codigoVolume": "14035_5918",
-      "orderNumber": "5918",
-      "cliente": "ANDRESSA FERREIRA DE OLIVEIRA",
-      "cidade": "LIMEIRA",
-      "uf": "SP",
-      "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
-      "postagem": 18.34
-    },
-    {
-      "codigoVolume": "14035_5920",
-      "orderNumber": "5920",
-      "cliente": "SILMARA PEREIRA DA SILVA MARTINS",
-      "cidade": "SOROCABA",
-      "uf": "SP",
-      "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
-      "postagem": 22.6
-    },
-    {
-      "codigoVolume": "14035_5677",
-      "orderNumber": "5677",
-      "cliente": "ANDRESSA FERREIRA",
-      "cidade": "RONDONÓPOLIS",
-      "uf": "MT",
-      "status": "ENTREGUE",
-      "postagem": 74.64
-    },
-    {
-      "codigoVolume": "1805647_1084",
-      "orderNumber": "1084",
-      "cliente": "ANTONIA PEIXOTO",
-      "cidade": "BRASEDLIA",
-      "uf": "DF",
-      "status": "ENDERECO NAO LOCALIZADO",
-      "postagem": 22.04
+      "postagem": 112.67
     },
     {
       "codigoVolume": "157680_7796",
@@ -107,13 +390,22 @@
       "postagem": 59.87
     },
     {
-      "codigoVolume": "1355848_3920",
-      "orderNumber": "3920",
-      "cliente": "ELAINE APARECIDA GASPAR GARCIA",
-      "cidade": "SÃO CARLOS",
-      "uf": "SP",
+      "codigoVolume": "14035_5919",
+      "orderNumber": "5919",
+      "cliente": "MARIANA BERNARDI JOIA",
+      "cidade": "BRASEDLIA",
+      "uf": "DF",
+      "status": "ETIQUETA CANCELADA PELO SISTEMA DE CAPTAÇÃO",
+      "postagem": 68.27
+    },
+    {
+      "codigoVolume": "157680_7807",
+      "orderNumber": "7807",
+      "cliente": "ELIANA SCHELL",
+      "cidade": "GASPAR",
+      "uf": "SC",
       "status": "ENTREGUE",
-      "postagem": 112.67
+      "postagem": 52.85
     },
     {
       "codigoVolume": "1298864_89",
@@ -125,13 +417,22 @@
       "postagem": 61.67
     },
     {
-      "codigoVolume": "14035_5919",
-      "orderNumber": "5919",
-      "cliente": "MARIANA BERNARDI JOIA",
-      "cidade": "BRASEDLIA",
-      "uf": "DF",
-      "status": "ETIQUETA CANCELADA PELO SISTEMA DE CAPTAÇÃO",
-      "postagem": 68.27
+      "codigoVolume": "14035_5677",
+      "orderNumber": "5677",
+      "cliente": "ANDRESSA FERREIRA",
+      "cidade": "RONDONÓPOLIS",
+      "uf": "MT",
+      "status": "ENTREGUE",
+      "postagem": 74.64
+    },
+    {
+      "codigoVolume": "1355848_3932",
+      "orderNumber": "3932",
+      "cliente": "PATRICIA MANZATTI",
+      "cidade": "GUARARAPES",
+      "uf": "SP",
+      "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
+      "postagem": 26.09
     },
     {
       "codigoVolume": "1355848_3943",
@@ -143,16 +444,92 @@
       "postagem": 23.83
     },
     {
-      "codigoVolume": "157680_7807",
-      "orderNumber": "7807",
-      "cliente": "ELIANA SCHELL",
-      "cidade": "GASPAR",
-      "uf": "SC",
+      "codigoVolume": "157680_7779",
+      "orderNumber": "7779",
+      "cliente": "LUCYANNA LINHARES PINHEIRO",
+      "cidade": "PONTE NOVA",
+      "uf": "MG",
       "status": "ENTREGUE",
-      "postagem": 52.85
+      "postagem": 77.44
+    },
+    {
+      "codigoVolume": "1355848_3928",
+      "orderNumber": "3928",
+      "cliente": "SABRINA VIEIRA",
+      "cidade": "SOROCABA",
+      "uf": "SP",
+      "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
+      "postagem": 21.28
+    },
+    {
+      "codigoVolume": "14035_5918",
+      "orderNumber": "5918",
+      "cliente": "ANDRESSA FERREIRA DE OLIVEIRA",
+      "cidade": "LIMEIRA",
+      "uf": "SP",
+      "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
+      "postagem": 18.34
+    },
+    {
+      "codigoVolume": "157680_7716",
+      "orderNumber": "7716",
+      "cliente": "DANNA MUSYKANT",
+      "cidade": "CACHOEIRINHA",
+      "uf": "RS",
+      "status": "ENTREGUE",
+      "postagem": 104.19
+    },
+    {
+      "codigoVolume": "1805647_1084",
+      "orderNumber": "1084",
+      "cliente": "ANTONIA PEIXOTO",
+      "cidade": "BRASEDLIA",
+      "uf": "DF",
+      "status": "ENDERECO NAO LOCALIZADO",
+      "postagem": 22.04
+    },
+    {
+      "codigoVolume": "1355848_3944",
+      "orderNumber": "3944",
+      "cliente": "CASSIANA ZULETA",
+      "cidade": "ITABERE1",
+      "uf": "SP",
+      "status": "ENTREGUE",
+      "postagem": 36.71
+    },
+    {
+      "codigoVolume": "14035_5920",
+      "orderNumber": "5920",
+      "cliente": "SILMARA PEREIRA DA SILVA MARTINS",
+      "cidade": "SOROCABA",
+      "uf": "SP",
+      "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
+      "postagem": 22.6
     }
   ],
   "soFabric": [
+    {
+      "data": "2026-04-10",
+      "orderNumber": 847,
+      "marca": "KAESSI",
+      "cliente": "Tálita Kitamura",
+      "cidade": "Mogi das Cruzes",
+      "uf": "SP",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 864.49
+    },
+    {
+      "data": "2026-04-05",
+      "orderNumber": 1023,
+      "marca": "CVL Moda - CD Nova Friburgo",
+      "cliente": "Larissa Santos",
+      "cidade": "Itaboraí",
+      "uf": "RJ",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 420.49
+    },
     {
       "data": "2026-04-14",
       "orderNumber": 989,
@@ -163,6 +540,171 @@
       "cancelado": false,
       "status": "WAITING",
       "valor": 591.44
+    },
+    {
+      "data": "2026-04-11",
+      "orderNumber": 978,
+      "marca": " Era Uma Vez",
+      "cliente": "Mnica Niemerch Barbosa Costa",
+      "cidade": "Porto Velho",
+      "uf": "RO",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 621.62
+    },
+    {
+      "data": "2026-04-05",
+      "orderNumber": 840,
+      "marca": "KAESSI",
+      "cliente": "Andrea Lima",
+      "cidade": "Aracaju",
+      "uf": "SE",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 1020.36
+    },
+    {
+      "data": "2026-04-06",
+      "orderNumber": 3963,
+      "marca": "Arary",
+      "cliente": "Vanessa",
+      "cidade": "Papanduva",
+      "uf": "SC",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 1784.25
+    },
+    {
+      "data": "2026-04-10",
+      "orderNumber": 974,
+      "marca": " Era Uma Vez",
+      "cliente": "Gilmara Ferreira De Almeida",
+      "cidade": "Petrópolis",
+      "uf": "RJ",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 341.49
+    },
+    {
+      "data": "2026-04-08",
+      "orderNumber": 970,
+      "marca": " Era Uma Vez",
+      "cliente": "Carla Rossana Mendonça Fernandes",
+      "cidade": "Tucunduva",
+      "uf": "RS",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 594.47
+    },
+    {
+      "data": "2026-04-15",
+      "orderNumber": 4027,
+      "marca": "Arary",
+      "cliente": "Cleusa Dias Peixoto",
+      "cidade": "Valinhos",
+      "uf": "SP",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 1724.67
+    },
+    {
+      "data": "2026-04-14",
+      "orderNumber": 990,
+      "marca": " Era Uma Vez",
+      "cliente": "Barion Bertoletti",
+      "cidade": "Goiânia",
+      "uf": "GO",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 2725.78
+    },
+    {
+      "data": "2026-04-15",
+      "orderNumber": 5913,
+      "marca": "Anne Blánc",
+      "cliente": "Glória Cardoso ",
+      "cidade": "Carlos Chagas",
+      "uf": "MG",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 640.59
+    },
+    {
+      "data": "2026-04-01",
+      "orderNumber": 5697,
+      "marca": "Anne Blánc",
+      "cliente": "Anna Júlia Santos",
+      "cidade": "Volta Redonda",
+      "uf": "RJ",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 241.17
+    },
+    {
+      "data": "2026-04-11",
+      "orderNumber": 979,
+      "marca": " Era Uma Vez",
+      "cliente": "Samanta Da Rocha Silva Machado",
+      "cidade": "Curitiba",
+      "uf": "PR",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 809.5
+    },
+    {
+      "data": "2026-04-11",
+      "orderNumber": 848,
+      "marca": "KAESSI",
+      "cliente": "Amanda Martins",
+      "cidade": "Borborema",
+      "uf": "SP",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 394.23
+    },
+    {
+      "data": "2026-04-15",
+      "orderNumber": 992,
+      "marca": " Era Uma Vez",
+      "cliente": "Aline Amereles",
+      "cidade": "Londrina",
+      "uf": "PR",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 3169.0
+    },
+    {
+      "data": "2026-04-03",
+      "orderNumber": 838,
+      "marca": "KAESSI",
+      "cliente": "Elisabeth Gomes Andrade",
+      "cidade": "Americana",
+      "uf": "SP",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 514.17
+    },
+    {
+      "data": "2026-04-05",
+      "orderNumber": 841,
+      "marca": "KAESSI",
+      "cliente": "Ticiana gomes",
+      "cidade": "Itapetininga",
+      "uf": "SP",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 472.46
+    },
+    {
+      "data": "2026-04-14",
+      "orderNumber": 673,
+      "marca": "FIRE",
+      "cliente": "Nataniel Junior Gonsalves",
+      "cidade": "Carmo do Paranaíba",
+      "uf": "MG",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 726.08
     },
     {
       "data": "2026-04-15",
@@ -187,182 +729,6 @@
       "valor": 319.85
     },
     {
-      "data": "2026-04-15",
-      "orderNumber": 5913,
-      "marca": "Anne Blánc",
-      "cliente": "Glória Cardoso ",
-      "cidade": "Carlos Chagas",
-      "uf": "MG",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 640.59
-    },
-    {
-      "data": "2026-04-11",
-      "orderNumber": 848,
-      "marca": "KAESSI",
-      "cliente": "Amanda Martins",
-      "cidade": "Borborema",
-      "uf": "SP",
-      "cancelado": false,
-      "status": "SENT",
-      "valor": 394.23
-    },
-    {
-      "data": "2026-04-08",
-      "orderNumber": 970,
-      "marca": " Era Uma Vez",
-      "cliente": "Carla Rossana Mendonça Fernandes",
-      "cidade": "Tucunduva",
-      "uf": "RS",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 594.47
-    },
-    {
-      "data": "2026-04-11",
-      "orderNumber": 978,
-      "marca": " Era Uma Vez",
-      "cliente": "Mnica Niemerch Barbosa Costa",
-      "cidade": "Porto Velho",
-      "uf": "RO",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 621.62
-    },
-    {
-      "data": "2026-04-14",
-      "orderNumber": 673,
-      "marca": "FIRE",
-      "cliente": "Nataniel Junior Gonsalves",
-      "cidade": "Carmo do Paranaíba",
-      "uf": "MG",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 726.08
-    },
-    {
-      "data": "2026-04-15",
-      "orderNumber": 992,
-      "marca": " Era Uma Vez",
-      "cliente": "Aline Amereles",
-      "cidade": "Londrina",
-      "uf": "PR",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 3169.0
-    },
-    {
-      "data": "2026-04-10",
-      "orderNumber": 847,
-      "marca": "KAESSI",
-      "cliente": "Tálita Kitamura",
-      "cidade": "Mogi das Cruzes",
-      "uf": "SP",
-      "cancelado": false,
-      "status": "SENT",
-      "valor": 864.49
-    },
-    {
-      "data": "2026-04-11",
-      "orderNumber": 979,
-      "marca": " Era Uma Vez",
-      "cliente": "Samanta Da Rocha Silva Machado",
-      "cidade": "Curitiba",
-      "uf": "PR",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 809.5
-    },
-    {
-      "data": "2026-04-05",
-      "orderNumber": 840,
-      "marca": "KAESSI",
-      "cliente": "Andrea Lima",
-      "cidade": "Aracaju",
-      "uf": "SE",
-      "cancelado": false,
-      "status": "SENT",
-      "valor": 1020.36
-    },
-    {
-      "data": "2026-04-05",
-      "orderNumber": 841,
-      "marca": "KAESSI",
-      "cliente": "Ticiana gomes",
-      "cidade": "Itapetininga",
-      "uf": "SP",
-      "cancelado": false,
-      "status": "SENT",
-      "valor": 472.46
-    },
-    {
-      "data": "2026-04-10",
-      "orderNumber": 974,
-      "marca": " Era Uma Vez",
-      "cliente": "Gilmara Ferreira De Almeida",
-      "cidade": "Petrópolis",
-      "uf": "RJ",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 341.49
-    },
-    {
-      "data": "2026-04-15",
-      "orderNumber": 4027,
-      "marca": "Arary",
-      "cliente": "Cleusa Dias Peixoto",
-      "cidade": "Valinhos",
-      "uf": "SP",
-      "cancelado": false,
-      "status": "SENT",
-      "valor": 1724.67
-    },
-    {
-      "data": "2026-04-01",
-      "orderNumber": 5697,
-      "marca": "Anne Blánc",
-      "cliente": "Anna Júlia Santos",
-      "cidade": "Volta Redonda",
-      "uf": "RJ",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 241.17
-    },
-    {
-      "data": "2026-04-03",
-      "orderNumber": 838,
-      "marca": "KAESSI",
-      "cliente": "Elisabeth Gomes Andrade",
-      "cidade": "Americana",
-      "uf": "SP",
-      "cancelado": false,
-      "status": "SENT",
-      "valor": 514.17
-    },
-    {
-      "data": "2026-04-06",
-      "orderNumber": 3963,
-      "marca": "Arary",
-      "cliente": "Vanessa",
-      "cidade": "Papanduva",
-      "uf": "SC",
-      "cancelado": false,
-      "status": "SENT",
-      "valor": 1784.25
-    },
-    {
-      "data": "2026-04-05",
-      "orderNumber": 1023,
-      "marca": "CVL Moda - CD Nova Friburgo",
-      "cliente": "Larissa Santos",
-      "cidade": "Itaboraí",
-      "uf": "RJ",
-      "cancelado": false,
-      "status": "SENT",
-      "valor": 420.49
-    },
-    {
       "data": "2026-04-09",
       "orderNumber": 971,
       "marca": " Era Uma Vez",
@@ -372,17 +738,6 @@
       "cancelado": false,
       "status": "WAITING",
       "valor": 4879.15
-    },
-    {
-      "data": "2026-04-14",
-      "orderNumber": 990,
-      "marca": " Era Uma Vez",
-      "cliente": "Barion Bertoletti",
-      "cidade": "Goiânia",
-      "uf": "GO",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 2725.78
     }
   ]
 }
