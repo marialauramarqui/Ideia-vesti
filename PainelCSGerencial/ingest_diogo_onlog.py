@@ -163,13 +163,9 @@ def compare(planilha: dict, fabric: dict) -> tuple[int, list, list, list]:
         if fa and not pl:
             only_f.append(fa)
             continue
+        # Ignoramos cliente/destino - sao diferencas de formatacao/abreviacao
+        # que nao representam erro real. Comparamos so o que importa: cancelamento e valor postagem.
         divs = []
-        if norm_txt(pl["cliente"]) != norm_txt(fa.get("cliente", "")):
-            divs.append(("Cliente", pl["cliente"], fa.get("cliente", "")))
-        dest_p = f'{norm_txt(pl["cidade"])} / {norm_uf(pl["uf"])}'
-        dest_f = f'{norm_txt(fa.get("cidade",""))} / {norm_uf(fa.get("uf",""))}'
-        if dest_p != dest_f:
-            divs.append(("Destino", f'{pl["cidade"]}/{pl["uf"]}', f'{fa.get("cidade","")}/{fa.get("uf","")}'))
         if fa.get("cancelado"):
             divs.append(("Cancelado", "(postado pela Onlog)", "CANCELADO no Vesti"))
         pp = pl["postagem"]
