@@ -121,6 +121,18 @@ def fetch_rows(conn) -> list[dict]:
     return rows
 
 
+def _is_onlog_postado(provider: str) -> bool:
+    """Filtra provider names que NAO sao postagens reais via Onlog.
+
+    Onlog opera multiplas transportadoras (Jadlog, Loggi, Total Express, OnLog Red, etc),
+    todas com delivery_provider_provider='onlog'. Mas a flag tambem aparece em pedidos
+    de retirada-em-loja, excursao, motoboy etc que nunca sao postados. Filtramos.
+    Ficam: tudo que comeca com "Vesti - " (postagens reais via integracao Vesti).
+    """
+    p = (provider or "").strip().lower()
+    return p.startswith("vesti - ") or p.startswith("vesti -") or p.startswith("vesti -")
+
+
 def build(rows: list[dict], companies: dict[str, dict]) -> dict:
     pedidos: list[dict] = []
     dias_set: set[str] = set()
@@ -130,8 +142,12 @@ def build(rows: list[dict], companies: dict[str, dict]) -> dict:
     n_sem_etiqueta = 0
     val_total = 0.0
     sem_match = 0
+    n_filtrado_nao_postado = 0
 
     for r in rows:
+        if not _is_onlog_postado(r.get("provider", "")):
+            n_filtrado_nao_postado += 1
+            continue
         dom = str(r.get("domainId") or "").strip()
         if not dom:
             continue
@@ -212,6 +228,7 @@ def build(rows: list[dict], companies: dict[str, dict]) -> dict:
     cs_list = sorted(cs_set, key=lambda s: s.lower())
 
     print(f"[build] {len(pedidos)} pedidos | com etiqueta: {n_com_etiqueta} | sem: {n_sem_etiqueta} | sem match: {sem_match}")
+    print(f"[build] filtrados (retirada/excursao/motoboy/etc - nao postados via Onlog): {n_filtrado_nao_postado}")
     print(f"[build] GMV Onlog: R$ {val_total:,.2f}")
     if dias_list:
         print(f"[build] periodo: {dias_list[-1]} -> {dias_list[0]}")
