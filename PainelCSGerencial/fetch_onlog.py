@@ -181,11 +181,10 @@ def build(rows: list[dict], companies: dict[str, dict]) -> dict:
         val_total += valor
         cs = (c.get("anjo") or "") if c else ""
 
-        # Colunas do painel Onlog Descritivo:
-        #   Cotacao BIA    = delivery_provider_value
-        #   Valor Onlog    = sheets_onlog_descritivo.Valor_Onlog (o que a Onlog cobra)
-        #   Valor Postagem = SUM(sheets_onlog_fechamento.ValorPostagem) (custo de postagem real)
-        #   Margem Onlog   = Valor Onlog - Valor Postagem
+        # Cotacao BIA    = delivery_provider_value (com 10% de markup que cobramos do cliente)
+        # Valor Onlog    = sheets_onlog_descritivo.Valor_Onlog (o que a Onlog cobra)
+        # Valor Postagem = SUM(sheets_onlog_fechamento.ValorPostagem) (custo de postagem real)
+        # Margem         = Cotacao BIA - Valor Postagem (lucro real da Vesti por frete)
         bia = r.get("cotacao_bia")
         bia_f = float(bia) if bia is not None else None
         post = r.get("postagem_onlog")
@@ -193,7 +192,7 @@ def build(rows: list[dict], companies: dict[str, dict]) -> dict:
         post_fonte = "fechamento" if post_f is not None else ""
         vo = r.get("valor_onlog_descr")
         valor_onlog = float(vo) if vo is not None else None
-        margem_onlog = (valor_onlog - post_f) if (valor_onlog is not None and post_f is not None) else None
+        margem_onlog = (bia_f - post_f) if (bia_f is not None and post_f is not None) else None
 
         pedidos.append({
             "orderNumber": int(r.get("orderNumber") or 0),

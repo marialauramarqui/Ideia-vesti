@@ -145,6 +145,43 @@ def filter_fabric(pedidos: list[dict], de: str, ate: str) -> dict:
     return out
 
 
+def _is_no_postavel(p: dict) -> bool:
+    """Pedidos cancelados ou ainda em SEPARATED nao deveriam aparecer na planilha
+    do Diogo - sao 'so no Fabric' esperado e nao representam problema."""
+    if p.get("cancelado"):
+        return True
+    return (p.get("status") or "").upper() == "SEPARATED"
+
+
+def patch_onlog_data(onlog_data: dict, planilha: dict, de: str, ate: str) -> tuple[int, int]:
+    """Atualiza valorPostagem e margemOnlog dos pedidos no onlog_data.json
+    usando os valores reais da planilha do Diogo, para o range [de, ate].
+
+    Margem = Cotacao BIA - Valor Postagem (lucro real da Vesti por frete).
+
+    Retorna (n_atualizados, n_no_range_sem_planilha).
+    """
+    n_upd = 0
+    n_skip = 0
+    for p in onlog_data.get("pedidos", []):
+        d = p.get("data") or ""
+        if not d or d < de or d > ate:
+            continue
+        k = f'{p.get("dominioId","")}_{p.get("orderNumber","")}'
+        pl = planilha.get(k)
+        if not pl:
+            n_skip += 1
+            continue
+        post = round(pl["postagem"], 2)
+        p["valorPostagem"] = post
+        p["postagemFonte"] = "planilha-diogo"
+        bia = p.get("cotacaoBia")
+        if bia is not None:
+            p["margemOnlog"] = round(float(bia) - post, 2)
+        n_upd += 1
+    return n_upd, n_skip
+
+
 def fmt_brl(v) -> str:
     if v is None:
         return "-"
@@ -161,6 +198,9 @@ def compare(planilha: dict, fabric: dict) -> tuple[int, list, list, list]:
             only_p.append(pl)
             continue
         if fa and not pl:
+            # cancelados e SEPARATED nao deveriam estar na planilha por design - ignora
+            if _is_no_postavel(fa):
+                continue
             only_f.append(fa)
             continue
         # Ignoramos cliente/destino - sao diferencas de formatacao/abreviacao
@@ -225,6 +265,11 @@ def main() -> None:
     onlog_data = json.loads(ONLOG_JSON.read_text(encoding="utf-8"))
     fabric = filter_fabric(onlog_data.get("pedidos", []), de, ate)
     print(f"      {len(fabric)} pedidos do Fabric na quinzena")
+
+    print(f"[3.5/4] Patch onlog_data.json com valores da planilha (postagem + margem)")
+    n_upd, n_skip = patch_onlog_data(onlog_data, planilha, de, ate)
+    ONLOG_JSON.write_text(json.dumps(onlog_data, ensure_ascii=False), encoding="utf-8")
+    print(f"      {n_upd} pedidos atualizados (postagem + margem); {n_skip} sem match na planilha")
 
     print(f"[4/4] Comparando")
     ok, dif, only_p, only_f = compare(planilha, fabric)
