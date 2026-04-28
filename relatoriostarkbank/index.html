@@ -643,7 +643,11 @@ function renderCr(){
     // === KPIs Saldo (entradas/saídas/saldo acumulado) ===
     // Entradas[d] = sum(amount/100) das parcelas paid com due=d (CR)
     // Saidas[d]  = sum(grossValue) dos pagamentos antec com payDate=d (CP)
-    // Saldo[d]   = Saldo[d-1] + Entradas[d] - Saidas[d]
+    // Saldo[d]   = Saldo[d-1] + Entradas[d] - Saidas[d]   (acumulado dia-a-dia)
+    //
+    // Respeita o filtro de Data de Recebimento (dDe/dAte):
+    //   - Entradas/Saídas KPI = soma do range filtrado (ou hoje se sem filtro)
+    //   - Saldo KPI = saldo cumulativo no ultimo dia do range (ou hoje)
     var entradasByDay={}, saidasByDay={};
     (window.INVOICES.faturas||[]).forEach(function(f){
         if(isTestMarca(f.nomeFantasia))return;
@@ -662,25 +666,35 @@ function renderCr(){
             saidasByDay[d]=(saidasByDay[d]||0)+(p.grossValue||0);
         });
     }
-    var allDays=Object.keys(entradasByDay).concat(Object.keys(saidasByDay));
-    var uniqDays=[...new Set(allDays)].sort();
+    var uniqDays=[...new Set(Object.keys(entradasByDay).concat(Object.keys(saidasByDay)))].sort();
     var saldoByDay={}, acc=0;
     uniqDays.forEach(function(d){
         acc += (entradasByDay[d]||0) - (saidasByDay[d]||0);
         saldoByDay[d] = acc;
     });
+    // Determina range pra mostrar: usa filtro se preenchido, senao hoje
     var hojeISO=new Date().toISOString().substring(0,10);
-    var entradasHoje=entradasByDay[hojeISO]||0;
-    var saidasHoje=saidasByDay[hojeISO]||0;
-    var saldoHoje=saldoByDay[hojeISO];
-    if(saldoHoje===undefined){
-        // se hoje nao tem movimento, pega o saldo do ultimo dia <= hoje
-        var prev=uniqDays.filter(function(x){return x<=hojeISO}).pop();
-        saldoHoje = prev ? saldoByDay[prev] : 0;
-    }
-    document.getElementById('crEntradas').textContent=fmtC(entradasHoje);
-    document.getElementById('crSaidas').textContent=fmtC(saidasHoje);
-    document.getElementById('crSaldo').textContent=fmtC(saldoHoje);
+    var rDe = dDe || hojeISO;
+    var rAte = dAte || (dDe ? dDe : hojeISO);
+    var entradasRng=0, saidasRng=0;
+    uniqDays.forEach(function(d){
+        if(d>=rDe && d<=rAte){
+            entradasRng += entradasByDay[d]||0;
+            saidasRng += saidasByDay[d]||0;
+        }
+    });
+    // Saldo no ultimo dia do range (acumulado desde o inicio dos dados)
+    var saldoFim = 0;
+    var ultimoComDado = uniqDays.filter(function(x){return x<=rAte}).pop();
+    if(ultimoComDado!==undefined) saldoFim = saldoByDay[ultimoComDado];
+    document.getElementById('crEntradas').textContent=fmtC(entradasRng);
+    document.getElementById('crSaidas').textContent=fmtC(saidasRng);
+    document.getElementById('crSaldo').textContent=fmtC(saldoFim);
+    // labels dinamicos baseados no range
+    var lblHoje = (rDe===rAte && rDe===hojeISO) ? 'hoje' : (rDe===rAte ? fmtD(rDe) : fmtD(rDe)+' a '+fmtD(rAte));
+    var entLbl=document.querySelector('#kpisCrSaldo .kpi.green .lbl'); if(entLbl) entLbl.textContent='Entradas '+lblHoje;
+    var saiLbl=document.querySelector('#kpisCrSaldo .kpi.red .lbl');   if(saiLbl) saiLbl.textContent='Saídas '+lblHoje;
+    var sldLbl=document.querySelector('#kpisCrSaldo .kpi.teal .lbl');  if(sldLbl) sldLbl.textContent='Saldo '+(rAte===hojeISO?'hoje':fmtD(rAte));
     document.getElementById('crCount').textContent=fmtN(tot.n)+' parcela(s) em '+fmtN(dates.length)+' dia(s)';
     if(!dates.length){tb.innerHTML='<tr><td colspan="10" class="empty">Nenhuma parcela com os filtros atuais</td></tr>';return}
     var html=[];
