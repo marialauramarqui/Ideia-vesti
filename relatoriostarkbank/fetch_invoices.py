@@ -1,9 +1,13 @@
 """
 Puxa faturas/parcelas de cada pedido StarkBank direto da API Vesti.
-Fonte unica do CR: substitui os valores do lake nesta aba.
+Fonte 100% API — descobre workspaces e purchases via endpoints novos:
+  - GET /workspaces                      lista workspaces (filtra marcas teste)
+  - GET /workspace/{ws}/purchases        lista pedidos (paginado por cursor)
+  - GET /workspace/{ws}/purchase/{id}    detalhes da purchase com installments
 
-Depende de dados.js (gerado por fetch_data.py) pra saber quais
-(workspaceId, transactionId) consultar.
+Enriquece com dados.js (Mongo) quando disponivel pra ganhar orderNumber/
+isAntecipacao/customerName, mas nao depende dele pra descobrir purchases —
+qualquer pedido na Stark aparece, mesmo que o sync Mongo esteja atrasado.
 
 Auth: VESTIAPI_TOKEN como env var (JWT bearer de servico).
 """
@@ -24,8 +28,14 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 ROOT = Path(__file__).parent
 DADOS_JS = ROOT / "dados.js"
 OUT_JS = ROOT / "invoices.js"
-API = "https://apivesti.vesti.mobi/payment/v1/starkbank/workspace/{ws}/purchase/{pur}"
-MAX_WORKERS = 5
+API_BASE = "https://apivesti.vesti.mobi/payment/v1/starkbank"
+URL_WORKSPACES = f"{API_BASE}/workspaces"
+URL_PURCHASES = API_BASE + "/workspace/{ws}/purchases"
+URL_PURCHASE = API_BASE + "/workspace/{ws}/purchase/{pur}"
+MAX_WORKERS = 8
+
+# Marcas de teste — excluidas do CR.
+EXCLUDED_NAMES = {"andressa vesti", "andressa - teste"}
 
 # --- Fabric VestiHouse warehouse (escrita via pyodbc + MERGE) ---
 # Reaproveita connect() de fetch_data.py. Se a conexao falhar (ex: ambiente
@@ -251,18 +261,41 @@ def write_warehouse(faturas: list[dict]) -> None:
     print("[warehouse] ok")
 
 
-def load_pedidos() -> list[dict]:
-    text = DADOS_JS.read_text(encoding="utf-8")
-    m = re.match(r"window\.DADOS\s*=\s*(.*);\s*$", text.strip(), re.DOTALL)
-    if not m:
-        print("dados.js em formato inesperado", file=sys.stderr)
-        sys.exit(1)
-    return json.loads(m.group(1))["pedidos"]
+def load_enrichment_from_dados() -> dict:
+    """Le dados.js pra obter orderNumber/isAntecipacao/etc por transactionId.
+    Indexa por transactionId (= purchase.id na Stark). Retorna {} se dados.js
+    nao existe ou estiver vazio — nao bloqueia o pipeline."""
+    if not DADOS_JS.exists():
+        return {}
+    try:
+        text = DADOS_JS.read_text(encoding="utf-8")
+        m = re.match(r"window\.DADOS\s*=\s*(.*);\s*$", text.strip(), re.DOTALL)
+        if not m:
+            return {}
+        data = json.loads(m.group(1))
+        out: dict[str, dict] = {}
+        for p in data.get("pedidos", []):
+            for pc in p.get("parcelas") or []:
+                tid = (pc.get("transactionId") or "").strip()
+                if tid and tid not in out:
+                    out[tid] = {
+                        "orderNumber":         p.get("orderNumber"),
+                        "nomeFantasia":        p.get("nomeFantasia"),
+                        "antecipacaoEnabled":  bool(p.get("antecipacaoEnabled")),
+                        "customerName":        p.get("customerName"),
+                        "orderDate":           p.get("orderDate"),
+                        "companyId":           p.get("companyId"),
+                        "domainId":            p.get("domainId"),
+                    }
+        return out
+    except Exception as e:
+        print(f"[enrich] falha lendo dados.js: {e}", file=sys.stderr)
+        return {}
 
 
-def fetch_one(ws: str, pur: str, token: str) -> dict | None:
+def _api_get(url: str, token: str) -> dict | None:
     req = urllib.request.Request(
-        API.format(ws=ws, pur=pur),
+        url,
         headers={
             "Accept": "application/json",
             "Authorization": f"Bearer {token}",
@@ -270,13 +303,68 @@ def fetch_one(ws: str, pur: str, token: str) -> dict | None:
         },
     )
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
+        with urllib.request.urlopen(req, timeout=60) as resp:
             return json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
-        print(f"[api] {ws}/{pur} HTTP {e.code}", file=sys.stderr)
+        print(f"[api] {url} HTTP {e.code}", file=sys.stderr)
     except Exception as e:
-        print(f"[api] {ws}/{pur} erro: {e}", file=sys.stderr)
+        print(f"[api] {url} erro: {e}", file=sys.stderr)
     return None
+
+
+def list_workspaces(token: str) -> list[dict]:
+    """Lista workspaces Stark, filtrando marcas de teste."""
+    resp = _api_get(URL_WORKSPACES, token)
+    if not resp or not resp.get("success"):
+        return []
+    workspaces = resp.get("message", {}).get("workspaces", [])
+    out = []
+    for w in workspaces:
+        nome = (w.get("name") or "").strip().lower()
+        if nome in EXCLUDED_NAMES:
+            continue
+        out.append(w)
+    return out
+
+
+def list_purchases(ws_id: str, token: str) -> list[dict]:
+    """Lista todos os pedidos da workspace (paginado via cursor)."""
+    purchases: list[dict] = []
+    cursor: str | None = None
+    pages = 0
+    while True:
+        url = URL_PURCHASES.format(ws=ws_id)
+        if cursor:
+            url += f"?cursor={cursor}"
+        resp = _api_get(url, token)
+        if not resp or not resp.get("success"):
+            break
+        msg = resp.get("message") or {}
+        page = msg.get("purchases") or []
+        purchases.extend(page)
+        cursor = msg.get("cursor") or None
+        pages += 1
+        if not cursor or pages > 200:
+            break
+    return purchases
+
+
+def fetch_purchase(ws_id: str, pur_id: str, token: str) -> dict | None:
+    """Busca detalhes de uma purchase (com installments)."""
+    return _api_get(URL_PURCHASE.format(ws=ws_id, pur=pur_id), token)
+
+
+def parse_purchase_tags(tags: list[str]) -> dict:
+    """Extrai companyId / orderId / customerId dos tags."""
+    out: dict = {}
+    for t in tags or []:
+        if t.startswith("company_"):
+            out["companyId"] = t[len("company_"):]
+        elif t.startswith("order_"):
+            out["orderId"] = t[len("order_"):]
+        elif t.startswith("customer_"):
+            out["customerId"] = t[len("customer_"):]
+    return out
 
 
 def extract(resp: dict) -> dict | None:
@@ -343,45 +431,63 @@ def main() -> None:
     if not token:
         print("ERRO: defina VESTIAPI_TOKEN", file=sys.stderr)
         sys.exit(1)
-    pedidos = load_pedidos()
-    # monta tarefas (workspace, transactionId) unicos por pedido
-    tarefas = []
-    skipped = 0
-    for p in pedidos:
-        ws = (p.get("workspaceId") or "").strip()
-        tids = {
-            (pc.get("transactionId") or "").strip()
-            for pc in (p.get("parcelas") or [])
-            if pc.get("transactionId")
-        }
-        if not ws or not tids:
-            skipped += 1
-            continue
-        for tid in tids:
+
+    # 1) lista workspaces (filtrando marcas de teste)
+    print("[api] listando workspaces...")
+    workspaces = list_workspaces(token)
+    print(f"[api] {len(workspaces)} workspaces ativas")
+
+    # 2) lista todas as purchases por workspace (paginadas)
+    tarefas: list[dict] = []
+    for ws in workspaces:
+        ws_id = ws.get("id")
+        ws_name = ws.get("name") or ""
+        purchases = list_purchases(ws_id, token)
+        print(f"[api]   {ws_name}: {len(purchases)} purchases")
+        for p in purchases:
             tarefas.append({
-                "workspaceId": ws,
-                "transactionId": tid,
-                "orderId": p["orderId"],
-                "orderNumber": p.get("orderNumber"),
-                "companyId": p.get("companyId", ""),
-                "nomeFantasia": p.get("nomeFantasia", ""),
-                "orderDate": p.get("orderDate", ""),
-                "customerName": p.get("customerName", ""),
-                "antecipacaoEnabled": bool(p.get("antecipacaoEnabled")),
+                "ws_id": ws_id,
+                "ws_name": ws_name,
+                "purchase_id": p.get("id"),
+                "summary": p,  # preserva tags, holderName, etc. caso enriquecimento Mongo falte
             })
-    print(f"[api] {len(tarefas)} consultas ({skipped} pedidos sem workspace/transactionId)")
+    print(f"[api] total purchases: {len(tarefas)}")
+
+    # 3) carrega enriquecimento Mongo (opcional)
+    enrich = load_enrichment_from_dados()
+    print(f"[enrich] {len(enrich)} entradas em dados.js (orderNumber/isAntec/...)")
+
+    # 4) busca detalhes (com installments) em paralelo
+    def _process(t: dict) -> dict | None:
+        resp = fetch_purchase(t["ws_id"], t["purchase_id"], token)
+        data = extract(resp)
+        if not data:
+            return None
+        summ = t.get("summary") or {}
+        tags_parsed = parse_purchase_tags(summ.get("tags", []))
+        e = enrich.get(t["purchase_id"], {})
+        order_date = e.get("orderDate") or (summ.get("created") or "")[:10]
+        return {
+            "workspaceId":         t["ws_id"],
+            "transactionId":       t["purchase_id"],
+            "orderId":             e.get("orderId") or tags_parsed.get("orderId", ""),
+            "orderNumber":         e.get("orderNumber"),
+            "companyId":           e.get("companyId") or tags_parsed.get("companyId", ""),
+            "nomeFantasia":        e.get("nomeFantasia") or t["ws_name"],
+            "domainId":            e.get("domainId", ""),
+            "orderDate":           order_date,
+            "customerName":        e.get("customerName") or summ.get("holderName") or "",
+            "antecipacaoEnabled":  bool(e.get("antecipacaoEnabled", False)),
+            "purchase":            data,
+        }
 
     faturas: list[dict] = []
     with cf.ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
-        futs = {ex.submit(fetch_one, t["workspaceId"], t["transactionId"], token): t for t in tarefas}
-        for fut in cf.as_completed(futs):
-            t = futs[fut]
-            data = extract(fut.result())
-            if not data:
-                continue
-            faturas.append({**t, "purchase": data})
-
+        for r in ex.map(_process, tarefas):
+            if r is not None:
+                faturas.append(r)
     print(f"[api] {len(faturas)} faturas obtidas")
+
     payload = {
         "geradoEm": datetime.now(timezone.utc).isoformat(),
         "faturas": faturas,

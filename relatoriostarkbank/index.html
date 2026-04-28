@@ -168,6 +168,11 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
         <div class="kpi orange"><div class="lbl">Taxas</div><div class="val" id="crFee">R$ --</div><div class="ks">fees Starkbank</div></div>
         <div class="kpi blue"><div class="lbl">Valor líquido</div><div class="val" id="crLiq">R$ --</div><div class="ks">cai na Starkbank</div></div>
     </div>
+    <div class="kpis" id="kpisCrSaldo" style="display:none">
+        <div class="kpi green"><div class="lbl">Entradas hoje</div><div class="val" id="crEntradas">R$ --</div><div class="ks">parcelas liquidando</div></div>
+        <div class="kpi red"><div class="lbl">Saídas hoje</div><div class="val" id="crSaidas">R$ --</div><div class="ks">antecipações pagas</div></div>
+        <div class="kpi teal"><div class="lbl">Saldo carteira</div><div class="val" id="crSaldo">R$ --</div><div class="ks">acumulado</div></div>
+    </div>
 
     <div class="tbl-card" id="cardCp">
         <div class="tbl-head">
@@ -347,6 +352,7 @@ function switchTab(which){
     document.getElementById('subtabs').style.display = isCr?'none':'flex';
     document.getElementById('kpisCp').style.display  = isCr?'none':'grid';
     document.getElementById('kpisCr').style.display  = isCr?'grid':'none';
+    document.getElementById('kpisCrSaldo').style.display = isCr?'grid':'none';
     document.getElementById('cardCp').style.display  = isCr?'none':'block';
     document.getElementById('cardCr').style.display  = isCr?'block':'none';
     document.getElementById('lblDataDe').textContent  = isCr?'Data de recebimento (de)':'Data a pagar (de)';
@@ -541,7 +547,7 @@ function renderCr(){
     var tb=document.getElementById('tbodyCr');
     if(!window.INVOICES||!window.INVOICES.faturas){
         tb.innerHTML='<tr><td colspan="10" class="empty" style="color:#E17055">invoices.js nao carregou — rode fetch_invoices.py</td></tr>';
-        ['crEmp','crPed','crPedPg','crGross','crFee','crLiq'].forEach(function(id){document.getElementById(id).textContent='--'});
+        ['crEmp','crPed','crPedPg','crGross','crFee','crLiq','crEntradas','crSaidas','crSaldo'].forEach(function(id){document.getElementById(id).textContent='--'});
         return;
     }
     try{
@@ -633,6 +639,48 @@ function renderCr(){
     document.getElementById('crGross').textContent=fmtC(tot.vRec+tot.vAr);
     document.getElementById('crFee').textContent=fmtC(tot.fee);
     document.getElementById('crLiq').textContent=fmtC(tot.liq);
+
+    // === KPIs Saldo (entradas/saídas/saldo acumulado) ===
+    // Entradas[d] = sum(amount/100) das parcelas paid com due=d (CR)
+    // Saidas[d]  = sum(grossValue) dos pagamentos antec com payDate=d (CP)
+    // Saldo[d]   = Saldo[d-1] + Entradas[d] - Saidas[d]
+    var entradasByDay={}, saidasByDay={};
+    (window.INVOICES.faturas||[]).forEach(function(f){
+        if(isTestMarca(f.nomeFantasia))return;
+        ((f.purchase&&f.purchase.installments)||[]).forEach(function(i){
+            var d=isoBRTDate(i.due); if(!d)return;
+            if(i.status==='paid'){
+                entradasByDay[d]=(entradasByDay[d]||0)+(i.amount||0)/100;
+            }
+        });
+    });
+    if(window.DADOS&&window.DADOS.pagamentos){
+        window.DADOS.pagamentos.forEach(function(p){
+            if(isTestMarca(p.nomeFantasia))return;
+            if(!p.isAntecipacao)return;
+            var d=(p.payDate||'').substring(0,10); if(!d)return;
+            saidasByDay[d]=(saidasByDay[d]||0)+(p.grossValue||0);
+        });
+    }
+    var allDays=Object.keys(entradasByDay).concat(Object.keys(saidasByDay));
+    var uniqDays=[...new Set(allDays)].sort();
+    var saldoByDay={}, acc=0;
+    uniqDays.forEach(function(d){
+        acc += (entradasByDay[d]||0) - (saidasByDay[d]||0);
+        saldoByDay[d] = acc;
+    });
+    var hojeISO=new Date().toISOString().substring(0,10);
+    var entradasHoje=entradasByDay[hojeISO]||0;
+    var saidasHoje=saidasByDay[hojeISO]||0;
+    var saldoHoje=saldoByDay[hojeISO];
+    if(saldoHoje===undefined){
+        // se hoje nao tem movimento, pega o saldo do ultimo dia <= hoje
+        var prev=uniqDays.filter(function(x){return x<=hojeISO}).pop();
+        saldoHoje = prev ? saldoByDay[prev] : 0;
+    }
+    document.getElementById('crEntradas').textContent=fmtC(entradasHoje);
+    document.getElementById('crSaidas').textContent=fmtC(saidasHoje);
+    document.getElementById('crSaldo').textContent=fmtC(saldoHoje);
     document.getElementById('crCount').textContent=fmtN(tot.n)+' parcela(s) em '+fmtN(dates.length)+' dia(s)';
     if(!dates.length){tb.innerHTML='<tr><td colspan="10" class="empty">Nenhuma parcela com os filtros atuais</td></tr>';return}
     var html=[];
