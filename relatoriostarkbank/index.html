@@ -673,10 +673,15 @@ function renderCr(){
         acc += (entradasByDay[d]||0) - (saidasByDay[d]||0);
         saldoByDay[d] = acc;
     });
-    // Determina range pra mostrar: usa filtro se preenchido, senao hoje
+    // Determina range pra mostrar — prioriza filtros preenchidos:
+    //   1. Data Recebimento (dDe/dAte) — afeta saidas (CR liquidacoes)
+    //   2. Data da Compra (pDe/pAte)   — afeta entradas (CP customerPaidAt)
+    //   3. Hoje (default)
+    // Quando QUALQUER filtro estiver setado, KPIs usam ele como range comum
+    // (entradas e saidas no mesmo intervalo, saldo cumulativo no fim).
     var hojeISO=new Date().toISOString().substring(0,10);
-    var rDe = dDe || hojeISO;
-    var rAte = dAte || (dDe ? dDe : hojeISO);
+    var rDe = dDe || pDe || hojeISO;
+    var rAte = dAte || pAte || rDe;
     var entradasRng=0, saidasRng=0;
     uniqDays.forEach(function(d){
         if(d>=rDe && d<=rAte){
