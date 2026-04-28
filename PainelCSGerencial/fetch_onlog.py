@@ -181,17 +181,24 @@ def build(rows: list[dict], companies: dict[str, dict]) -> dict:
         val_total += valor
         cs = (c.get("anjo") or "") if c else ""
 
-        # Cotacao BIA    = delivery_provider_value (com 10% de markup que cobramos do cliente)
-        # Valor Onlog    = sheets_onlog_descritivo.Valor_Onlog (o que a Onlog cobra)
-        # Valor Postagem = SUM(sheets_onlog_fechamento.ValorPostagem) (custo de postagem real)
-        # Margem         = Cotacao BIA - Valor Postagem (lucro real da Vesti por frete)
+        # Cotacao BIA      = delivery_provider_value (com 10% que cobramos do cliente)
+        # Valor Postagem   = SUM(sheets_onlog_fechamento.ValorPostagem) (custo real)
+        # Valor Ana FINAL  = MAX(Cotacao BIA, Valor Postagem * 1.10) - mesma logica do BI
+        # Margem           = Cotacao BIA - Valor Postagem (lucro real da Vesti)
         bia = r.get("cotacao_bia")
         bia_f = float(bia) if bia is not None else None
         post = r.get("postagem_onlog")
         post_f = float(post) if post is not None else None
         post_fonte = "fechamento" if post_f is not None else ""
-        vo = r.get("valor_onlog_descr")
-        valor_onlog = float(vo) if vo is not None else None
+        # Valor Ana FINAL: max(BIA, postagem*1.10) quando ambos existem; senao usa o que tiver
+        if bia_f is not None and post_f is not None:
+            valor_ana_final = max(bia_f, post_f * 1.10)
+        elif bia_f is not None:
+            valor_ana_final = bia_f
+        elif post_f is not None:
+            valor_ana_final = post_f * 1.10
+        else:
+            valor_ana_final = None
         margem_onlog = (bia_f - post_f) if (bia_f is not None and post_f is not None) else None
 
         pedidos.append({
@@ -212,7 +219,7 @@ def build(rows: list[dict], companies: dict[str, dict]) -> dict:
             "cliente": r.get("cliente") or "",
             "cancelado": bool(r.get("cancelado")),
             "cotacaoBia": round(bia_f, 2) if bia_f is not None else None,
-            "valorOnlog": round(valor_onlog, 2) if valor_onlog is not None else None,
+            "valorAnaFinal": round(valor_ana_final, 2) if valor_ana_final is not None else None,
             "valorPostagem": round(post_f, 2) if post_f is not None else None,
             "margemOnlog": round(margem_onlog, 2) if margem_onlog is not None else None,
             "operadorReal": r.get("operador_fech") or "",

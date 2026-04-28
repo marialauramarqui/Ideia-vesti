@@ -176,8 +176,15 @@ def patch_onlog_data(onlog_data: dict, planilha: dict, de: str, ate: str) -> tup
         p["valorPostagem"] = post
         p["postagemFonte"] = "planilha-diogo"
         bia = p.get("cotacaoBia")
-        if bia is not None:
-            p["margemOnlog"] = round(float(bia) - post, 2)
+        bia_f = float(bia) if bia is not None else None
+        # Margem = Cotacao BIA - Valor Postagem (lucro real)
+        if bia_f is not None:
+            p["margemOnlog"] = round(bia_f - post, 2)
+        # Valor Ana FINAL = MAX(Cotacao BIA, Valor Postagem * 1.10)
+        if bia_f is not None:
+            p["valorAnaFinal"] = round(max(bia_f, post * 1.10), 2)
+        else:
+            p["valorAnaFinal"] = round(post * 1.10, 2)
         n_upd += 1
     return n_upd, n_skip
 

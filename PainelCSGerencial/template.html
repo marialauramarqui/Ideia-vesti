@@ -525,7 +525,7 @@ table.dt tr:hover td{background:#FAFAFA}
                     <th>Etiqueta</th>
                     <th style="text-align:right">Valor Pedido</th>
                     <th style="text-align:right" title="delivery_provider_value">Cotacao BIA</th>
-                    <th style="text-align:right" title="sheets_onlog_descritivo.Valor_Onlog">Valor Onlog</th>
+                    <th style="text-align:right" title="MAX(Cotacao BIA, Valor Postagem * 1.10) - mesma logica do BI">Valor Ana FINAL</th>
                     <th style="text-align:right" title="SUM(ValorPostagem) do fechamento">Valor Postagem</th>
                     <th style="text-align:right" title="Cotacao BIA - Valor Postagem (margem real da Vesti)">Margem</th>
                 </tr></thead>
@@ -667,13 +667,13 @@ table.dt tr:hover td{background:#FAFAFA}
         <p><b>Colunas financeiras (espelham o Painel Onlog Descritivo):</b></p>
         <ul>
             <li><b>Cotacao BIA</b> = <code>delivery_provider_value</code> (valor do frete no pedido do cliente).</li>
-            <li><b>Valor Onlog</b> = <code>Valor_Onlog</code> de <code>sheets_onlog_descritivo</code> (o que a Onlog cobra pelo frete).</li>
+            <li><b>Valor Ana FINAL</b> = <code>MAX(Cotacao BIA, Valor Postagem &times; 1.10)</code>. Mesma logica da coluna Valor Ana FINAL no BI.</li>
             <li><b>Valor Postagem</b> = <code>SUM(ValorPostagem)</code> das linhas em <code>sheets_onlog_fechamento</code> (CodigoVolume = domainId_orderNumber). Um pedido pode ter N volumes - soma.</li>
-            <li><b>Margem Onlog</b> = <code>Valor Onlog - Valor Postagem</code>. Verde = positiva, vermelho = negativa.</li>
+            <li><b>Margem</b> = <code>Cotacao BIA - Valor Postagem</code> (lucro real da Vesti por frete). Verde = positiva, vermelho = negativa.</li>
         </ul>
         <p>&mdash; significa sem dado (pedido ainda nao foi postado no fechamento Onlog).</p>
         <p><b>Conferencia da quinzena:</b></p>
-        <p>A comparacao com a planilha do Diogo agora e feita na fonte (Fabric). O painel ja mostra Cotacao BIA, Valor Onlog, Valor Postagem e Margem de cada pedido cruzados via <code>sheets_onlog_descritivo</code> e <code>sheets_onlog_fechamento</code>.</p>
+        <p>A comparacao com a planilha do Diogo e feita na fonte (ingest manual quinzenal). O painel mostra Cotacao BIA, Valor Ana FINAL, Valor Postagem e Margem de cada pedido. Quando a planilha da quinzena e ingerida, Valor Postagem e Margem dos pedidos sao patcheados com os valores reais do Diogo.</p>
         <p>Os filtros globais de <b>Empresa</b> e <b>CS</b> (barra superior) tambem se aplicam aqui.</p>
     </div>
 </div>
@@ -1424,7 +1424,7 @@ function updateOnlog(){
             '<td>'+etqCell+'</td>'+
             '<td style="text-align:right;font-weight:700;color:var(--s);white-space:nowrap">R$ '+(p.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
             '<td style="text-align:right;color:var(--dk);white-space:nowrap">'+_olFmt(p.cotacaoBia)+'</td>'+
-            '<td style="text-align:right;color:var(--p);white-space:nowrap">'+_olFmt(p.valorOnlog)+'</td>'+
+            '<td style="text-align:right;color:var(--p);white-space:nowrap">'+_olFmt(p.valorAnaFinal)+'</td>'+
             '<td style="text-align:right;color:#0984E3;white-space:nowrap">'+_olFmt(p.valorPostagem)+'</td>'+
             '<td style="text-align:right;white-space:nowrap;font-weight:600;color:'+((p.margemOnlog==null)?'#B2BEC3':(p.margemOnlog>=0?'var(--s)':'#E17055'))+'">'+_olFmt(p.margemOnlog)+'</td>'+
         '</tr>'
