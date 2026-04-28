@@ -163,6 +163,7 @@ def main() -> None:
     gmv = load("gmv_data.json", {})
     top80 = load("top80_data.json", {})
     onlog = load("onlog_data.json", {})
+    onlog_diff = load("onlog_diff.json", {})
     t3plus = load("t3plus_data.json", {})
 
     nps = build_nps(sheets)
@@ -187,6 +188,7 @@ def main() -> None:
         + dump("GMV_DATA", gmv)
         + dump("TOP80_DATA", top80)
         + dump("ONLOG_DATA", onlog)
+        + dump("ONLOG_DIFF", onlog_diff)
         + dump("T3PLUS_DATA", t3plus)
     )
     OUT.write_text(content, encoding="utf-8")
@@ -203,6 +205,12 @@ def main() -> None:
     print(f"  GMV_DATA.empresas:    {len(gmv.get('empresas', [])) if isinstance(gmv, dict) else 0}")
     print(f"  TOP80_DATA.linhas:    {len(top80.get('linhas', [])) if isinstance(top80, dict) else 0}")
     print(f"  ONLOG_DATA.pedidos:   {len(onlog.get('pedidos', [])) if isinstance(onlog, dict) else 0}")
+    if isinstance(onlog_diff, dict) and onlog_diff.get("quinzena"):
+        qz = onlog_diff["quinzena"]
+        rs = onlog_diff.get("resumo", {})
+        print(f"  ONLOG_DIFF:           {qz.get('de')} a {qz.get('ate')} - OK={rs.get('ok')} dif={rs.get('divergenciasPedidos')} sp={rs.get('soPlanilha')} sf={rs.get('soFabric')}")
+    else:
+        print(f"  ONLOG_DIFF:           (sem conferencia ingerida)")
     print(f"  T3PLUS_DATA.empresas: {len(t3plus.get('empresas', [])) if isinstance(t3plus, dict) else 0}")
 
 

@@ -1,0 +1,844 @@
+{
+  "quinzena": {
+    "de": "2026-02-01",
+    "ate": "2026-02-15"
+  },
+  "geradoEm": "2026-04-28T09:45:12.335556",
+  "planilhaArquivo": "Fechamento ONLOG (1).xlsx",
+  "resumo": {
+    "ok": 24,
+    "divergencias": 20,
+    "divergenciasPedidos": 20,
+    "soPlanilha": 0,
+    "soFabric": 62,
+    "nPlanilha": 44,
+    "nFabric": 106
+  },
+  "divergencias": [
+    {
+      "orderNumber": 9,
+      "marca": "ADsusan",
+      "campo": "Destino",
+      "planilha": "FLORIANF3POLIS/SC",
+      "fabric": "Florianópolis/SC"
+    },
+    {
+      "orderNumber": 127,
+      "marca": "V.azevedo",
+      "campo": "Cliente",
+      "planilha": "LETEDCIA BETTIO",
+      "fabric": "Letícia Bettio"
+    },
+    {
+      "orderNumber": 3581,
+      "marca": "Arary",
+      "campo": "Destino",
+      "planilha": "CARAMBEED/PR",
+      "fabric": "Carambeí/PR"
+    },
+    {
+      "orderNumber": 3585,
+      "marca": "Arary",
+      "campo": "Destino",
+      "planilha": "ARUJE1/SP",
+      "fabric": "Arujá/SP"
+    },
+    {
+      "orderNumber": 42,
+      "marca": "Mi&co",
+      "campo": "Cliente",
+      "planilha": "ANGELA ARAFAJO",
+      "fabric": "Angela Araújo"
+    },
+    {
+      "orderNumber": 3559,
+      "marca": "Arary",
+      "campo": "Destino",
+      "planilha": "SE3O PAULO/SP",
+      "fabric": "São Paulo/SP"
+    },
+    {
+      "orderNumber": 3579,
+      "marca": "Arary",
+      "campo": "Cliente",
+      "planilha": "ALCIONE LOURENE7O",
+      "fabric": "Alcione Lourenço"
+    },
+    {
+      "orderNumber": 3543,
+      "marca": "Arary",
+      "campo": "Cliente",
+      "planilha": "LEDDIA OLIVEIRA PIMENTA",
+      "fabric": "Lídia Oliveira Pimenta"
+    },
+    {
+      "orderNumber": 3578,
+      "marca": "Arary",
+      "campo": "Destino",
+      "planilha": "SE3O JOSE9 DOS CAMPOS/SP",
+      "fabric": "São José dos Campos/SP"
+    },
+    {
+      "orderNumber": 133,
+      "marca": "V.azevedo",
+      "campo": "Cliente",
+      "planilha": "CE1SSIA MORAES",
+      "fabric": "Cássia Moraes"
+    },
+    {
+      "orderNumber": 3587,
+      "marca": "Arary",
+      "campo": "Destino",
+      "planilha": "PONTAL DO PARANE1/PR",
+      "fabric": "Pontal do Paraná/PR"
+    },
+    {
+      "orderNumber": 3542,
+      "marca": "Arary",
+      "campo": "Destino",
+      "planilha": "TIMF3TEO/MG",
+      "fabric": "Timóteo/MG"
+    },
+    {
+      "orderNumber": 3531,
+      "marca": "Arary",
+      "campo": "Destino",
+      "planilha": "ORLE2NDIA/SP",
+      "fabric": "Orlândia/SP"
+    },
+    {
+      "orderNumber": 514,
+      "marca": "CVL Moda - CD Nova Friburgo",
+      "campo": "Destino",
+      "planilha": "RIBEIRE3O PRETO/SP",
+      "fabric": "Ribeirão Preto/SP"
+    },
+    {
+      "orderNumber": 44,
+      "marca": "Mi&co",
+      "campo": "Destino",
+      "planilha": "JAGUAPITE3/PR",
+      "fabric": "Jaguapitã/PR"
+    },
+    {
+      "orderNumber": 134,
+      "marca": "V.azevedo",
+      "campo": "Destino",
+      "planilha": "SANTO ANDRE9/SP",
+      "fabric": "Santo André/SP"
+    },
+    {
+      "orderNumber": 3569,
+      "marca": "Arary",
+      "campo": "Destino",
+      "planilha": "NOVA VENE9CIA/ES",
+      "fabric": "Nova Venécia/ES"
+    },
+    {
+      "orderNumber": 3537,
+      "marca": "Arary",
+      "campo": "Destino",
+      "planilha": "SE3O PAULO/SP",
+      "fabric": "São Paulo/SP"
+    },
+    {
+      "orderNumber": 546,
+      "marca": "CVL Moda - CD Nova Friburgo",
+      "campo": "Destino",
+      "planilha": "IBIFANA/SP",
+      "fabric": "Ibiúna/SP"
+    },
+    {
+      "orderNumber": 465,
+      "marca": "CVL Moda - CD Nova Friburgo",
+      "campo": "Destino",
+      "planilha": "RIBEIRE3O PRETO/SP",
+      "fabric": "Ribeirão Preto/SP"
+    }
+  ],
+  "soPlanilha": [],
+  "soFabric": [
+    {
+      "data": "2026-02-09",
+      "orderNumber": 493,
+      "marca": "CVL Moda - CD Nova Friburgo",
+      "cliente": "Carla Eduarda Costa Monteiro",
+      "cidade": "Guarujá",
+      "uf": "SP",
+      "cancelado": false,
+      "status": "DELIVERED",
+      "valor": 287.22
+    },
+    {
+      "data": "2026-02-06",
+      "orderNumber": 3533,
+      "marca": "Arary",
+      "cliente": "Giovana Saraiva",
+      "cidade": "Boa Vista",
+      "uf": "RR",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 81.34
+    },
+    {
+      "data": "2026-02-06",
+      "orderNumber": 3539,
+      "marca": "Arary",
+      "cliente": "Carolina Nunes",
+      "cidade": "São Paulo",
+      "uf": "SP",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 604.61
+    },
+    {
+      "data": "2026-02-04",
+      "orderNumber": 3522,
+      "marca": "Arary",
+      "cliente": "Diego Vitali",
+      "cidade": "Congonhal",
+      "uf": "MG",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 36.79
+    },
+    {
+      "data": "2026-02-02",
+      "orderNumber": 121,
+      "marca": "V.azevedo",
+      "cliente": "Larissa Lisboa Nascimento",
+      "cidade": "Santa Maria",
+      "uf": "RS",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 240.0
+    },
+    {
+      "data": "2026-02-04",
+      "orderNumber": 3524,
+      "marca": "Arary",
+      "cliente": "Costa",
+      "cidade": "Juazeiro Do Norte",
+      "uf": "CE",
+      "cancelado": false,
+      "status": "DELIVERED",
+      "valor": 6201.0
+    },
+    {
+      "data": "2026-02-11",
+      "orderNumber": 3570,
+      "marca": "Arary",
+      "cliente": "Aparecida",
+      "cidade": "Paulínia",
+      "uf": "SP",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 21.29
+    },
+    {
+      "data": "2026-02-11",
+      "orderNumber": 3575,
+      "marca": "Arary",
+      "cliente": "Maria Francisca Rodrigues Tizatto",
+      "cidade": "Assis",
+      "uf": "SP",
+      "cancelado": false,
+      "status": "DELIVERED",
+      "valor": 488.0
+    },
+    {
+      "data": "2026-02-06",
+      "orderNumber": 3540,
+      "marca": "Arary",
+      "cliente": "Rosiane ",
+      "cidade": "Loanda",
+      "uf": "PR",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 89.6
+    },
+    {
+      "data": "2026-02-03",
+      "orderNumber": 2,
+      "marca": "SANDY",
+      "cliente": "Teste Sandy",
+      "cidade": "São Paulo",
+      "uf": "SP",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 22.98
+    },
+    {
+      "data": "2026-02-09",
+      "orderNumber": 131,
+      "marca": "V.azevedo",
+      "cliente": "Maricele Andrade Martins Gomes",
+      "cidade": "Conselheiro Lafaiete",
+      "uf": "MG",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 950.0
+    },
+    {
+      "data": "2026-02-13",
+      "orderNumber": 3592,
+      "marca": "Arary",
+      "cliente": "Eliza Paula Cesari Santos",
+      "cidade": "Barretos",
+      "uf": "SP",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 795.44
+    },
+    {
+      "data": "2026-02-13",
+      "orderNumber": 3591,
+      "marca": "Arary",
+      "cliente": "Denise Motta",
+      "cidade": "Belo Horizonte",
+      "uf": "MG",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 28.18
+    },
+    {
+      "data": "2026-02-05",
+      "orderNumber": 3528,
+      "marca": "Arary",
+      "cliente": "Ananda Brenda Sousa Oliveira",
+      "cidade": "Imperatriz",
+      "uf": "MA",
+      "cancelado": false,
+      "status": "DELIVERED",
+      "valor": 545.0
+    },
+    {
+      "data": "2026-02-09",
+      "orderNumber": 3555,
+      "marca": "Arary",
+      "cliente": "Cristina",
+      "cidade": "Cambé",
+      "uf": "PR",
+      "cancelado": false,
+      "status": "DELIVERED",
+      "valor": 711.0
+    },
+    {
+      "data": "2026-02-11",
+      "orderNumber": 3,
+      "marca": "",
+      "cliente": "Zatt Teste",
+      "cidade": "São Paulo",
+      "uf": "SP",
+      "cancelado": false,
+      "status": "SEPARATED",
+      "valor": 452.1
+    },
+    {
+      "data": "2026-02-12",
+      "orderNumber": 526,
+      "marca": "CVL Moda - CD Nova Friburgo",
+      "cliente": "Luiza Sharion Caldas Faga",
+      "cidade": "Santos",
+      "uf": "SP",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 31.1
+    },
+    {
+      "data": "2026-02-08",
+      "orderNumber": 3553,
+      "marca": "Arary",
+      "cliente": "Alexandra Fátima Loss",
+      "cidade": "Chapeco",
+      "uf": "SC",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 0.0
+    },
+    {
+      "data": "2026-02-12",
+      "orderNumber": 40,
+      "marca": "Mi&co",
+      "cliente": "Usuário de suporte ",
+      "cidade": "São Paulo",
+      "uf": "SP",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 18.91
+    },
+    {
+      "data": "2026-02-10",
+      "orderNumber": 3562,
+      "marca": "Arary",
+      "cliente": "Izabella Canedo",
+      "cidade": "Coronel Fabriciano",
+      "uf": "MG",
+      "cancelado": false,
+      "status": "DELIVERED",
+      "valor": 2663.0
+    },
+    {
+      "data": "2026-02-13",
+      "orderNumber": 41,
+      "marca": "Mi&co",
+      "cliente": "Espaço Lolita Comercio de Vestuario Eireli ",
+      "cidade": "Maringá",
+      "uf": "PR",
+      "cancelado": false,
+      "status": "SEPARATED",
+      "valor": 1029.0
+    },
+    {
+      "data": "2026-02-09",
+      "orderNumber": 3558,
+      "marca": "Arary",
+      "cliente": "Maria Castro",
+      "cidade": "Uberlândia",
+      "uf": "MG",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 700.0
+    },
+    {
+      "data": "2026-02-11",
+      "orderNumber": 3565,
+      "marca": "Arary",
+      "cliente": "Carla ",
+      "cidade": "Osasco",
+      "uf": "SP",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 390.0
+    },
+    {
+      "data": "2026-02-09",
+      "orderNumber": 489,
+      "marca": "CVL Moda - CD Nova Friburgo",
+      "cliente": "Josilene Siqueira",
+      "cidade": "Santos",
+      "uf": "SP",
+      "cancelado": false,
+      "status": "DELIVERED",
+      "valor": 584.11
+    },
+    {
+      "data": "2026-02-11",
+      "orderNumber": 3,
+      "marca": "Saga Mais",
+      "cliente": "Usuário de suporte ",
+      "cidade": "São Paulo",
+      "uf": "SP",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 25.29
+    },
+    {
+      "data": "2026-02-05",
+      "orderNumber": 125,
+      "marca": "V.azevedo",
+      "cliente": "Claudete Garcia Ribeiro",
+      "cidade": "São Paulo",
+      "uf": "SP",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 690.0
+    },
+    {
+      "data": "2026-02-12",
+      "orderNumber": 3580,
+      "marca": "Arary",
+      "cliente": "Samira Santos Torres",
+      "cidade": "Pirapozinho",
+      "uf": "SP",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 44.32
+    },
+    {
+      "data": "2026-02-02",
+      "orderNumber": 122,
+      "marca": "V.azevedo",
+      "cliente": "Maria Eduarda Lima",
+      "cidade": "Andradas",
+      "uf": "MG",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 310.0
+    },
+    {
+      "data": "2026-02-04",
+      "orderNumber": 3523,
+      "marca": "Arary",
+      "cliente": "Patrcia",
+      "cidade": "São Paulo",
+      "uf": "SP",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 24.99
+    },
+    {
+      "data": "2026-02-07",
+      "orderNumber": 3548,
+      "marca": "Arary",
+      "cliente": "Eva Santos",
+      "cidade": "Vargem Grande Paulista",
+      "uf": "SP",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 21.53
+    },
+    {
+      "data": "2026-02-13",
+      "orderNumber": 534,
+      "marca": "CVL Moda - CD Nova Friburgo",
+      "cliente": "Taimara Gabriela Cardoso ",
+      "cidade": "Toledo",
+      "uf": "PR",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 324.3
+    },
+    {
+      "data": "2026-02-13",
+      "orderNumber": 3590,
+      "marca": "Arary",
+      "cliente": "Gabriela Cardoso Da Silva",
+      "cidade": "Piracicaba",
+      "uf": "SP",
+      "cancelado": false,
+      "status": "DELIVERED",
+      "valor": 640.0
+    },
+    {
+      "data": "2026-02-04",
+      "orderNumber": 3521,
+      "marca": "Arary",
+      "cliente": "Rosilene",
+      "cidade": "Congonhal",
+      "uf": "MG",
+      "cancelado": false,
+      "status": "DELIVERED",
+      "valor": 4917.1
+    },
+    {
+      "data": "2026-02-07",
+      "orderNumber": 3545,
+      "marca": "Arary",
+      "cliente": "Raquel",
+      "cidade": "Fronteiras",
+      "uf": "PI",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 708.0
+    },
+    {
+      "data": "2026-02-10",
+      "orderNumber": 3561,
+      "marca": "Arary",
+      "cliente": "Gislene Aguiar",
+      "cidade": "Joinville",
+      "uf": "SC",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 30.49
+    },
+    {
+      "data": "2026-02-12",
+      "orderNumber": 3586,
+      "marca": "Arary",
+      "cliente": "Thaylana Oliveira",
+      "cidade": "Parauapebas",
+      "uf": "PA",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 45.44
+    },
+    {
+      "data": "2026-02-03",
+      "orderNumber": 7,
+      "marca": "ADsusan",
+      "cliente": "Alessandra Da Silva",
+      "cidade": "Florianópolis",
+      "uf": "SC",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 28.17
+    },
+    {
+      "data": "2026-02-03",
+      "orderNumber": 8,
+      "marca": "ADsusan",
+      "cliente": "Alvin Ricardo Cruz Cori",
+      "cidade": "Itaquaquecetuba",
+      "uf": "SP",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 20.82
+    },
+    {
+      "data": "2026-02-06",
+      "orderNumber": 10,
+      "marca": "ADsusan",
+      "cliente": "Ad Susan Teste",
+      "cidade": "São Paulo",
+      "uf": "SP",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 27.04
+    },
+    {
+      "data": "2026-02-03",
+      "orderNumber": 123,
+      "marca": "V.azevedo",
+      "cliente": "Juliana Duarte",
+      "cidade": "Viçosa",
+      "uf": "MG",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 220.0
+    },
+    {
+      "data": "2026-02-03",
+      "orderNumber": 2,
+      "marca": "",
+      "cliente": "Micaela Miyagusuku",
+      "cidade": "São Bernardo do Campo",
+      "uf": "SP",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 15.99
+    },
+    {
+      "data": "2026-02-12",
+      "orderNumber": 3582,
+      "marca": "Arary",
+      "cliente": "Fernanda Leia Batista Souza Estevo",
+      "cidade": "Nova Mamoré",
+      "uf": "RO",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 0.0
+    },
+    {
+      "data": "2026-02-05",
+      "orderNumber": 3530,
+      "marca": "Arary",
+      "cliente": "Teste Pedido Suporte Vesti",
+      "cidade": "São Paulo",
+      "uf": "SP",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 17.28
+    },
+    {
+      "data": "2026-02-15",
+      "orderNumber": 43,
+      "marca": "Mi&co",
+      "cliente": "Aline Fratoni",
+      "cidade": "Barra do Bugres",
+      "uf": "MT",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 14197.6
+    },
+    {
+      "data": "2026-02-10",
+      "orderNumber": 6,
+      "marca": "SANDY",
+      "cliente": "Evellyn",
+      "cidade": "São Paulo",
+      "uf": "SP",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 29.2
+    },
+    {
+      "data": "2026-02-13",
+      "orderNumber": 3589,
+      "marca": "Arary",
+      "cliente": "Mabe",
+      "cidade": "Otacílio Costa",
+      "uf": "SC",
+      "cancelado": false,
+      "status": "DELIVERED",
+      "valor": 2657.41
+    },
+    {
+      "data": "2026-02-12",
+      "orderNumber": 3584,
+      "marca": "Arary",
+      "cliente": "Sue Kim",
+      "cidade": "Alto Alegre dos Parecis",
+      "uf": "SC",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 442.91
+    },
+    {
+      "data": "2026-02-09",
+      "orderNumber": 3557,
+      "marca": "Arary",
+      "cliente": "Débora Lange",
+      "cidade": "Chapeco",
+      "uf": "SC",
+      "cancelado": false,
+      "status": "DELIVERED",
+      "valor": 1190.0
+    },
+    {
+      "data": "2026-02-09",
+      "orderNumber": 130,
+      "marca": "V.azevedo",
+      "cliente": "Kely Freitas",
+      "cidade": "Registro",
+      "uf": "SP",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 415.0
+    },
+    {
+      "data": "2026-02-13",
+      "orderNumber": 3588,
+      "marca": "Arary",
+      "cliente": "Liliane De Freitas Pereira",
+      "cidade": "Contagem",
+      "uf": "MG",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 72.35
+    },
+    {
+      "data": "2026-02-06",
+      "orderNumber": 126,
+      "marca": "V.azevedo",
+      "cliente": "Nathalia Emporio",
+      "cidade": "Sao Bernardo Do Campo",
+      "uf": "SP",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 210.0
+    },
+    {
+      "data": "2026-02-06",
+      "orderNumber": 3536,
+      "marca": "Arary",
+      "cliente": "Pablo Ficagna",
+      "cidade": "Carapicuíba",
+      "uf": "SP",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 0.0
+    },
+    {
+      "data": "2026-02-14",
+      "orderNumber": 3593,
+      "marca": "Arary",
+      "cliente": "Deide Fabiana De Brito Rezende",
+      "cidade": "Maringá",
+      "uf": "PR",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 106.76
+    },
+    {
+      "data": "2026-02-14",
+      "orderNumber": 3594,
+      "marca": "Arary",
+      "cliente": "Tania Pitondo ",
+      "cidade": "Pinhalzinho",
+      "uf": "SP",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 1600.89
+    },
+    {
+      "data": "2026-02-09",
+      "orderNumber": 129,
+      "marca": "V.azevedo",
+      "cliente": "Larissa Lisboa Nascimento",
+      "cidade": "Santa Maria",
+      "uf": "RS",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 525.0
+    },
+    {
+      "data": "2026-02-08",
+      "orderNumber": 3552,
+      "marca": "Arary",
+      "cliente": "Rolandi Caimare",
+      "cidade": "Ponta Porã",
+      "uf": "MS",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 83.46
+    },
+    {
+      "data": "2026-02-04",
+      "orderNumber": 451,
+      "marca": "CVL Moda - CD Nova Friburgo",
+      "cliente": "Usuário de suporte ",
+      "cidade": "São Paulo",
+      "uf": "SP",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 10.92
+    },
+    {
+      "data": "2026-02-15",
+      "orderNumber": 3595,
+      "marca": "Arary",
+      "cliente": "Juliana Imaculada",
+      "cidade": "Timóteo",
+      "uf": "MG",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 978.61
+    },
+    {
+      "data": "2026-02-10",
+      "orderNumber": 5,
+      "marca": "SANDY",
+      "cliente": "Rosilene",
+      "cidade": "Congonhal",
+      "uf": "MG",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 119.18
+    },
+    {
+      "data": "2026-02-08",
+      "orderNumber": 3551,
+      "marca": "Arary",
+      "cliente": "Caroline Castro E Coelho",
+      "cidade": "Timóteo",
+      "uf": "MG",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 586.98
+    },
+    {
+      "data": "2026-02-09",
+      "orderNumber": 3554,
+      "marca": "Arary",
+      "cliente": "Lidiane Brandino",
+      "cidade": "Duque de Caxias",
+      "uf": "RJ",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 26.81
+    },
+    {
+      "data": "2026-02-04",
+      "orderNumber": 3520,
+      "marca": "Arary",
+      "cliente": "Usuário de suporte ",
+      "cidade": "São Paulo",
+      "uf": "SP",
+      "cancelado": true,
+      "status": "CANCELED",
+      "valor": 24.99
+    }
+  ]
+}

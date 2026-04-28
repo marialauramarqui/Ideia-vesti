@@ -472,6 +472,43 @@ table.dt tr:hover td{background:#FAFAFA}
         <button class="f-btn" onclick="onlogClearFilters()">Limpar</button>
         <button class="help-btn" onclick="document.getElementById('helpOnlog').classList.add('show')" title="Como funciona">?</button>
     </div>
+    <div id="ol-conf" class="tbl-card" style="margin-bottom:16px;background:linear-gradient(135deg,#FFF8F0,#FFFFFF);border:1px dashed #F39C12;display:none">
+        <h4 id="ol-conf-title" style="margin-bottom:8px">Conferencia da quinzena <span style="color:var(--g);font-weight:500;font-size:12px">- planilha do Diogo (Onlog)</span></h4>
+        <p id="ol-conf-sub" style="font-size:12px;color:var(--g);margin-bottom:10px"></p>
+        <div class="kpi-row" style="margin-bottom:10px">
+            <div class="kpi"><div class="ki" style="background:#E0F7F0">&#9989;</div><div class="kl">Pedidos batendo</div><div class="kv" style="color:var(--s)" id="ol-conf-ok">--</div><div class="ks">cliente, destino, cancelado e postagem conferem</div></div>
+            <div class="kpi"><div class="ki" style="background:#FFE5DC">&#10060;</div><div class="kl">Divergencias</div><div class="kv" style="color:var(--d)" id="ol-conf-dif">--</div><div class="ks" id="ol-conf-dif-s">--</div></div>
+            <div class="kpi"><div class="ki" style="background:#FFF3E0">&#128190;</div><div class="kl">So na planilha</div><div class="kv" style="color:var(--w)" id="ol-conf-only">--</div><div class="ks">nao achei no Fabric</div></div>
+            <div class="kpi"><div class="ki" style="background:#E8EAF6">&#128194;</div><div class="kl">So no Fabric</div><div class="kv" style="color:#0984E3" id="ol-conf-miss">--</div><div class="ks">Onlog nao postou ainda / cancelado</div></div>
+        </div>
+        <details open>
+            <summary style="cursor:pointer;font-weight:700;padding:6px 0;color:var(--d)">Divergencias por campo - <span id="ol-conf-dif-c">0</span></summary>
+            <div style="max-height:360px;overflow:auto;margin-top:6px">
+                <table class="dt" id="tConfDif">
+                    <thead><tr><th>Pedido #</th><th>Marca</th><th>Campo</th><th>Planilha (Diogo)</th><th>Fabric (Vesti)</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </details>
+        <details>
+            <summary style="cursor:pointer;font-weight:700;padding:6px 0;color:var(--w)">Pedidos so na planilha - <span id="ol-conf-only-c">0</span></summary>
+            <div style="max-height:300px;overflow:auto;margin-top:6px">
+                <table class="dt" id="tConfOnly">
+                    <thead><tr><th>CodigoVolume</th><th>Pedido #</th><th>Cliente</th><th>Destino</th><th>Status</th><th style="text-align:right">Postagem</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </details>
+        <details>
+            <summary style="cursor:pointer;font-weight:700;padding:6px 0;color:#0984E3">Pedidos so no Fabric - <span id="ol-conf-miss-c">0</span></summary>
+            <div style="max-height:300px;overflow:auto;margin-top:6px">
+                <table class="dt" id="tConfMiss">
+                    <thead><tr><th>Data</th><th>Pedido #</th><th>Marca</th><th>Cliente</th><th>Destino</th><th>Status</th><th style="text-align:right">Valor</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </details>
+    </div>
     <div class="tbl-card">
         <h4 id="ol-tbl-title">Pedidos Onlog &middot; <span id="ol-tbl-count" style="color:var(--g);font-weight:500">--</span></h4>
         <div style="max-height:560px;overflow-y:auto;overflow-x:auto">
@@ -1343,6 +1380,7 @@ function _onlogFilterRows(od){
 function updateOnlog(){
     onlogStatusInit();
     onlogQuinzenaInit();
+    onlogConfRender();
     var od=(typeof ONLOG_DATA!=='undefined'?ONLOG_DATA:null);
     var tb=document.querySelector('#tOnlog tbody');
     if(!od||!od.pedidos||!od.pedidos.length){
@@ -1444,7 +1482,72 @@ function onlogQuinzenaApply(){
     updateOnlog();
 }
 
-// (Onlog: comparacao com Diogo agora vem da fonte/Fabric, nao mais upload)
+// === ONLOG CONFERENCIA QUINZENAL (planilha do Diogo, ingestao via ingest_diogo_onlog.py) ===
+if(typeof ONLOG_DIFF==='undefined')window.ONLOG_DIFF={};
+var _onlogConfRendered=false;
+function onlogConfRender(){
+    if(_onlogConfRendered)return;
+    var d=ONLOG_DIFF;
+    if(!d||!d.quinzena||!d.quinzena.de)return;
+    _onlogConfRendered=true;
+    var box=document.getElementById('ol-conf');if(!box)return;
+    box.style.display='';
+    var qz=d.quinzena,r=d.resumo||{};
+    document.getElementById('ol-conf-title').innerHTML=
+        'Conferencia da quinzena <b>'+esc(qz.de)+' a '+esc(qz.ate)+'</b> '+
+        '<span style="color:var(--g);font-weight:500;font-size:12px">- planilha do Diogo (Onlog)</span>';
+    document.getElementById('ol-conf-sub').textContent=
+        (d.planilhaArquivo||'')+' - '+(r.nPlanilha||0)+' pedido(s) na planilha vs '+(r.nFabric||0)+
+        ' no Fabric. Gerado em '+(d.geradoEm||'').slice(0,16).replace('T',' ');
+    document.getElementById('ol-conf-ok').textContent=(r.ok||0).toLocaleString('pt-BR');
+    document.getElementById('ol-conf-dif').textContent=(r.divergenciasPedidos||0).toLocaleString('pt-BR');
+    document.getElementById('ol-conf-dif-s').textContent=(r.divergencias||0)+' apontamento(s) em '+(r.divergenciasPedidos||0)+' pedido(s)';
+    document.getElementById('ol-conf-only').textContent=(r.soPlanilha||0).toLocaleString('pt-BR');
+    document.getElementById('ol-conf-miss').textContent=(r.soFabric||0).toLocaleString('pt-BR');
+    document.getElementById('ol-conf-dif-c').textContent=r.divergencias||0;
+    document.getElementById('ol-conf-only-c').textContent=r.soPlanilha||0;
+    document.getElementById('ol-conf-miss-c').textContent=r.soFabric||0;
+    function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+    function fmtBRL(v){if(v==null)return '<span style="color:#B2BEC3">&mdash;</span>';return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}
+
+    var tb=document.querySelector('#tConfDif tbody');
+    tb.innerHTML=(d.divergencias||[]).length?d.divergencias.map(function(x){
+        return '<tr>'+
+            '<td style="font-family:monospace">#'+esc(x.orderNumber)+'</td>'+
+            '<td><b>'+esc(x.marca)+'</b></td>'+
+            '<td style="color:var(--d);font-weight:600">'+esc(x.campo)+'</td>'+
+            '<td style="color:var(--g)">'+esc(x.planilha)+'</td>'+
+            '<td>'+esc(x.fabric)+'</td>'+
+        '</tr>';
+    }).join(''):'<tr><td colspan="5" style="text-align:center;color:#999;padding:14px">Nenhuma divergencia.</td></tr>';
+
+    tb=document.querySelector('#tConfOnly tbody');
+    tb.innerHTML=(d.soPlanilha||[]).length?d.soPlanilha.map(function(p){
+        return '<tr>'+
+            '<td style="font-family:monospace">'+esc(p.codigoVolume)+'</td>'+
+            '<td style="font-family:monospace">#'+esc(p.orderNumber)+'</td>'+
+            '<td>'+esc(p.cliente)+'</td>'+
+            '<td>'+esc((p.cidade||'')+'/'+(p.uf||''))+'</td>'+
+            '<td style="font-size:11px;color:var(--g)">'+esc(p.status)+'</td>'+
+            '<td style="text-align:right">'+fmtBRL(p.postagem)+'</td>'+
+        '</tr>';
+    }).join(''):'<tr><td colspan="6" style="text-align:center;color:#999;padding:14px">Nenhum.</td></tr>';
+
+    tb=document.querySelector('#tConfMiss tbody');
+    tb.innerHTML=(d.soFabric||[]).length?d.soFabric.map(function(p){
+        var st=p.cancelado?'Cancelado':onlogStatusPt(p.status);
+        var col=p.cancelado?'#E17055':'var(--g)';
+        return '<tr>'+
+            '<td style="white-space:nowrap;color:var(--g)">'+esc(p.data)+'</td>'+
+            '<td style="font-family:monospace">#'+esc(p.orderNumber)+'</td>'+
+            '<td><b>'+esc(p.marca||'-')+'</b></td>'+
+            '<td>'+esc(p.cliente||'-')+'</td>'+
+            '<td>'+esc((p.cidade||'')+'/'+(p.uf||''))+'</td>'+
+            '<td style="font-size:11px;color:'+col+'">'+esc(st)+'</td>'+
+            '<td style="text-align:right">'+fmtBRL(p.valor)+'</td>'+
+        '</tr>';
+    }).join(''):'<tr><td colspan="7" style="text-align:center;color:#999;padding:14px">Nenhum.</td></tr>';
+}
 
 // === CHURN VESTIPAGO DATA ===
 // CHURN_DATA e injetado pelo merge_data.py via INLINE_DATA (fetch_churn_vestipago.py -> churn_vestipago_data.json)
