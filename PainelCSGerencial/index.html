@@ -6,30 +6,10 @@
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Painel CS Gerencial (build onlog-v4)</title>
-<script>
-window.__BUILD__='onlog-quinzena-v5-'+Date.now();
-console.log('BUILD onlog-quinzena-v5 carregado');
-window.addEventListener('load',function(){
-    var b=document.createElement('div');
-    b.id='ol-dbg';
-    b.style.cssText='position:fixed;bottom:8px;right:8px;background:#2D3436;color:#FFEAA7;padding:8px 12px;border-radius:6px;font:12px monospace;z-index:9999;max-width:480px;white-space:pre-wrap;cursor:pointer';
-    b.textContent='[onlog] build v5 carregado - clique pra fechar';
-    b.onclick=function(){b.style.display='none'};
-    document.body.appendChild(b);
-    // Garantir bind dos handlers, caso onchange inline falhe por algum motivo
-    var qm=document.getElementById('olFQzMes');
-    var qn=document.getElementById('olFQzNum');
-    var fl=document.getElementById('olDiogoFile');
-    if(qm)qm.addEventListener('change',function(){console.log('[onlog] olFQzMes change');if(typeof onlogQuinzenaApply==='function')onlogQuinzenaApply()});
-    if(qn)qn.addEventListener('change',function(){console.log('[onlog] olFQzNum change');if(typeof onlogQuinzenaApply==='function')onlogQuinzenaApply()});
-    if(fl)fl.addEventListener('change',function(){console.log('[onlog] olDiogoFile change');if(typeof onlogUploadDiogo==='function')onlogUploadDiogo(fl)});
-    console.log('[onlog] handlers extra registrados:',{qm:!!qm,qn:!!qn,fl:!!fl});
-});
-</script>
+<title>Painel CS Gerencial</title>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--p:#6C5CE7;--pl:rgba(108,92,231,.15);--s:#00B894;--w:#F39C12;--d:#E17055;--dk:#2D3436;--g:#636E72;--lg:#DFE6E9;--bg:#F8F9FA;--card:#FFF;--sh:0 2px 10px rgba(0,0,0,.07);--r:14px}
@@ -132,7 +112,6 @@ table.dt tr:hover td{background:#FAFAFA}
 </style>
 </head>
 <body>
-<div id="buildChip" style="position:fixed;top:8px;right:8px;background:#00B894;color:#fff;padding:4px 10px;border-radius:12px;font:11px monospace;z-index:9999;box-shadow:0 2px 6px rgba(0,0,0,.2)">build v5 (28-abr 22:35)</div>
 <div id="loginScreen" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#2D3436,#636E72)">
     <div style="background:#fff;border-radius:16px;padding:40px;width:360px;box-shadow:0 8px 32px rgba(0,0,0,.2);text-align:center">
         <div style="font-size:28px;font-weight:700;color:#2D3436;margin-bottom:4px">CS Gerencial</div>
@@ -493,64 +472,6 @@ table.dt tr:hover td{background:#FAFAFA}
         <button class="f-btn" onclick="onlogClearFilters()">Limpar</button>
         <button class="help-btn" onclick="document.getElementById('helpOnlog').classList.add('show')" title="Como funciona">?</button>
     </div>
-    <div class="tbl-card" style="margin-bottom:16px;background:linear-gradient(135deg,#FFF8F0,#FFFFFF);border:1px dashed #F39C12">
-        <h4 style="margin-bottom:8px">Conferencia da planilha do Diogo (Onlog) <span style="color:var(--g);font-weight:500;font-size:12px">- opcional</span></h4>
-        <p style="font-size:12px;color:var(--g);margin-bottom:10px">
-            Escolha a <b>quinzena</b> acima e suba o arquivo <code>Fechamento ONLOG.xlsx</code> que o Diogo manda. O painel
-            compara linha-a-linha com o que esta no Fabric (Mongo + sheets_onlog) e mostra divergencias de cliente, destino,
-            cancelamento e valor de postagem. <b>Nada sai do seu navegador</b> - o arquivo e' lido localmente.
-        </p>
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-            <input type="file" id="olDiogoFile" accept=".xlsx,.xls" onchange="onlogUploadDiogo(this)" style="font-size:12px">
-            <button class="f-btn" onclick="onlogUploadDiogoBtn()" style="background:#00B894;color:#fff;font-weight:700">Comparar agora</button>
-            <button class="f-btn" onclick="onlogClearDiff()" style="background:#FFEAA7;color:#2D3436">Limpar</button>
-            <span id="ol-diff-status" style="font-size:12px;color:var(--g)"></span>
-        </div>
-        <div id="ol-diff-results" style="margin-top:14px;display:none">
-            <div class="kpi-row" style="margin-bottom:10px">
-                <div class="kpi"><div class="ki" style="background:#E0F7F0">&#9989;</div><div class="kl">Pedidos batendo</div><div class="kv" style="color:var(--s)" id="dl-kok">--</div><div class="ks" id="dl-kok-s">cliente, destino e cancelado conferem</div></div>
-                <div class="kpi"><div class="ki" style="background:#FFE5DC">&#10060;</div><div class="kl">Divergencias</div><div class="kv" style="color:var(--d)" id="dl-kdif">--</div><div class="ks">cliente/destino/cancelado divergem</div></div>
-                <div class="kpi"><div class="ki" style="background:#FFF3E0">&#128190;</div><div class="kl">So na planilha</div><div class="kv" style="color:var(--w)" id="dl-konly">--</div><div class="ks">nao achei no Fabric</div></div>
-                <div class="kpi"><div class="ki" style="background:#E8EAF6">&#128194;</div><div class="kl">So no Fabric</div><div class="kv" style="color:#0984E3" id="dl-kmiss">--</div><div class="ks">Onlog nao postou ainda / cancelado</div></div>
-            </div>
-            <details open style="margin-top:10px">
-                <summary style="cursor:pointer;font-weight:700;padding:6px 0;color:var(--d)">Divergencias (cliente / destino / cancelado / postagem) - <span id="dl-dif-count">0</span></summary>
-                <div style="max-height:360px;overflow:auto;margin-top:6px">
-                    <table class="dt" id="tDiffDif">
-                        <thead><tr>
-                            <th>Pedido #</th><th>Marca</th><th>Campo</th>
-                            <th>Planilha (Diogo)</th><th>Fabric (Vesti)</th>
-                        </tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </details>
-            <details style="margin-top:10px">
-                <summary style="cursor:pointer;font-weight:700;padding:6px 0;color:var(--w)">Pedidos so na planilha do Diogo - <span id="dl-only-count">0</span></summary>
-                <div style="max-height:300px;overflow:auto;margin-top:6px">
-                    <table class="dt" id="tDiffOnly">
-                        <thead><tr>
-                            <th>CodigoVolume</th><th>Pedido #</th><th>Cliente</th><th>Destino</th>
-                            <th>Status (planilha)</th><th style="text-align:right">Valor Postagem</th>
-                        </tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </details>
-            <details style="margin-top:10px">
-                <summary style="cursor:pointer;font-weight:700;padding:6px 0;color:#0984E3">Pedidos so no Fabric (na quinzena, sem postagem do Diogo) - <span id="dl-miss-count">0</span></summary>
-                <div style="max-height:300px;overflow:auto;margin-top:6px">
-                    <table class="dt" id="tDiffMiss">
-                        <thead><tr>
-                            <th>Data</th><th>Pedido #</th><th>Marca</th><th>Cliente</th>
-                            <th>Destino</th><th>Status</th><th style="text-align:right">Valor Pedido</th>
-                        </tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </details>
-        </div>
-    </div>
     <div class="tbl-card">
         <h4 id="ol-tbl-title">Pedidos Onlog &middot; <span id="ol-tbl-count" style="color:var(--g);font-weight:500">--</span></h4>
         <div style="max-height:560px;overflow-y:auto;overflow-x:auto">
@@ -714,21 +635,8 @@ table.dt tr:hover td{background:#FAFAFA}
             <li><b>Margem Onlog</b> = <code>Valor Onlog - Valor Postagem</code>. Verde = positiva, vermelho = negativa.</li>
         </ul>
         <p>&mdash; significa sem dado (pedido ainda nao foi postado no fechamento Onlog).</p>
-        <p><b>Conferencia da quinzena (planilha do Diogo):</b></p>
-        <ul>
-            <li>Selecione a <b>quinzena</b> (mes + 1a/2a) no topo da aba.</li>
-            <li>Suba o arquivo <code>Fechamento ONLOG.xlsx</code>. O arquivo e' lido <b>localmente no navegador</b>; nada e' enviado para servidor.</li>
-            <li>O painel cruza pela chave <code>CodigoVolume = domainId_orderNumber</code> e mostra:
-                <ul>
-                    <li><b>Pedidos batendo</b>: cliente, destino, cancelado e postagem conferem.</li>
-                    <li><b>Divergencias</b>: cada campo divergente vira uma linha (planilha vs Fabric).</li>
-                    <li><b>So na planilha</b>: pedido nao achado no Mongo (verificar pedido manual ou problema de ingestao).</li>
-                    <li><b>So no Fabric</b>: pedido feito mas nao postado pela Onlog ainda (ou cancelado e nunca postado).</li>
-                </ul>
-            </li>
-            <li><b>Cancelado</b> aparece quando o Vesti marcou o pedido como cancelado mas a Onlog postou - sinal de alerta.</li>
-            <li><b>Valor Postagem</b> e' comparado com tolerancia de R$ 0,01. Como o Fabric ja ingere a planilha do Diogo (sheets_onlog_fechamento), normalmente bate exato.</li>
-        </ul>
+        <p><b>Conferencia da quinzena:</b></p>
+        <p>A comparacao com a planilha do Diogo agora e feita na fonte (Fabric). O painel ja mostra Cotacao BIA, Valor Onlog, Valor Postagem e Margem de cada pedido cruzados via <code>sheets_onlog_descritivo</code> e <code>sheets_onlog_fechamento</code>.</p>
         <p>Os filtros globais de <b>Empresa</b> e <b>CS</b> (barra superior) tambem se aplicam aqui.</p>
     </div>
 </div>
@@ -1530,272 +1438,26 @@ function onlogQuinzenaInit(){
     document.getElementById('olFAte').value=ate;
 }
 function _lastDayOfMonth(y,m){return new Date(y,m,0).getDate()} // m=1..12
-function _olDbg(msg){
-    var b=document.getElementById('ol-dbg');
-    if(!b){b=document.createElement('div');b.id='ol-dbg';b.style.cssText='position:fixed;bottom:8px;right:8px;background:#2D3436;color:#FFEAA7;padding:8px 12px;border-radius:6px;font:12px monospace;z-index:9999;max-width:480px;white-space:pre-wrap';document.body.appendChild(b)}
-    b.textContent='[onlog] '+msg;
-    console.log('[onlog]',msg);
-}
 function onlogQuinzenaApply(){
-    try{
-        var mesSel=document.getElementById('olFQzMes');
-        var numSel=document.getElementById('olFQzNum');
-        if(!mesSel||!numSel){_olDbg('ERRO: dropdowns nao encontrados');return}
-        if(!mesSel.value){
-            var h=new Date();mesSel.value=h.getFullYear()+'-'+String(h.getMonth()+1).padStart(2,'0');
-        }
-        if(!numSel.value)numSel.value='1';
-        var mes=mesSel.value,num=numSel.value;
-        var y=parseInt(mes.slice(0,4),10),mo=parseInt(mes.slice(5,7),10);
-        var de,ate;
-        if(num==='1'){de=mes+'-01';ate=mes+'-15'}
-        else{de=mes+'-16';ate=mes+'-'+String(_lastDayOfMonth(y,mo)).padStart(2,'0')}
-        document.getElementById('olFDe').value=de;
-        document.getElementById('olFAte').value=ate;
-        document.getElementById('olFDia').value='';
-        _olDbg('quinzena aplicada: '+de+' a '+ate+' - chamando updateOnlog');
-        updateOnlog();
-        _onlogRefreshDiff();
-        var nRows=document.querySelectorAll('#tOnlog tbody tr').length;
-        _olDbg('quinzena '+de+' a '+ate+' OK - '+nRows+' linha(s) na tabela');
-    }catch(e){_olDbg('ERRO: '+e.message);console.error(e);throw e}
-}
-
-// === ONLOG DIFF (planilha do Diogo) ===
-var _onlogDiogoRows=null; // cache do parse mais recente
-
-function _normTxt(s){
-    return String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'')
-        .toUpperCase().replace(/[^A-Z0-9]+/g,' ').trim();
-}
-function _normUF(s){return String(s||'').toUpperCase().trim().slice(0,2)}
-function _parseValBR(v){
-    if(v==null||v==='')return null;
-    if(typeof v==='number')return v;
-    var s=String(v).replace(/\./g,'').replace(',','.');
-    var n=parseFloat(s);return isNaN(n)?null:n;
-}
-
-function onlogClearDiff(){
-    _onlogDiogoRows=null;
-    var f=document.getElementById('olDiogoFile');if(f)f.value='';
-    document.getElementById('ol-diff-status').textContent='';
-    document.getElementById('ol-diff-results').style.display='none';
-}
-
-function onlogUploadDiogoBtn(){
-    var input=document.getElementById('olDiogoFile');
-    if(!input||!input.files||!input.files.length){
-        _olDbg('Nenhum arquivo selecionado. Clique em "Escolher arquivo" primeiro.');
-        var st=document.getElementById('ol-diff-status');if(st){st.textContent='Selecione um arquivo .xlsx primeiro.';st.style.color='#E17055'}
-        return;
+    var mesSel=document.getElementById('olFQzMes');
+    var numSel=document.getElementById('olFQzNum');
+    if(!mesSel||!numSel)return;
+    if(!mesSel.value){
+        var h=new Date();mesSel.value=h.getFullYear()+'-'+String(h.getMonth()+1).padStart(2,'0');
     }
-    onlogUploadDiogo(input);
-}
-function onlogUploadDiogo(input){
-    var file=input.files&&input.files[0];if(!file){_olDbg('upload: nenhum arquivo');return}
-    var st=document.getElementById('ol-diff-status');
-    if(st)st.textContent='Lendo '+file.name+'...';
-    _olDbg('upload: lendo '+file.name+' ('+file.size+' bytes), XLSX='+(typeof XLSX));
-    if(typeof XLSX==='undefined'){
-        if(st)st.textContent='ERRO: biblioteca XLSX nao carregou (CDN bloqueado?). Recarregue a pagina.';
-        _olDbg('XLSX undefined - CDN bloqueado?');
-        return;
-    }
-    var reader=new FileReader();
-    reader.onload=function(e){
-        try{
-            var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});
-            var ws=wb.Sheets[wb.SheetNames[0]];
-            var rows=XLSX.utils.sheet_to_json(ws,{defval:null,raw:true});
-            _onlogDiogoRows=rows;
-            if(st)st.textContent=rows.length+' linhas lidas. Comparando...';
-            _olDbg('upload OK: '+rows.length+' linhas. Chamando _onlogRefreshDiff');
-            _onlogRefreshDiff();
-        }catch(err){
-            if(st)st.textContent='Erro ao ler planilha: '+err.message;
-            _olDbg('ERRO no parse: '+err.message);
-            console.error(err);
-        }
-    };
-    reader.onerror=function(){_olDbg('FileReader erro')};
-    reader.readAsArrayBuffer(file);
+    if(!numSel.value)numSel.value='1';
+    var mes=mesSel.value,num=numSel.value;
+    var y=parseInt(mes.slice(0,4),10),mo=parseInt(mes.slice(5,7),10);
+    var de,ate;
+    if(num==='1'){de=mes+'-01';ate=mes+'-15'}
+    else{de=mes+'-16';ate=mes+'-'+String(_lastDayOfMonth(y,mo)).padStart(2,'0')}
+    document.getElementById('olFDe').value=de;
+    document.getElementById('olFAte').value=ate;
+    document.getElementById('olFDia').value='';
+    updateOnlog();
 }
 
-function _onlogDiogoAggregate(rows,deStr,ateStr){
-    // Agrega linhas da planilha por CodigoVolume (=domainId_orderNumber).
-    // Filtra por data (coluna Data) dentro da quinzena se fornecida.
-    var by={};
-    rows.forEach(function(r){
-        var cv=String(r.CodigoVolume||'').trim();
-        if(!cv||cv.indexOf('_')<0)return;
-        var d=r.Data;var dStr='';
-        if(d instanceof Date)dStr=d.toISOString().slice(0,10);
-        else if(typeof d==='string')dStr=d.slice(0,10);
-        if(deStr&&dStr&&dStr<deStr)return;
-        if(ateStr&&dStr&&dStr>ateStr)return;
-        var k=cv;
-        if(!by[k]){
-            by[k]={
-                codigoVolume:cv,
-                orderNumber:r.NumeroPedido||cv.split('_')[1],
-                domainId:cv.split('_')[0],
-                cliente:r.Destinatario||'',
-                cidade:r.CidadeDestinatario||'',
-                uf:r.UFDestinatario||'',
-                status:r.Status||'',
-                data:dStr,
-                postagem:0,
-                _nLinhas:0
-            };
-        }
-        var v=_parseValBR(r.ValorPostagem);
-        if(v!=null)by[k].postagem+=v;
-        by[k]._nLinhas++;
-    });
-    return by;
-}
-
-function _onlogRefreshDiff(){
-    if(!_onlogDiogoRows)return;
-    var od=(typeof ONLOG_DATA!=='undefined'?ONLOG_DATA:null);
-    if(!od||!od.pedidos){document.getElementById('ol-diff-status').textContent='ONLOG_DATA vazio';return}
-    var de=document.getElementById('olFDe').value;
-    var ate=document.getElementById('olFAte').value;
-    if(!de||!ate){
-        // auto-detectar quinzena pela menor/maior data da planilha
-        var minD=null,maxD=null;
-        _onlogDiogoRows.forEach(function(r){
-            var d=r.Data;var s='';
-            if(d instanceof Date)s=d.toISOString().slice(0,10);
-            else if(typeof d==='string')s=d.slice(0,10);
-            if(!s)return;
-            if(!minD||s<minD)minD=s;
-            if(!maxD||s>maxD)maxD=s;
-        });
-        if(!minD||!maxD){
-            document.getElementById('ol-diff-status').textContent='Nao consegui ler datas da planilha. Selecione a quinzena manualmente (De/Ate).';
-            document.getElementById('ol-diff-results').style.display='none';
-            return;
-        }
-        // arredondar pra quinzena: se min<=15, comeca dia 1; se min>=16, comeca dia 16
-        var y=parseInt(minD.slice(0,4),10),mo=parseInt(minD.slice(5,7),10),dia=parseInt(minD.slice(8,10),10);
-        var mes=minD.slice(0,7);
-        if(dia<=15){de=mes+'-01';ate=mes+'-15';document.getElementById('olFQzNum').value='1';}
-        else{de=mes+'-16';ate=mes+'-'+String(_lastDayOfMonth(y,mo)).padStart(2,'0');document.getElementById('olFQzNum').value='2';}
-        document.getElementById('olFQzMes').value=mes;
-        document.getElementById('olFDe').value=de;
-        document.getElementById('olFAte').value=ate;
-        updateOnlog();
-    }
-    // Lado A: planilha agregada por codigoVolume
-    var planilha=_onlogDiogoAggregate(_onlogDiogoRows,de,ate);
-    // Lado B: pedidos do Mongo na quinzena (todas marcas; respeita filtro CS/empresa global)
-    var fcsGlobal=(fCS&&fCS.value)||'';
-    var selCoLow=selCo?selCo.toLowerCase():'';
-    var fabric={};
-    od.pedidos.forEach(function(p){
-        if(!p.data||p.data<de||p.data>ate)return;
-        if(fcsGlobal&&(p.cs||'')!==fcsGlobal)return;
-        if(selCoLow&&(p.marca||'').toLowerCase().indexOf(selCoLow)<0)return;
-        var k=String(p.dominioId||'')+'_'+String(p.orderNumber||'');
-        fabric[k]=p;
-    });
-
-    var keysAll={};
-    Object.keys(planilha).forEach(function(k){keysAll[k]=1});
-    Object.keys(fabric).forEach(function(k){keysAll[k]=1});
-
-    var dif=[],onlyP=[],onlyF=[],ok=0;
-    Object.keys(keysAll).forEach(function(k){
-        var pl=planilha[k],fa=fabric[k];
-        if(pl&&!fa){onlyP.push(pl);return}
-        if(!pl&&fa){onlyF.push(fa);return}
-        // ambos presentes - comparar campos
-        var divs=[];
-        if(_normTxt(pl.cliente)!==_normTxt(fa.cliente||'')){
-            divs.push({campo:'Cliente',a:pl.cliente,b:fa.cliente||''});
-        }
-        var destP=_normTxt(pl.cidade)+' / '+_normUF(pl.uf);
-        var destF=_normTxt(fa.cidade||'')+' / '+_normUF(fa.uf||'');
-        if(destP!==destF){
-            divs.push({campo:'Destino',a:(pl.cidade||'')+'/'+(pl.uf||''),b:(fa.cidade||'')+'/'+(fa.uf||'')});
-        }
-        if(fa.cancelado){
-            divs.push({campo:'Cancelado',a:'(postado pela Onlog)',b:'CANCELADO no Vesti'});
-        }
-        // postagem: comparar valor (tolerancia 0.01)
-        if(pl.postagem!=null&&fa.valorPostagem!=null){
-            if(Math.abs(pl.postagem-fa.valorPostagem)>0.01){
-                divs.push({campo:'Valor Postagem',
-                    a:'R$ '+pl.postagem.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}),
-                    b:'R$ '+Number(fa.valorPostagem).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})});
-            }
-        }else if(pl.postagem!=null&&fa.valorPostagem==null){
-            divs.push({campo:'Valor Postagem',
-                a:'R$ '+pl.postagem.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}),
-                b:'(sem dado no Fabric)'});
-        }
-        if(divs.length){divs.forEach(function(d){d.orderNumber=fa.orderNumber;d.marca=fa.marca||'-';dif.push(d)})}
-        else ok++;
-    });
-
-    _onlogRenderDiff(ok,dif,onlyP,onlyF);
-    document.getElementById('ol-diff-status').textContent=
-        'Quinzena '+de+' a '+ate+' - '+Object.keys(planilha).length+' pedido(s) na planilha, '+
-        Object.keys(fabric).length+' pedido(s) no Fabric.';
-}
-
-function _onlogRenderDiff(ok,dif,onlyP,onlyF){
-    var box=document.getElementById('ol-diff-results');box.style.display='';
-    document.getElementById('dl-kok').textContent=ok.toLocaleString('pt-BR');
-    // contar pedidos unicos com divergencia
-    var unic={};dif.forEach(function(d){unic[d.orderNumber]=1});
-    document.getElementById('dl-kdif').textContent=Object.keys(unic).length.toLocaleString('pt-BR');
-    document.getElementById('dl-konly').textContent=onlyP.length.toLocaleString('pt-BR');
-    document.getElementById('dl-kmiss').textContent=onlyF.length.toLocaleString('pt-BR');
-    document.getElementById('dl-dif-count').textContent=dif.length;
-    document.getElementById('dl-only-count').textContent=onlyP.length;
-    document.getElementById('dl-miss-count').textContent=onlyF.length;
-
-    var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
-
-    var tb1=document.querySelector('#tDiffDif tbody');
-    tb1.innerHTML=dif.length?dif.map(function(d){
-        return '<tr>'+
-            '<td style="font-family:monospace">#'+esc(d.orderNumber)+'</td>'+
-            '<td><b>'+esc(d.marca)+'</b></td>'+
-            '<td style="color:var(--d);font-weight:600">'+esc(d.campo)+'</td>'+
-            '<td style="color:var(--g)">'+esc(d.a)+'</td>'+
-            '<td>'+esc(d.b)+'</td>'+
-        '</tr>';
-    }).join(''):'<tr><td colspan="5" style="text-align:center;color:#999;padding:14px">Nenhuma divergencia - tudo bate.</td></tr>';
-
-    var tb2=document.querySelector('#tDiffOnly tbody');
-    tb2.innerHTML=onlyP.length?onlyP.map(function(p){
-        return '<tr>'+
-            '<td style="font-family:monospace">'+esc(p.codigoVolume)+'</td>'+
-            '<td style="font-family:monospace">#'+esc(p.orderNumber)+'</td>'+
-            '<td>'+esc(p.cliente)+'</td>'+
-            '<td>'+esc((p.cidade||'')+'/'+(p.uf||''))+'</td>'+
-            '<td style="font-size:11px;color:var(--g)">'+esc(p.status)+'</td>'+
-            '<td style="text-align:right">R$ '+Number(p.postagem||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
-        '</tr>';
-    }).join(''):'<tr><td colspan="6" style="text-align:center;color:#999;padding:14px">Nenhum.</td></tr>';
-
-    var tb3=document.querySelector('#tDiffMiss tbody');
-    tb3.innerHTML=onlyF.length?onlyF.map(function(p){
-        return '<tr>'+
-            '<td style="white-space:nowrap;color:var(--g)">'+esc(p.data)+'</td>'+
-            '<td style="font-family:monospace">#'+esc(p.orderNumber)+'</td>'+
-            '<td><b>'+esc(p.marca||'-')+'</b></td>'+
-            '<td>'+esc(p.cliente||'-')+'</td>'+
-            '<td>'+esc((p.cidade||'')+'/'+(p.uf||''))+'</td>'+
-            '<td style="font-size:11px;color:'+(p.cancelado?'#E17055':'var(--g)')+'">'+esc(p.cancelado?'Cancelado':onlogStatusPt(p.status))+'</td>'+
-            '<td style="text-align:right">R$ '+Number(p.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
-        '</tr>';
-    }).join(''):'<tr><td colspan="7" style="text-align:center;color:#999;padding:14px">Nenhum.</td></tr>';
-}
+// (Onlog: comparacao com Diogo agora vem da fonte/Fabric, nao mais upload)
 
 // === CHURN VESTIPAGO DATA ===
 // CHURN_DATA e injetado pelo merge_data.py via INLINE_DATA (fetch_churn_vestipago.py -> churn_vestipago_data.json)
