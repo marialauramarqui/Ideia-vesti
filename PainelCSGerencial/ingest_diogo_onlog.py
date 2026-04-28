@@ -100,6 +100,20 @@ def detect_quinzena(rows: list[dict]) -> tuple[str, str]:
     return f"{mes}-16", f"{mes}-{monthrange(y, mo)[1]:02d}"
 
 
+def detect_diogo_total(rows: list[dict]) -> float | None:
+    """Detecta a linha totalizadora da planilha do Diogo:
+    todos os campos vazios EXCETO ValorPostagem. Esse e' o valor que ele cobra."""
+    for r in rows:
+        if r.get("Destinatario") or r.get("CodigoInterno") or r.get("CodigoVolume"):
+            continue
+        if r.get("Remetente") or r.get("NumeroPedido") or r.get("NumeroNF"):
+            continue
+        v = parse_val_br(r.get("ValorPostagem"))
+        if v is not None and v > 100:  # totalizador sempre tem valor alto
+            return v
+    return None
+
+
 def aggregate_planilha(rows: list[dict], de: str, ate: str) -> tuple[dict, list]:
     """Retorna (pedidos_por_codigovolume, pa_vesti_avulsas).
 
@@ -281,6 +295,9 @@ def main() -> None:
     print(f"[1/4] Lendo planilha: {xlsx_path.name}")
     raw = read_planilha(xlsx_path)
     print(f"      {len(raw)} linhas brutas")
+    diogo_total = detect_diogo_total(raw)
+    if diogo_total is not None:
+        print(f"      [linha totalizadora detectada] Diogo cobra: R$ {diogo_total:,.2f}")
 
     if args.de and args.ate:
         de, ate = args.de, args.ate
@@ -344,7 +361,10 @@ def main() -> None:
     )
 
     total_geral = round(total_pedidos_planilha + pa_total, 2)
-    total_cobrar = round(total_geral * 1.10, 2)
+    # Custo real = o que o Diogo cobra (linha totalizadora). Fallback: soma da planilha.
+    custo_diogo = round(diogo_total, 2) if diogo_total is not None else total_geral
+    # Receita = custo Diogo * 1.10 (Vesti cobra das marcas o que paga + 10%)
+    total_cobrar = round(custo_diogo * 1.10, 2)
     out = {
         "quinzena": {"de": de, "ate": ate},
         "geradoEm": datetime.now().isoformat(),
@@ -363,6 +383,9 @@ def main() -> None:
             "totalCobrarPedidos": round(total_pedidos_planilha * 1.10, 2),
             "totalCobrarPa": round(pa_total * 1.10, 2),
             "totalCobrarMarcas": total_cobrar,
+            "custoDiogo": custo_diogo,
+            "diogoDetectado": diogo_total is not None,
+            "margemVesti": round(total_cobrar - custo_diogo, 2),
             "nPaVesti": len(pa_vesti),
         },
         "paVesti": pa_vesti,

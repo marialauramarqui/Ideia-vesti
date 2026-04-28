@@ -1636,17 +1636,23 @@ function onlogConfRender(){
     var totalCobrar=rTot.totalCobrarMarcas||0;
     var totalCobrarPed=rTot.totalCobrarPedidos||0;
     var totalCobrarPa=rTot.totalCobrarPa||0;
+    var custoDiogo=rTot.custoDiogo||totalGeral;
+    var diogoDetectado=rTot.diogoDetectado;
+    var margem=rTot.margemVesti||(totalCobrar-custoDiogo);
+    var diogoLabel=diogoDetectado
+        ?'<span style="color:var(--s)">(detectado da planilha)</span>'
+        :'<span style="color:var(--w)">(usando soma; planilha nao tinha linha totalizadora)</span>';
     document.getElementById('ol-conf-saldo').innerHTML=
         '<b>Conferencia financeira:</b><br>'+
-        '<u>Custo (pagar pra Onlog)</u><br>'+
-        '&bull; Postagem dos '+(rTot.nPlanilha||0)+' pedidos com CodigoVolume: <b>'+fmtBRL(totalPedidos)+'</b><br>'+
-        '&bull; Postagem das '+(rTot.nPaVesti||0)+' PA VESTI (avulsas): <b>'+fmtBRL(totalPa)+'</b><br>'+
-        '&bull; <b>Total que a Vesti deve pagar a Onlog: '+fmtBRL(totalGeral)+'</b> <span style="color:var(--g)">(comparar com o valor cobrado pelo Diogo)</span><br>'+
-        '<br><u>Receita (cobrar das marcas, postagem &times; 1.10)</u><br>'+
+        '<u>Custo (Vesti paga Onlog)</u><br>'+
+        '&bull; Soma da planilha: '+(rTot.nPlanilha||0)+' pedidos com CV ('+fmtBRL(totalPedidos)+') + '+(rTot.nPaVesti||0)+' PA VESTI ('+fmtBRL(totalPa)+') = <b>'+fmtBRL(totalGeral)+'</b><br>'+
+        '&bull; <b style="color:var(--d)">Diogo cobra: '+fmtBRL(custoDiogo)+'</b> '+diogoLabel+'<br>'+
+        '&bull; Diferenca: <b>'+fmtBRL(totalGeral-custoDiogo)+'</b> <span style="color:var(--g)">(estornos/cortesias do Diogo)</span><br>'+
+        '<br><u>Receita (Vesti cobra das marcas: custo Diogo &times; 1.10)</u><br>'+
         '&bull; Pedidos do site: <b style="color:var(--s)">'+fmtBRL(totalCobrarPed)+'</b><br>'+
         '&bull; PA VESTI (precisa identificar marca manualmente): <b style="color:var(--s)">'+fmtBRL(totalCobrarPa)+'</b><br>'+
-        '&bull; <b>Total a cobrar das marcas: '+fmtBRL(totalCobrar)+'</b><br>'+
-        '<br>&bull; <b>Margem real da Vesti</b> (receita - custo): <b style="color:var(--p);font-size:15px">'+fmtBRL(totalCobrar-totalGeral)+'</b>';
+        '&bull; <b>Total a cobrar das marcas: '+fmtBRL(totalCobrar)+'</b> <span style="color:var(--g)">(custo Diogo &times; 1.10)</span><br>'+
+        '<br>&bull; <b>Margem da Vesti</b> (cobrado - pago a Onlog): <b style="color:var(--p);font-size:15px">'+fmtBRL(margem)+'</b> <span style="color:var(--g)">(= 10% do custo Diogo)</span>';
 }
 
 // === CHURN VESTIPAGO DATA ===
