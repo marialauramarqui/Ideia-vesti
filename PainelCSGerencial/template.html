@@ -8,13 +8,13 @@
 <meta http-equiv="Expires" content="0">
 <title>Painel CS Gerencial (build onlog-v4)</title>
 <script>
-window.__BUILD__='onlog-quinzena-v4-'+Date.now();
-console.log('BUILD onlog-quinzena-v4 carregado');
+window.__BUILD__='onlog-quinzena-v5-'+Date.now();
+console.log('BUILD onlog-quinzena-v5 carregado');
 window.addEventListener('load',function(){
     var b=document.createElement('div');
     b.id='ol-dbg';
     b.style.cssText='position:fixed;bottom:8px;right:8px;background:#2D3436;color:#FFEAA7;padding:8px 12px;border-radius:6px;font:12px monospace;z-index:9999;max-width:480px;white-space:pre-wrap;cursor:pointer';
-    b.textContent='[onlog] build v4 carregado - clique pra fechar';
+    b.textContent='[onlog] build v5 carregado - clique pra fechar';
     b.onclick=function(){b.style.display='none'};
     document.body.appendChild(b);
     // Garantir bind dos handlers, caso onchange inline falhe por algum motivo
@@ -132,7 +132,7 @@ table.dt tr:hover td{background:#FAFAFA}
 </style>
 </head>
 <body>
-<div id="buildChip" style="position:fixed;top:8px;right:8px;background:#00B894;color:#fff;padding:4px 10px;border-radius:12px;font:11px monospace;z-index:9999;box-shadow:0 2px 6px rgba(0,0,0,.2)">build v4 (28-abr 22:35)</div>
+<div id="buildChip" style="position:fixed;top:8px;right:8px;background:#00B894;color:#fff;padding:4px 10px;border-radius:12px;font:11px monospace;z-index:9999;box-shadow:0 2px 6px rgba(0,0,0,.2)">build v5 (28-abr 22:35)</div>
 <div id="loginScreen" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#2D3436,#636E72)">
     <div style="background:#fff;border-radius:16px;padding:40px;width:360px;box-shadow:0 8px 32px rgba(0,0,0,.2);text-align:center">
         <div style="font-size:28px;font-weight:700;color:#2D3436;margin-bottom:4px">CS Gerencial</div>
@@ -502,7 +502,8 @@ table.dt tr:hover td{background:#FAFAFA}
         </p>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
             <input type="file" id="olDiogoFile" accept=".xlsx,.xls" onchange="onlogUploadDiogo(this)" style="font-size:12px">
-            <button class="f-btn" onclick="onlogClearDiff()" style="background:#FFEAA7;color:#2D3436">Limpar conferencia</button>
+            <button class="f-btn" onclick="onlogUploadDiogoBtn()" style="background:#00B894;color:#fff;font-weight:700">Comparar agora</button>
+            <button class="f-btn" onclick="onlogClearDiff()" style="background:#FFEAA7;color:#2D3436">Limpar</button>
             <span id="ol-diff-status" style="font-size:12px;color:var(--g)"></span>
         </div>
         <div id="ol-diff-results" style="margin-top:14px;display:none">
@@ -1569,6 +1570,15 @@ function onlogClearDiff(){
     document.getElementById('ol-diff-results').style.display='none';
 }
 
+function onlogUploadDiogoBtn(){
+    var input=document.getElementById('olDiogoFile');
+    if(!input||!input.files||!input.files.length){
+        _olDbg('Nenhum arquivo selecionado. Clique em "Escolher arquivo" primeiro.');
+        var st=document.getElementById('ol-diff-status');if(st){st.textContent='Selecione um arquivo .xlsx primeiro.';st.style.color='#E17055'}
+        return;
+    }
+    onlogUploadDiogo(input);
+}
 function onlogUploadDiogo(input){
     var file=input.files&&input.files[0];if(!file){_olDbg('upload: nenhum arquivo');return}
     var st=document.getElementById('ol-diff-status');
