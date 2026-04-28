@@ -640,32 +640,33 @@ function renderCr(){
     document.getElementById('crFee').textContent=fmtC(tot.fee);
     document.getElementById('crLiq').textContent=fmtC(tot.liq);
 
-    // === KPIs Saldo (entradas/saídas/saldo acumulado) ===
-    // Entradas[d] = sum(amount/100) das parcelas paid com due=d (CR)
-    // Saidas[d]  = sum(grossValue) dos pagamentos antec com payDate=d (CP)
-    // Saldo[d]   = Saldo[d-1] + Entradas[d] - Saidas[d]   (acumulado dia-a-dia)
+    // === KPIs Saldo Stark (CR Stark = Fluxo + Antecipação combinados) ===
+    // Entradas[d] = sum(grossValue) de TODOS pagamentos CP por customerPaidAt=d
+    //               (fluxo + antec combinados). Bate com a planilha de auditoria.
+    // Saidas[d]   = sum(amount/100) das parcelas com due=d e status=paid (CR
+    //               liquidações Stark). Bate com a planilha de auditoria.
+    // Saldo[d]    = Saldo[d-1] + Entradas[d] - Saidas[d]   (acumulado dia-a-dia)
     //
     // Respeita o filtro de Data de Recebimento (dDe/dAte):
     //   - Entradas/Saídas KPI = soma do range filtrado (ou hoje se sem filtro)
     //   - Saldo KPI = saldo cumulativo no ultimo dia do range (ou hoje)
     var entradasByDay={}, saidasByDay={};
+    if(window.DADOS&&window.DADOS.pagamentos){
+        window.DADOS.pagamentos.forEach(function(p){
+            if(isTestMarca(p.nomeFantasia))return;
+            var d=(p.customerPaidAt||'').substring(0,10); if(!d)return;
+            entradasByDay[d]=(entradasByDay[d]||0)+(p.grossValue||0);
+        });
+    }
     (window.INVOICES.faturas||[]).forEach(function(f){
         if(isTestMarca(f.nomeFantasia))return;
         ((f.purchase&&f.purchase.installments)||[]).forEach(function(i){
             var d=isoBRTDate(i.due); if(!d)return;
             if(i.status==='paid'){
-                entradasByDay[d]=(entradasByDay[d]||0)+(i.amount||0)/100;
+                saidasByDay[d]=(saidasByDay[d]||0)+(i.amount||0)/100;
             }
         });
     });
-    if(window.DADOS&&window.DADOS.pagamentos){
-        window.DADOS.pagamentos.forEach(function(p){
-            if(isTestMarca(p.nomeFantasia))return;
-            if(!p.isAntecipacao)return;
-            var d=(p.payDate||'').substring(0,10); if(!d)return;
-            saidasByDay[d]=(saidasByDay[d]||0)+(p.grossValue||0);
-        });
-    }
     var uniqDays=[...new Set(Object.keys(entradasByDay).concat(Object.keys(saidasByDay)))].sort();
     var saldoByDay={}, acc=0;
     uniqDays.forEach(function(d){
