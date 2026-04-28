@@ -1527,6 +1527,8 @@ function onlogQuinzenaApply(){
 if(typeof ONLOG_DIFF==='undefined')window.ONLOG_DIFF={};
 var _onlogConfRendered=false;
 function onlogConfRender(){
+    // Card de conferencia desabilitado por enquanto (a pedido)
+    return;
     if(_onlogConfRendered)return;
     var d=ONLOG_DIFF;
     if(!d||!d.quinzena||!d.quinzena.de)return;
