@@ -175,13 +175,19 @@ def patch_onlog_data(onlog_data: dict, planilha: dict, de: str, ate: str) -> tup
         post = round(pl["postagem"], 2)
         p["valorPostagem"] = post
         p["postagemFonte"] = "planilha-diogo"
+        # Status REAL da postagem (Diogo) - sobrepoe o status do Mongo no display
+        if pl.get("status"):
+            p["statusOnlog"] = pl["status"]
         bia = p.get("cotacaoBia")
         bia_f = float(bia) if bia is not None else None
         # Margem = Cotacao BIA - Valor Postagem (lucro real)
-        if bia_f is not None:
+        if bia_f is not None and bia_f > 0:
             p["margemOnlog"] = round(bia_f - post, 2)
+        else:
+            # BIA zerado/ausente -> margem nao calculavel (frete gratis ou erro de cadastro)
+            p["margemOnlog"] = None
         # Valor Ana FINAL = MAX(Cotacao BIA, Valor Postagem * 1.10)
-        if bia_f is not None:
+        if bia_f is not None and bia_f > 0:
             p["valorAnaFinal"] = round(max(bia_f, post * 1.10), 2)
         else:
             p["valorAnaFinal"] = round(post * 1.10, 2)

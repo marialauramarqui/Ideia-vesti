@@ -3,7 +3,7 @@
     "de": "2026-04-01",
     "ate": "2026-04-15"
   },
-  "geradoEm": "2026-04-28T15:56:04.055120",
+  "geradoEm": "2026-04-28T16:54:05.016008",
   "planilhaArquivo": "Vesti Abril.xlsx",
   "resumo": {
     "ok": 202,
@@ -17,22 +17,13 @@
   "divergencias": [],
   "soPlanilha": [
     {
-      "codigoVolume": "1298864_89",
-      "orderNumber": "89",
-      "cliente": "RACHEL QUEIRF3Z",
-      "cidade": "ARAGUATINS",
-      "uf": "TO",
-      "status": "OBJETO EM TRANSFERÊNCIA - POR FAVOR AGUARDE",
-      "postagem": 61.67
-    },
-    {
-      "codigoVolume": "1805647_1084",
-      "orderNumber": "1084",
-      "cliente": "ANTONIA PEIXOTO",
-      "cidade": "BRASEDLIA",
-      "uf": "DF",
-      "status": "ENDERECO NAO LOCALIZADO",
-      "postagem": 22.04
+      "codigoVolume": "157680_7716",
+      "orderNumber": "7716",
+      "cliente": "DANNA MUSYKANT",
+      "cidade": "CACHOEIRINHA",
+      "uf": "RS",
+      "status": "ENTREGUE",
+      "postagem": 104.19
     },
     {
       "codigoVolume": "1355848_3944",
@@ -44,31 +35,13 @@
       "postagem": 36.71
     },
     {
-      "codigoVolume": "14035_5920",
-      "orderNumber": "5920",
-      "cliente": "SILMARA PEREIRA DA SILVA MARTINS",
+      "codigoVolume": "1355848_3928",
+      "orderNumber": "3928",
+      "cliente": "SABRINA VIEIRA",
       "cidade": "SOROCABA",
       "uf": "SP",
       "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
-      "postagem": 22.6
-    },
-    {
-      "codigoVolume": "157680_7796",
-      "orderNumber": "7796",
-      "cliente": "LILIANE MENDONCA",
-      "cidade": "GOIÂNIA",
-      "uf": "GO",
-      "status": "ENTREGUE",
-      "postagem": 59.87
-    },
-    {
-      "codigoVolume": "157680_7779",
-      "orderNumber": "7779",
-      "cliente": "LUCYANNA LINHARES PINHEIRO",
-      "cidade": "PONTE NOVA",
-      "uf": "MG",
-      "status": "ENTREGUE",
-      "postagem": 77.44
+      "postagem": 21.28
     },
     {
       "codigoVolume": "1355848_3932",
@@ -80,31 +53,13 @@
       "postagem": 26.09
     },
     {
-      "codigoVolume": "1355848_3920",
-      "orderNumber": "3920",
-      "cliente": "ELAINE APARECIDA GASPAR GARCIA",
-      "cidade": "SÃO CARLOS",
-      "uf": "SP",
+      "codigoVolume": "157680_7779",
+      "orderNumber": "7779",
+      "cliente": "LUCYANNA LINHARES PINHEIRO",
+      "cidade": "PONTE NOVA",
+      "uf": "MG",
       "status": "ENTREGUE",
-      "postagem": 112.67
-    },
-    {
-      "codigoVolume": "14035_5919",
-      "orderNumber": "5919",
-      "cliente": "MARIANA BERNARDI JOIA",
-      "cidade": "BRASEDLIA",
-      "uf": "DF",
-      "status": "ETIQUETA CANCELADA PELO SISTEMA DE CAPTAÇÃO",
-      "postagem": 68.27
-    },
-    {
-      "codigoVolume": "157680_7716",
-      "orderNumber": "7716",
-      "cliente": "DANNA MUSYKANT",
-      "cidade": "CACHOEIRINHA",
-      "uf": "RS",
-      "status": "ENTREGUE",
-      "postagem": 104.19
+      "postagem": 77.44
     },
     {
       "codigoVolume": "14035_5918",
@@ -116,22 +71,13 @@
       "postagem": 18.34
     },
     {
-      "codigoVolume": "1355848_3928",
-      "orderNumber": "3928",
-      "cliente": "SABRINA VIEIRA",
+      "codigoVolume": "14035_5920",
+      "orderNumber": "5920",
+      "cliente": "SILMARA PEREIRA DA SILVA MARTINS",
       "cidade": "SOROCABA",
       "uf": "SP",
       "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
-      "postagem": 21.28
-    },
-    {
-      "codigoVolume": "1355848_3943",
-      "orderNumber": "3943",
-      "cliente": "MARA BATISTA",
-      "cidade": "PRESIDENTE PRUDENTE",
-      "uf": "SP",
-      "status": "ENTREGUE",
-      "postagem": 23.83
+      "postagem": 22.6
     },
     {
       "codigoVolume": "14035_5677",
@@ -141,6 +87,60 @@
       "uf": "MT",
       "status": "ENTREGUE",
       "postagem": 74.64
+    },
+    {
+      "codigoVolume": "1805647_1084",
+      "orderNumber": "1084",
+      "cliente": "ANTONIA PEIXOTO",
+      "cidade": "BRASEDLIA",
+      "uf": "DF",
+      "status": "ENDERECO NAO LOCALIZADO",
+      "postagem": 22.04
+    },
+    {
+      "codigoVolume": "157680_7796",
+      "orderNumber": "7796",
+      "cliente": "LILIANE MENDONCA",
+      "cidade": "GOIÂNIA",
+      "uf": "GO",
+      "status": "ENTREGUE",
+      "postagem": 59.87
+    },
+    {
+      "codigoVolume": "1355848_3920",
+      "orderNumber": "3920",
+      "cliente": "ELAINE APARECIDA GASPAR GARCIA",
+      "cidade": "SÃO CARLOS",
+      "uf": "SP",
+      "status": "ENTREGUE",
+      "postagem": 112.67
+    },
+    {
+      "codigoVolume": "1298864_89",
+      "orderNumber": "89",
+      "cliente": "RACHEL QUEIRF3Z",
+      "cidade": "ARAGUATINS",
+      "uf": "TO",
+      "status": "OBJETO EM TRANSFERÊNCIA - POR FAVOR AGUARDE",
+      "postagem": 61.67
+    },
+    {
+      "codigoVolume": "14035_5919",
+      "orderNumber": "5919",
+      "cliente": "MARIANA BERNARDI JOIA",
+      "cidade": "BRASEDLIA",
+      "uf": "DF",
+      "status": "ETIQUETA CANCELADA PELO SISTEMA DE CAPTAÇÃO",
+      "postagem": 68.27
+    },
+    {
+      "codigoVolume": "1355848_3943",
+      "orderNumber": "3943",
+      "cliente": "MARA BATISTA",
+      "cidade": "PRESIDENTE PRUDENTE",
+      "uf": "SP",
+      "status": "ENTREGUE",
+      "postagem": 23.83
     },
     {
       "codigoVolume": "157680_7807",
@@ -154,48 +154,15 @@
   ],
   "soFabric": [
     {
-      "data": "2026-04-10",
-      "orderNumber": 974,
+      "data": "2026-04-14",
+      "orderNumber": 989,
       "marca": " Era Uma Vez",
-      "cliente": "Gilmara Ferreira De Almeida",
-      "cidade": "Petrópolis",
-      "uf": "RJ",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 341.49
-    },
-    {
-      "data": "2026-04-08",
-      "orderNumber": 970,
-      "marca": " Era Uma Vez",
-      "cliente": "Carla Rossana Mendonça Fernandes",
-      "cidade": "Tucunduva",
+      "cliente": "Leticia Wallauer",
+      "cidade": "Carazinho",
       "uf": "RS",
       "cancelado": false,
       "status": "WAITING",
-      "valor": 594.47
-    },
-    {
-      "data": "2026-04-14",
-      "orderNumber": 990,
-      "marca": " Era Uma Vez",
-      "cliente": "Barion Bertoletti",
-      "cidade": "Goiânia",
-      "uf": "GO",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 2725.78
-    },
-    {
-      "data": "2026-04-14",
-      "orderNumber": 673,
-      "marca": "FIRE",
-      "cliente": "Nataniel Junior Gonsalves",
-      "cidade": "Carmo do Paranaíba",
-      "uf": "MG",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 726.08
+      "valor": 591.44
     },
     {
       "data": "2026-04-15",
@@ -209,59 +176,15 @@
       "valor": 891.07
     },
     {
-      "data": "2026-04-09",
-      "orderNumber": 971,
+      "data": "2026-04-10",
+      "orderNumber": 975,
       "marca": " Era Uma Vez",
-      "cliente": "Aline Amereles",
-      "cidade": "Londrina",
-      "uf": "PR",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 4879.15
-    },
-    {
-      "data": "2026-04-11",
-      "orderNumber": 979,
-      "marca": " Era Uma Vez",
-      "cliente": "Samanta Da Rocha Silva Machado",
-      "cidade": "Curitiba",
-      "uf": "PR",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 809.5
-    },
-    {
-      "data": "2026-04-15",
-      "orderNumber": 992,
-      "marca": " Era Uma Vez",
-      "cliente": "Aline Amereles",
-      "cidade": "Londrina",
-      "uf": "PR",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 3169.0
-    },
-    {
-      "data": "2026-04-03",
-      "orderNumber": 838,
-      "marca": "KAESSI",
-      "cliente": "Elisabeth Gomes Andrade",
-      "cidade": "Americana",
+      "cliente": "Cintia Bianchi",
+      "cidade": "Cajamar",
       "uf": "SP",
       "cancelado": false,
-      "status": "SENT",
-      "valor": 514.17
-    },
-    {
-      "data": "2026-04-06",
-      "orderNumber": 3963,
-      "marca": "Arary",
-      "cliente": "Vanessa",
-      "cidade": "Papanduva",
-      "uf": "SC",
-      "cancelado": false,
-      "status": "SENT",
-      "valor": 1784.25
+      "status": "WAITING",
+      "valor": 319.85
     },
     {
       "data": "2026-04-15",
@@ -286,37 +209,15 @@
       "valor": 394.23
     },
     {
-      "data": "2026-04-10",
-      "orderNumber": 975,
+      "data": "2026-04-08",
+      "orderNumber": 970,
       "marca": " Era Uma Vez",
-      "cliente": "Cintia Bianchi",
-      "cidade": "Cajamar",
-      "uf": "SP",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 319.85
-    },
-    {
-      "data": "2026-04-14",
-      "orderNumber": 989,
-      "marca": " Era Uma Vez",
-      "cliente": "Leticia Wallauer",
-      "cidade": "Carazinho",
+      "cliente": "Carla Rossana Mendonça Fernandes",
+      "cidade": "Tucunduva",
       "uf": "RS",
       "cancelado": false,
       "status": "WAITING",
-      "valor": 591.44
-    },
-    {
-      "data": "2026-04-15",
-      "orderNumber": 4027,
-      "marca": "Arary",
-      "cliente": "Cleusa Dias Peixoto",
-      "cidade": "Valinhos",
-      "uf": "SP",
-      "cancelado": false,
-      "status": "SENT",
-      "valor": 1724.67
+      "valor": 594.47
     },
     {
       "data": "2026-04-11",
@@ -330,15 +231,48 @@
       "valor": 621.62
     },
     {
-      "data": "2026-04-05",
-      "orderNumber": 841,
+      "data": "2026-04-14",
+      "orderNumber": 673,
+      "marca": "FIRE",
+      "cliente": "Nataniel Junior Gonsalves",
+      "cidade": "Carmo do Paranaíba",
+      "uf": "MG",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 726.08
+    },
+    {
+      "data": "2026-04-15",
+      "orderNumber": 992,
+      "marca": " Era Uma Vez",
+      "cliente": "Aline Amereles",
+      "cidade": "Londrina",
+      "uf": "PR",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 3169.0
+    },
+    {
+      "data": "2026-04-10",
+      "orderNumber": 847,
       "marca": "KAESSI",
-      "cliente": "Ticiana gomes",
-      "cidade": "Itapetininga",
+      "cliente": "Tálita Kitamura",
+      "cidade": "Mogi das Cruzes",
       "uf": "SP",
       "cancelado": false,
       "status": "SENT",
-      "valor": 472.46
+      "valor": 864.49
+    },
+    {
+      "data": "2026-04-11",
+      "orderNumber": 979,
+      "marca": " Era Uma Vez",
+      "cliente": "Samanta Da Rocha Silva Machado",
+      "cidade": "Curitiba",
+      "uf": "PR",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 809.5
     },
     {
       "data": "2026-04-05",
@@ -352,6 +286,39 @@
       "valor": 1020.36
     },
     {
+      "data": "2026-04-05",
+      "orderNumber": 841,
+      "marca": "KAESSI",
+      "cliente": "Ticiana gomes",
+      "cidade": "Itapetininga",
+      "uf": "SP",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 472.46
+    },
+    {
+      "data": "2026-04-10",
+      "orderNumber": 974,
+      "marca": " Era Uma Vez",
+      "cliente": "Gilmara Ferreira De Almeida",
+      "cidade": "Petrópolis",
+      "uf": "RJ",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 341.49
+    },
+    {
+      "data": "2026-04-15",
+      "orderNumber": 4027,
+      "marca": "Arary",
+      "cliente": "Cleusa Dias Peixoto",
+      "cidade": "Valinhos",
+      "uf": "SP",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 1724.67
+    },
+    {
       "data": "2026-04-01",
       "orderNumber": 5697,
       "marca": "Anne Blánc",
@@ -361,6 +328,28 @@
       "cancelado": false,
       "status": "WAITING",
       "valor": 241.17
+    },
+    {
+      "data": "2026-04-03",
+      "orderNumber": 838,
+      "marca": "KAESSI",
+      "cliente": "Elisabeth Gomes Andrade",
+      "cidade": "Americana",
+      "uf": "SP",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 514.17
+    },
+    {
+      "data": "2026-04-06",
+      "orderNumber": 3963,
+      "marca": "Arary",
+      "cliente": "Vanessa",
+      "cidade": "Papanduva",
+      "uf": "SC",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 1784.25
     },
     {
       "data": "2026-04-05",
@@ -374,15 +363,26 @@
       "valor": 420.49
     },
     {
-      "data": "2026-04-10",
-      "orderNumber": 847,
-      "marca": "KAESSI",
-      "cliente": "Tálita Kitamura",
-      "cidade": "Mogi das Cruzes",
-      "uf": "SP",
+      "data": "2026-04-09",
+      "orderNumber": 971,
+      "marca": " Era Uma Vez",
+      "cliente": "Aline Amereles",
+      "cidade": "Londrina",
+      "uf": "PR",
       "cancelado": false,
-      "status": "SENT",
-      "valor": 864.49
+      "status": "WAITING",
+      "valor": 4879.15
+    },
+    {
+      "data": "2026-04-14",
+      "orderNumber": 990,
+      "marca": " Era Uma Vez",
+      "cliente": "Barion Bertoletti",
+      "cidade": "Goiânia",
+      "uf": "GO",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 2725.78
     }
   ]
 }
