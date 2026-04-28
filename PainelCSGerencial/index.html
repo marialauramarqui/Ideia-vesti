@@ -1419,6 +1419,15 @@ function updateOnlog(){
     document.getElementById('ol-tbl-count').textContent=rows.length+' pedido(s)'+per;
     if(!rows.length){tb.innerHTML='<tr><td colspan="14" style="text-align:center;color:#999;padding:24px">Nenhum pedido com os filtros atuais</td></tr>';return}
     var esc=function(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+    // totais por coluna
+    var totVal=0,totBia=0,totAna=0,totPost=0,totMargem=0;
+    rows.forEach(function(p){
+        totVal+=(p.valor||0);
+        if(p.cotacaoBia!=null)totBia+=p.cotacaoBia;
+        if(p.valorAnaFinal!=null)totAna+=p.valorAnaFinal;
+        if(p.valorPostagem!=null)totPost+=p.valorPostagem;
+        if(p.margemOnlog!=null)totMargem+=p.margemOnlog;
+    });
     tb.innerHTML=rows.map(function(p){
         var csEsc=(p.cs||'-').replace(/'/g,"\\'");
         var destino=esc((p.cidade||'-')+(p.uf?'/'+p.uf:''));
@@ -1442,7 +1451,15 @@ function updateOnlog(){
             '<td style="text-align:right;color:#0984E3;white-space:nowrap">'+_olFmt(p.valorPostagem)+'</td>'+
             '<td style="text-align:right;white-space:nowrap;font-weight:600;color:'+((p.margemOnlog==null)?'#B2BEC3':(p.margemOnlog>=0?'var(--s)':'#E17055'))+'">'+_olFmt(p.margemOnlog)+'</td>'+
         '</tr>'
-    }).join('');
+    }).join('')+
+    '<tr style="background:#F0EFFF;font-weight:700;border-top:2px solid var(--p)">'+
+        '<td colspan="9" style="text-align:right;color:var(--dk)">TOTAL ('+rows.length.toLocaleString("pt-BR")+' pedidos)</td>'+
+        '<td style="text-align:right;color:var(--s);white-space:nowrap">R$ '+totVal.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
+        '<td style="text-align:right;color:var(--dk);white-space:nowrap">'+_olFmt(totBia)+'</td>'+
+        '<td style="text-align:right;color:var(--p);white-space:nowrap">'+_olFmt(totAna)+'</td>'+
+        '<td style="text-align:right;color:#0984E3;white-space:nowrap">'+_olFmt(totPost)+'</td>'+
+        '<td style="text-align:right;white-space:nowrap;color:'+(totMargem>=0?"var(--s)":"#E17055")+'">'+_olFmt(totMargem)+'</td>'+
+    '</tr>';
 }
 function _olFmt(v){
     if(v==null||v==='')return '<span style="color:#B2BEC3">&mdash;</span>';
