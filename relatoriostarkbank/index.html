@@ -646,25 +646,25 @@ function renderCr(){
     document.getElementById('crFee').textContent=fmtC(tot.fee);
     document.getElementById('crLiq').textContent=fmtC(tot.liq);
 
-    // === KPIs Saldo Stark — modelo 20% retido (100% via API) ===
+    // === KPIs Saldo Stark — 100% via API ===
     //
-    // Regra de negocio: a Stark Bank retem 20% de cada venda como garantia.
-    // O "saldo Stark" eh o acumulado dos 20% de todas as vendas que a Stark
-    // ainda nao nos pagou. Como nao temos visibilidade de QUANDO a Stark
-    // libera esse 20%, o saldo so cresce com vendas — nunca diminui aqui.
+    // Formula:
+    //   Saldo[hoje] = Saldo[ontem] + Entradas[hoje] - Saidas[hoje]
     //
-    // KPIs:
-    //   Card Entradas: 100% das vendas no dia (purchase.amount)
-    //   Card Saidas:   100% das transferencias Stark no dia (installment paid)
-    //                  — informativo apenas, NAO subtrai do saldo
-    //   Card Saldo:    SALDO_INICIAL + 20% × cumul Entradas, desde Marco Zero
-    //                  ate o ultimo dia do range filtrado.
+    //   onde Entradas[hoje] considera que a Stark so retem 20% das vendas
+    //   (os outros 80% sao antecipados via VP imediatamente, nao entram no
+    //    saldo da Stark). Entao:
+    //     Entradas_no_saldo = 20% × purchase.amount[hoje]
     //
-    // Formula: S[t] = S[t-1] + 0.20 × Entradas[t]
-    //   = SALDO_INICIAL + 0.20 × Σ Entradas[d] ∀ d ∈ [Marco Zero, t]
+    //   E Saidas = liquidacoes Stark no dia (installment paid full amount).
+    //
+    // KPIs visuais:
+    //   Card Entradas: 100% das vendas no dia (purchase.amount) — informativo
+    //   Card Saidas:   100% das liquidacoes Stark no dia (installment paid)
+    //   Card Saldo:    cumulativo aplicando 20% nas entradas, descontando saidas
     var SALDO_MARCO_ZERO = null;       // null = auto (1o dia com saida) | '2026-04-22'
     var SALDO_INICIAL = 0;             // saldo no Marco Zero
-    var TAXA_RETENCAO = 0.20;          // 20% retido pela Stark
+    var TAXA_RETENCAO = 0.20;          // 20% retido pela Stark (Stark antecipa 80%)
     var entradasByDay={}, saidasByDay={};
     (window.INVOICES.faturas||[]).forEach(function(f){
         if(isTestMarca(f.nomeFantasia))return;
@@ -700,13 +700,12 @@ function renderCr(){
             saidasRng += saidasByDay[d]||0;
         }
     });
-    // Saldo cumulativo retido ate rAte (modelo 20% so de entradas):
-    // = SALDO_INICIAL + TAXA_RETENCAO × Σ Entradas[d] de startCum ate rAte
-    // (nao subtrai saidas — nao sabemos quando Stark libera o 20% retido)
+    // Saldo[t] = Saldo[t-1] + 0.20 × Entradas[t] - Saidas[t]
+    //   (Stark retem so 20% das vendas; 80% saiu como antec via VP)
     var saldoFim = SALDO_INICIAL;
     uniqDays.forEach(function(d){
         if(d>=startCum && d<=rAte){
-            saldoFim += TAXA_RETENCAO * (entradasByDay[d]||0);
+            saldoFim += TAXA_RETENCAO * (entradasByDay[d]||0) - (saidasByDay[d]||0);
         }
     });
     document.getElementById('crEntradas').textContent=fmtC(entradasRng);
