@@ -59,7 +59,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--dk);overflo
 .tbl-card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:16px;margin-bottom:16px}
 .tbl-card h4{font-size:13px;font-weight:600;margin-bottom:10px}
 table.dt{width:100%;border-collapse:collapse;font-size:11px}
-table.dt th{text-align:left;padding:6px 8px;background:#F8F9FA;font-weight:600;color:var(--g);font-size:10px;text-transform:uppercase;letter-spacing:.4px;border-bottom:2px solid var(--lg)}
+table.dt th{text-align:left;padding:6px 8px;background:#F8F9FA;font-weight:600;color:var(--g);font-size:10px;text-transform:uppercase;letter-spacing:.4px;border-bottom:2px solid var(--lg);position:sticky;top:0;z-index:3}
+.dt tr.totals-row{position:sticky;top:28px;z-index:2}
+.dt tr.totals-row td{background:#F0EFFF;font-weight:700;border-top:2px solid var(--p);border-bottom:2px solid var(--p)}
 table.dt td{padding:6px 8px;border-bottom:1px solid #f0f0f0}
 table.dt tr:hover td{background:#FAFAFA}
 .badge{display:inline-block;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:600}
@@ -1436,7 +1438,16 @@ function updateOnlog(){
         if(p.valorPostagem!=null)totPost+=p.valorPostagem;
         if(p.margemOnlog!=null)totMargem+=p.margemOnlog;
     });
-    tb.innerHTML=rows.map(function(p){
+    var totalRowHtml=
+        '<tr class="totals-row">'+
+            '<td colspan="9" style="text-align:right;color:var(--dk)">TOTAL ('+rows.length.toLocaleString("pt-BR")+' pedidos)</td>'+
+            '<td style="text-align:right;color:var(--s);white-space:nowrap">R$ '+totVal.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
+            '<td style="text-align:right;color:var(--dk);white-space:nowrap">'+_olFmt(totBia)+'</td>'+
+            '<td style="text-align:right;color:var(--p);white-space:nowrap">'+_olFmt(totAna)+'</td>'+
+            '<td style="text-align:right;color:#0984E3;white-space:nowrap">'+_olFmt(totPost)+'</td>'+
+            '<td style="text-align:right;white-space:nowrap;color:'+(totMargem>=0?"var(--s)":"#E17055")+'">'+_olFmt(totMargem)+'</td>'+
+        '</tr>';
+    tb.innerHTML=totalRowHtml+rows.map(function(p){
         var csEsc=(p.cs||'-').replace(/'/g,"\\'");
         var destino=esc((p.cidade||'-')+(p.uf?'/'+p.uf:''));
         var etqCell=p.comEtiqueta
@@ -1464,15 +1475,7 @@ function updateOnlog(){
             '<td style="text-align:right;color:#0984E3;white-space:nowrap">'+_olFmt(p.valorPostagem)+'</td>'+
             '<td style="text-align:right;white-space:nowrap;font-weight:600;color:'+((p.margemOnlog==null)?'#B2BEC3':(p.margemOnlog>=0?'var(--s)':'#E17055'))+'">'+_olFmt(p.margemOnlog)+'</td>'+
         '</tr>'
-    }).join('')+
-    '<tr style="background:#F0EFFF;font-weight:700;border-top:2px solid var(--p)">'+
-        '<td colspan="9" style="text-align:right;color:var(--dk)">TOTAL ('+rows.length.toLocaleString("pt-BR")+' pedidos)</td>'+
-        '<td style="text-align:right;color:var(--s);white-space:nowrap">R$ '+totVal.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
-        '<td style="text-align:right;color:var(--dk);white-space:nowrap">'+_olFmt(totBia)+'</td>'+
-        '<td style="text-align:right;color:var(--p);white-space:nowrap">'+_olFmt(totAna)+'</td>'+
-        '<td style="text-align:right;color:#0984E3;white-space:nowrap">'+_olFmt(totPost)+'</td>'+
-        '<td style="text-align:right;white-space:nowrap;color:'+(totMargem>=0?"var(--s)":"#E17055")+'">'+_olFmt(totMargem)+'</td>'+
-    '</tr>';
+    }).join('');
 }
 function _olFmt(v){
     if(v==null||v==='')return '<span style="color:#B2BEC3">&mdash;</span>';
