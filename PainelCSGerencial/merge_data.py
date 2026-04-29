@@ -163,7 +163,17 @@ def main() -> None:
     gmv = load("gmv_data.json", {})
     top80 = load("top80_data.json", {})
     onlog = load("onlog_data.json", {})
-    onlog_diff = load("onlog_diff.json", {})
+    # Coleta todas as conferencias quinzenais (onlog_diff_<de>_<ate>.json)
+    onlog_diffs = []
+    for p in sorted(ROOT.glob("onlog_diff_*.json")):
+        try:
+            d = json.loads(p.read_text(encoding="utf-8"))
+            if d.get("quinzena", {}).get("de"):
+                onlog_diffs.append(d)
+        except Exception as e:
+            print(f"[merge] falha lendo {p.name}: {e}")
+    onlog_diffs.sort(key=lambda d: d.get("quinzena", {}).get("de", ""))
+    onlog_diff = onlog_diffs[-1] if onlog_diffs else {}  # ultima como default
     t3plus = load("t3plus_data.json", {})
 
     nps = build_nps(sheets)
@@ -189,6 +199,7 @@ def main() -> None:
         + dump("TOP80_DATA", top80)
         + dump("ONLOG_DATA", onlog)
         + dump("ONLOG_DIFF", onlog_diff)
+        + dump("ONLOG_DIFFS", onlog_diffs)
         + dump("T3PLUS_DATA", t3plus)
     )
     OUT.write_text(content, encoding="utf-8")

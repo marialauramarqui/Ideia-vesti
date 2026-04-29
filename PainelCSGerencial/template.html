@@ -473,43 +473,43 @@ table.dt tr:hover td{background:#FAFAFA}
         <button class="help-btn" onclick="document.getElementById('helpOnlog').classList.add('show')" title="Como funciona">?</button>
     </div>
     <div id="ol-conf" class="tbl-card" style="margin-bottom:16px;background:linear-gradient(135deg,#FFF8F0,#FFFFFF);border:1px dashed #F39C12;display:none">
-        <h4 id="ol-conf-title" style="margin-bottom:8px">Conferencia da quinzena <span style="color:var(--g);font-weight:500;font-size:12px">- planilha do Diogo (Onlog)</span></h4>
+        <h4 id="ol-conf-title" style="margin-bottom:8px">Auditoria da quinzena <span style="color:var(--g);font-weight:500;font-size:12px">- segue o filtro de quinzena acima</span></h4>
         <p id="ol-conf-sub" style="font-size:12px;color:var(--g);margin-bottom:10px"></p>
         <div class="kpi-row" style="margin-bottom:10px">
-            <div class="kpi"><div class="ki" style="background:#E0F7F0">&#9989;</div><div class="kl">Pedidos batendo</div><div class="kv" style="color:var(--s)" id="ol-conf-ok">--</div><div class="ks">cliente, destino, cancelado e postagem conferem</div></div>
-            <div class="kpi"><div class="ki" style="background:#FFE5DC">&#10060;</div><div class="kl">Divergencias</div><div class="kv" style="color:var(--d)" id="ol-conf-dif">--</div><div class="ks" id="ol-conf-dif-s">--</div></div>
-            <div class="kpi"><div class="ki" style="background:#FFF3E0">&#128190;</div><div class="kl">So na planilha</div><div class="kv" style="color:var(--w)" id="ol-conf-only">--</div><div class="ks">nao achei no Fabric</div></div>
-            <div class="kpi"><div class="ki" style="background:#E8EAF6">&#128194;</div><div class="kl">So no Fabric</div><div class="kv" style="color:#0984E3" id="ol-conf-miss">--</div><div class="ks">Onlog nao postou ainda / cancelado</div></div>
+            <div class="kpi"><div class="ki" style="background:#FFF3E0">&#9201;</div><div class="kl">Status atrasado no Mongo</div><div class="kv" style="color:var(--w)" id="ol-aud-status">--</div><div class="ks">postado pela Onlog mas Mongo diz WAITING/SEPARATED</div></div>
+            <div class="kpi"><div class="ki" style="background:#FFE5DC">&#127991;</div><div class="kl">Sem etiqueta no Mongo</div><div class="kv" style="color:var(--d)" id="ol-aud-etiq">--</div><div class="ks">postado mas Vesti nao tem etiqueta gravada</div></div>
+            <div class="kpi"><div class="ki" style="background:#E8EAF6">&#128181;</div><div class="kl">Frete divergente &gt;5%</div><div class="kv" style="color:#0984E3" id="ol-aud-frete">--</div><div class="ks">BIA cobrado difere de Postagem &times; 1.10</div></div>
+            <div class="kpi"><div class="ki" style="background:#E0F7F0">&#9989;</div><div class="kl">Pedidos OK</div><div class="kv" style="color:var(--s)" id="ol-aud-ok">--</div><div class="ks">tudo conferindo na quinzena</div></div>
         </div>
         <details open>
-            <summary style="cursor:pointer;font-weight:700;padding:6px 0;color:var(--d)">Divergencias por campo - <span id="ol-conf-dif-c">0</span></summary>
-            <div style="max-height:360px;overflow:auto;margin-top:6px">
-                <table class="dt" id="tConfDif">
-                    <thead><tr><th>Pedido #</th><th>Marca</th><th>Campo</th><th>Planilha (Diogo)</th><th>Fabric (Vesti)</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </details>
-        <details>
-            <summary style="cursor:pointer;font-weight:700;padding:6px 0;color:var(--w)">Pedidos so na planilha - <span id="ol-conf-only-c">0</span></summary>
+            <summary style="cursor:pointer;font-weight:700;padding:6px 0;color:var(--w)">1. Status atrasado no Mongo - <span id="ol-aud-status-c">0</span> <span style="color:var(--g);font-weight:400">(operacao precisa atualizar status no Vesti)</span></summary>
             <div style="max-height:300px;overflow:auto;margin-top:6px">
-                <table class="dt" id="tConfOnly">
-                    <thead><tr><th>CodigoVolume</th><th>Pedido #</th><th>Cliente</th><th>Destino</th><th>Status</th><th style="text-align:right">Postagem</th></tr></thead>
+                <table class="dt" id="tAudStatus">
+                    <thead><tr><th>Pedido</th><th>Marca</th><th>Cliente</th><th>Status no Mongo</th><th>Status real (Onlog)</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
         </details>
         <details>
-            <summary style="cursor:pointer;font-weight:700;padding:6px 0;color:#0984E3">Pedidos so no Fabric - <span id="ol-conf-miss-c">0</span></summary>
+            <summary style="cursor:pointer;font-weight:700;padding:6px 0;color:var(--d)">2. Sem etiqueta no Mongo - <span id="ol-aud-etiq-c">0</span> <span style="color:var(--g);font-weight:400">(URL da etiqueta nao foi gravada no pedido)</span></summary>
             <div style="max-height:300px;overflow:auto;margin-top:6px">
-                <table class="dt" id="tConfMiss">
-                    <thead><tr><th>Data</th><th>Pedido #</th><th>Marca</th><th>Cliente</th><th>Destino</th><th>Status</th><th style="text-align:right">Valor</th></tr></thead>
+                <table class="dt" id="tAudEtiq">
+                    <thead><tr><th>Data</th><th>Pedido</th><th>Marca</th><th>Cliente</th><th>Status Mongo</th><th>Status Onlog</th><th style="text-align:right">Postagem</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
         </details>
         <details>
-            <summary style="cursor:pointer;font-weight:700;padding:6px 0;color:var(--p)">Postagens Avulsas (PA VESTI) - geradas manualmente fora do site - <span id="ol-conf-pa-c">0</span></summary>
+            <summary style="cursor:pointer;font-weight:700;padding:6px 0;color:#0984E3">3. Frete divergente &gt;5% - <span id="ol-aud-frete-c">0</span> <span style="color:var(--g);font-weight:400">(BIA cobrado vs Postagem &times; 1.10)</span></summary>
+            <div style="max-height:300px;overflow:auto;margin-top:6px">
+                <table class="dt" id="tAudFrete">
+                    <thead><tr><th>Pedido</th><th>Marca</th><th>Cliente</th><th style="text-align:right">Postagem</th><th style="text-align:right">Esperado (P&times;1.10)</th><th style="text-align:right">BIA cobrado</th><th style="text-align:right">Diferenca</th><th style="text-align:right">%</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </details>
+        <details>
+            <summary style="cursor:pointer;font-weight:700;padding:6px 0;color:var(--p)">4. Postagens Avulsas (PA VESTI) - <span id="ol-conf-pa-c">0</span></summary>
             <div style="max-height:300px;overflow:auto;margin-top:6px">
                 <table class="dt" id="tConfPA">
                     <thead><tr><th>Data</th><th>Operador</th><th>Cod.Interno</th><th>NF</th><th>Cliente</th><th>Destino</th><th>Status</th><th style="text-align:right">Postagem</th></tr></thead>
@@ -518,10 +518,10 @@ table.dt tr:hover td{background:#FAFAFA}
             </div>
         </details>
         <details>
-            <summary style="cursor:pointer;font-weight:700;padding:6px 0;color:var(--s)">Cobranca por Marca (Postagem &times; 1.10) - <span id="ol-conf-cob-c">0</span></summary>
+            <summary style="cursor:pointer;font-weight:700;padding:6px 0;color:var(--s)">5. Cobranca por Marca (MAX por pedido) - <span id="ol-conf-cob-c">0</span></summary>
             <div style="max-height:380px;overflow:auto;margin-top:6px">
                 <table class="dt" id="tConfCob">
-                    <thead><tr><th>Marca</th><th>DomainID</th><th style="text-align:right">Pedidos</th><th style="text-align:right">Postagem (custo Vesti)</th><th style="text-align:right">A Cobrar (Postagem x 1.10)</th></tr></thead>
+                    <thead><tr><th>Marca</th><th>DomainID</th><th style="text-align:right">Pedidos</th><th style="text-align:right">Postagem (custo Vesti)</th><th style="text-align:right">A Cobrar (P&times;1.10)</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
@@ -1378,6 +1378,9 @@ function onlogClearFilters(){
     var qn=document.getElementById('olFQzNum');if(qn)qn.value='';
     updateOnlog();
 }
+function _onlogTriggerConfRender(){
+    if(typeof onlogConfRender==='function')onlogConfRender();
+}
 function _onlogFilterRows(od){
     var fcsGlobal=(fCS&&fCS.value)||'';
     var selCoLow=selCo?selCo.toLowerCase():'';
@@ -1525,71 +1528,91 @@ function onlogQuinzenaApply(){
 
 // === ONLOG CONFERENCIA QUINZENAL (planilha do Diogo, ingestao via ingest_diogo_onlog.py) ===
 if(typeof ONLOG_DIFF==='undefined')window.ONLOG_DIFF={};
-var _onlogConfRendered=false;
+if(typeof ONLOG_DIFFS==='undefined')window.ONLOG_DIFFS=[];
+function _onlogPickDiff(){
+    var de=document.getElementById('olFDe').value;
+    var ate=document.getElementById('olFAte').value;
+    if(!de||!ate)return null;
+    // procura diff cuja quinzena bate exato com o filtro de datas
+    for(var i=0;i<ONLOG_DIFFS.length;i++){
+        var q=ONLOG_DIFFS[i].quinzena;
+        if(q&&q.de===de&&q.ate===ate)return ONLOG_DIFFS[i];
+    }
+    return null;
+}
 function onlogConfRender(){
-    // Card de conferencia desabilitado por enquanto (a pedido)
-    return;
-    if(_onlogConfRendered)return;
-    var d=ONLOG_DIFF;
-    if(!d||!d.quinzena||!d.quinzena.de)return;
-    _onlogConfRendered=true;
     var box=document.getElementById('ol-conf');if(!box)return;
+    var d=_onlogPickDiff();
+    if(!d){box.style.display='none';return}
     box.style.display='';
-    var qz=d.quinzena,r=d.resumo||{};
+    var qz=d.quinzena,r=d.resumo||{},aud=d.auditResumo||{};
+    function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+    function fmtBRL(v){if(v==null)return '<span style="color:#B2BEC3">&mdash;</span>';return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}
     document.getElementById('ol-conf-title').innerHTML=
-        'Conferencia da quinzena <b>'+esc(qz.de)+' a '+esc(qz.ate)+'</b> '+
+        'Auditoria da quinzena <b>'+esc(qz.de)+' a '+esc(qz.ate)+'</b> '+
         '<span style="color:var(--g);font-weight:500;font-size:12px">- planilha do Diogo (Onlog)</span>';
     document.getElementById('ol-conf-sub').textContent=
         (d.planilhaArquivo||'')+' - '+(r.nPlanilha||0)+' pedido(s) na planilha vs '+(r.nFabric||0)+
         ' no Fabric. Gerado em '+(d.geradoEm||'').slice(0,16).replace('T',' ');
-    document.getElementById('ol-conf-ok').textContent=(r.ok||0).toLocaleString('pt-BR');
-    document.getElementById('ol-conf-dif').textContent=(r.divergenciasPedidos||0).toLocaleString('pt-BR');
-    document.getElementById('ol-conf-dif-s').textContent=(r.divergencias||0)+' apontamento(s) em '+(r.divergenciasPedidos||0)+' pedido(s)';
-    document.getElementById('ol-conf-only').textContent=(r.soPlanilha||0).toLocaleString('pt-BR');
-    document.getElementById('ol-conf-miss').textContent=(r.soFabric||0).toLocaleString('pt-BR');
-    document.getElementById('ol-conf-dif-c').textContent=r.divergencias||0;
-    document.getElementById('ol-conf-only-c').textContent=r.soPlanilha||0;
-    document.getElementById('ol-conf-miss-c').textContent=r.soFabric||0;
-    function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-    function fmtBRL(v){if(v==null)return '<span style="color:#B2BEC3">&mdash;</span>';return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}
+    var nStatusAtr=aud.statusAtrasado||0;
+    var nSemEtiq=aud.semEtiqueta||0;
+    var nFreteDiv=aud.freteDivergente||0;
+    // Pedidos OK = na planilha, sem nenhum dos 3 problemas
+    var pedidosCom=new Set();
+    (d.auditStatus||[]).forEach(function(x){pedidosCom.add(x.orderNumber)});
+    (d.auditEtiqueta||[]).forEach(function(x){pedidosCom.add(x.orderNumber)});
+    (d.auditFrete||[]).forEach(function(x){pedidosCom.add(x.orderNumber)});
+    var nPedidosOk=Math.max(0,(r.nPlanilha||0)-pedidosCom.size-(r.soPlanilha||0));
+    document.getElementById('ol-aud-status').textContent=nStatusAtr.toLocaleString('pt-BR');
+    document.getElementById('ol-aud-etiq').textContent=nSemEtiq.toLocaleString('pt-BR');
+    document.getElementById('ol-aud-frete').textContent=nFreteDiv.toLocaleString('pt-BR');
+    document.getElementById('ol-aud-ok').textContent=nPedidosOk.toLocaleString('pt-BR');
+    document.getElementById('ol-aud-status-c').textContent=nStatusAtr;
+    document.getElementById('ol-aud-etiq-c').textContent=nSemEtiq;
+    document.getElementById('ol-aud-frete-c').textContent=nFreteDiv;
 
-    var tb=document.querySelector('#tConfDif tbody');
-    tb.innerHTML=(d.divergencias||[]).length?d.divergencias.map(function(x){
+    // 1) Status atrasado
+    var tb=document.querySelector('#tAudStatus tbody');
+    tb.innerHTML=(d.auditStatus||[]).length?d.auditStatus.map(function(x){
         return '<tr>'+
             '<td style="font-family:monospace">#'+esc(x.orderNumber)+'</td>'+
             '<td><b>'+esc(x.marca)+'</b></td>'+
-            '<td style="color:var(--d);font-weight:600">'+esc(x.campo)+'</td>'+
-            '<td style="color:var(--g)">'+esc(x.planilha)+'</td>'+
-            '<td>'+esc(x.fabric)+'</td>'+
+            '<td>'+esc(x.cliente)+'</td>'+
+            '<td style="color:var(--w);font-weight:600">'+esc(onlogStatusPt(x.statusMongo))+'</td>'+
+            '<td style="color:var(--s);font-weight:600">'+esc(x.statusOnlog)+'</td>'+
         '</tr>';
-    }).join(''):'<tr><td colspan="5" style="text-align:center;color:#999;padding:14px">Nenhuma divergencia.</td></tr>';
+    }).join(''):'<tr><td colspan="5" style="text-align:center;color:#999;padding:14px">Nenhum.</td></tr>';
 
-    tb=document.querySelector('#tConfOnly tbody');
-    tb.innerHTML=(d.soPlanilha||[]).length?d.soPlanilha.map(function(p){
+    // 2) Sem etiqueta no Mongo
+    tb=document.querySelector('#tAudEtiq tbody');
+    tb.innerHTML=(d.auditEtiqueta||[]).length?d.auditEtiqueta.map(function(x){
         return '<tr>'+
-            '<td style="font-family:monospace">'+esc(p.codigoVolume)+'</td>'+
-            '<td style="font-family:monospace">#'+esc(p.orderNumber)+'</td>'+
-            '<td>'+esc(p.cliente)+'</td>'+
-            '<td>'+esc((p.cidade||'')+'/'+(p.uf||''))+'</td>'+
-            '<td style="font-size:11px;color:var(--g)">'+esc(p.status)+'</td>'+
-            '<td style="text-align:right">'+fmtBRL(p.postagem)+'</td>'+
-        '</tr>';
-    }).join(''):'<tr><td colspan="6" style="text-align:center;color:#999;padding:14px">Nenhum.</td></tr>';
-
-    tb=document.querySelector('#tConfMiss tbody');
-    tb.innerHTML=(d.soFabric||[]).length?d.soFabric.map(function(p){
-        var st=p.cancelado?'Cancelado':onlogStatusPt(p.status);
-        var col=p.cancelado?'#E17055':'var(--g)';
-        return '<tr>'+
-            '<td style="white-space:nowrap;color:var(--g)">'+esc(p.data)+'</td>'+
-            '<td style="font-family:monospace">#'+esc(p.orderNumber)+'</td>'+
-            '<td><b>'+esc(p.marca||'-')+'</b></td>'+
-            '<td>'+esc(p.cliente||'-')+'</td>'+
-            '<td>'+esc((p.cidade||'')+'/'+(p.uf||''))+'</td>'+
-            '<td style="font-size:11px;color:'+col+'">'+esc(st)+'</td>'+
-            '<td style="text-align:right">'+fmtBRL(p.valor)+'</td>'+
+            '<td style="white-space:nowrap;color:var(--g)">'+esc(x.data)+'</td>'+
+            '<td style="font-family:monospace">#'+esc(x.orderNumber)+'</td>'+
+            '<td><b>'+esc(x.marca)+'</b></td>'+
+            '<td>'+esc(x.cliente)+'</td>'+
+            '<td style="color:var(--w);font-size:11px">'+esc(onlogStatusPt(x.statusMongo))+'</td>'+
+            '<td style="color:var(--s);font-size:11px">'+esc(x.statusOnlog)+'</td>'+
+            '<td style="text-align:right">'+fmtBRL(x.postagem)+'</td>'+
         '</tr>';
     }).join(''):'<tr><td colspan="7" style="text-align:center;color:#999;padding:14px">Nenhum.</td></tr>';
+
+    // 3) Frete divergente
+    tb=document.querySelector('#tAudFrete tbody');
+    tb.innerHTML=(d.auditFrete||[]).length?d.auditFrete.map(function(x){
+        var col=x.diferenca>=0?'var(--s)':'var(--d)';
+        var sign=x.diferenca>=0?'+':'';
+        return '<tr>'+
+            '<td style="font-family:monospace">#'+esc(x.orderNumber)+'</td>'+
+            '<td><b>'+esc(x.marca)+'</b></td>'+
+            '<td>'+esc(x.cliente)+'</td>'+
+            '<td style="text-align:right">'+fmtBRL(x.postagem)+'</td>'+
+            '<td style="text-align:right;color:var(--g)">'+fmtBRL(x.esperado)+'</td>'+
+            '<td style="text-align:right;color:#0984E3">'+fmtBRL(x.biaMongo)+'</td>'+
+            '<td style="text-align:right;color:'+col+';font-weight:700">'+sign+fmtBRL(x.diferenca)+'</td>'+
+            '<td style="text-align:right;color:'+col+'">'+sign+esc(x.diferencaPct)+'%</td>'+
+        '</tr>';
+    }).join(''):'<tr><td colspan="8" style="text-align:center;color:#999;padding:14px">Nenhum.</td></tr>';
 
     // PA VESTI (postagens avulsas)
     var paList=d.paVesti||[];

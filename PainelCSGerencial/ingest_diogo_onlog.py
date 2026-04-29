@@ -37,7 +37,6 @@ except ImportError:
 
 ROOT = Path(__file__).parent
 ONLOG_JSON = ROOT / "onlog_data.json"
-OUT_JSON = ROOT / "onlog_diff.json"
 
 
 def norm_txt(s) -> str:
@@ -326,6 +325,60 @@ def main() -> None:
 
     print(f"[4/4] Comparando")
     ok, dif, only_p, only_f = compare(planilha, fabric)
+
+    # Auditoria simplificada: 3 tipos de problema relevantes
+    audit_status, audit_etiqueta, audit_frete = [], [], []
+    THRESHOLD_FRETE_PCT = 0.05  # 5% de diferença
+    for k, pl in planilha.items():
+        fa = fabric.get(k)
+        if not fa or _is_no_postavel(fa):
+            continue
+        # 1) Status divergente (Mongo nao acompanha o status real da planilha)
+        st_mongo = (fa.get("status") or "").upper()
+        st_pla = (pl.get("status") or "").upper()
+        # Mongo: WAITING/SEPARATED ainda nao postados; SENT em transito; DELIVERED entregue
+        # Planilha: ENTREGUE / EM TRANSITO / etc - se planilha esta avancada e Mongo atras, divergencia
+        mongo_atras = st_mongo in ("WAITING", "SEPARATED") and st_pla and "RETIRADA" not in st_pla
+        if mongo_atras:
+            audit_status.append({
+                "orderNumber": fa.get("orderNumber"),
+                "marca": fa.get("marca", "-"),
+                "cliente": fa.get("cliente", "-"),
+                "statusMongo": fa.get("status") or "-",
+                "statusOnlog": pl.get("status") or "-",
+            })
+        # 2) Etiqueta ausente no Mongo (mas pedido foi postado pelo Diogo)
+        if not fa.get("comEtiqueta"):
+            audit_etiqueta.append({
+                "orderNumber": fa.get("orderNumber"),
+                "marca": fa.get("marca", "-"),
+                "cliente": fa.get("cliente", "-"),
+                "data": fa.get("data"),
+                "statusMongo": fa.get("status") or "-",
+                "statusOnlog": pl.get("status") or "-",
+                "postagem": round(pl["postagem"], 2),
+            })
+        # 3) Diferenca de frete relevante (BIA Mongo vs Postagem*1.10)
+        post = pl["postagem"]
+        bia = fa.get("cotacaoBia")
+        if post and bia and bia > 0:
+            esperado = post * 1.10
+            diff_pct = abs(bia - esperado) / esperado if esperado else 0
+            if diff_pct > THRESHOLD_FRETE_PCT and abs(bia - esperado) > 1.0:
+                audit_frete.append({
+                    "orderNumber": fa.get("orderNumber"),
+                    "marca": fa.get("marca", "-"),
+                    "cliente": fa.get("cliente", "-"),
+                    "postagem": round(post, 2),
+                    "esperado": round(esperado, 2),
+                    "biaMongo": round(bia, 2),
+                    "diferenca": round(bia - esperado, 2),
+                    "diferencaPct": round(diff_pct * 100, 1),
+                })
+
+    print(f"      [auditoria] status atrasado Mongo: {len(audit_status)}")
+    print(f"      [auditoria] sem etiqueta Mongo:    {len(audit_etiqueta)}")
+    print(f"      [auditoria] frete divergente >5%:  {len(audit_frete)}")
     n_dif_uniq = len({d["orderNumber"] for d in dif})
     print(f"      OK={ok}  Divergencias={len(dif)} ({n_dif_uniq} pedidos)")
     print(f"      So planilha={len(only_p)}  So Fabric={len(only_f)}")
@@ -390,6 +443,14 @@ def main() -> None:
         },
         "paVesti": pa_vesti,
         "cobrancaPorMarca": cobranca_lista,
+        "auditStatus": audit_status,
+        "auditEtiqueta": audit_etiqueta,
+        "auditFrete": audit_frete,
+        "auditResumo": {
+            "statusAtrasado": len(audit_status),
+            "semEtiqueta": len(audit_etiqueta),
+            "freteDivergente": len(audit_frete),
+        },
         "divergencias": dif,
         "soPlanilha": [{
             "codigoVolume": p["codigoVolume"],
@@ -412,8 +473,12 @@ def main() -> None:
             "valor": p.get("valor"),
         } for p in only_f],
     }
-    OUT_JSON.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"\n>> {OUT_JSON.name} escrito ({OUT_JSON.stat().st_size//1024} KB)")
+    # Salva por quinzena: onlog_diff_<de>_<ate>.json (multi-quinzenas)
+    out_quinzena = ROOT / f"onlog_diff_{de}_{ate}.json"
+    out_quinzena.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    # Mantem onlog_diff.json como ultimo ingerido (compat)
+    (ROOT / "onlog_diff.json").write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"\n>> {out_quinzena.name} escrito ({out_quinzena.stat().st_size//1024} KB)")
     print(f">> Agora rode: py merge_data.py && py build_html.py")
 
 
