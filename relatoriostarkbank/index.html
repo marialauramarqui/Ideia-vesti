@@ -646,23 +646,28 @@ function renderCr(){
     document.getElementById('crFee').textContent=fmtC(tot.fee);
     document.getElementById('crLiq').textContent=fmtC(tot.liq);
 
-    // === KPIs Saldo Stark — 100% via API (ignora Mongo) ===
+    // === KPIs Saldo Stark — modelo 20% retido (100% via API) ===
     //
-    // Marco Zero (SALDO_MARCO_ZERO): data de inicio do calculo cumulativo.
-    //   null = auto-detecta o primeiro dia com saida (1a liquidacao Stark).
-    //   string ISO (ex: '2026-04-22') = data fixa.
-    // Saldo Inicial (SALDO_INICIAL): saldo no Marco Zero, em BRL. 0 = parte do zero.
+    // Regra de negocio: a Stark Bank retem 20% de cada venda como garantia
+    // (os outros 80% sao antecipados pra marca via VP). O "saldo Stark" eh
+    // o acumulado dos 20% de todas as vendas que ainda nao foram liquidadas
+    // pela Stark.
     //
-    // Calculo:
-    //   Entradas[d] = sum(purchase.amount BRT) por dia       — vendas no dia
-    //   Saidas[d]   = sum(installment.amount paid) por due   — repasses Stark
-    //   Saldo[d]    = SALDO_INICIAL + sum(entradas - saidas) de Marco Zero ate d
+    // KPIs:
+    //   Card Entradas: 100% das vendas no dia (purchase.amount)
+    //   Card Saidas:   100% das transferencias Stark no dia (installment paid)
+    //   Card Saldo:    20% × (cumul Entradas - cumul Saidas) cumulativo desde
+    //                  Marco Zero ate o ultimo dia do range filtrado.
+    //
+    // Formula: S[t] = S[t-1] + 0.20 × (Entradas[t] - Saidas[t])
+    //   = SALDO_INICIAL + 0.20 × Σ (Entradas[d] - Saidas[d]) ∀ d ∈ [Marco Zero, t]
     //
     // Interpretacao:
-    //   - Saldo subindo  = Stark retendo (20% retido + parcelas longas a liberar)
-    //   - Saldo caindo   = liberacao de lote / repasse maior naquele dia
-    var SALDO_MARCO_ZERO = null; // ou ex: '2026-04-22'
-    var SALDO_INICIAL = 0;
+    //   - Saldo subindo:  Stark esta retendo (mais vendas do que liquidacoes)
+    //   - Saldo caindo:   houve repasse de lote / Stark liberou mais que reteve
+    var SALDO_MARCO_ZERO = null;       // null = auto (1o dia com saida) | '2026-04-22'
+    var SALDO_INICIAL = 0;             // saldo no Marco Zero
+    var TAXA_RETENCAO = 0.20;          // 20% retido pela Stark
     var entradasByDay={}, saidasByDay={};
     (window.INVOICES.faturas||[]).forEach(function(f){
         if(isTestMarca(f.nomeFantasia))return;
@@ -698,11 +703,12 @@ function renderCr(){
             saidasRng += saidasByDay[d]||0;
         }
     });
-    // Saldo cumulativo ate rAte (= SALDO_INICIAL + Σ(ent-sai) de startCum a rAte)
+    // Saldo cumulativo retido ate rAte (modelo 20%):
+    // = SALDO_INICIAL + TAXA_RETENCAO × Σ (ent - sai) de startCum ate rAte
     var saldoFim = SALDO_INICIAL;
     uniqDays.forEach(function(d){
         if(d>=startCum && d<=rAte){
-            saldoFim += (entradasByDay[d]||0) - (saidasByDay[d]||0);
+            saldoFim += TAXA_RETENCAO * ((entradasByDay[d]||0) - (saidasByDay[d]||0));
         }
     });
     document.getElementById('crEntradas').textContent=fmtC(entradasRng);
