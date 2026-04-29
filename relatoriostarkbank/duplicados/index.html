@@ -162,10 +162,10 @@ function render(){
         var p = f.purchase || {};
         // Filtra status: so pago/confirmado/pendente. Ignora denied/voided/failed.
         if(!statusValido(p.status))return;
-        // Detecta estorno: Stark zera amount das installments em vez de virar voided.
-        // Se soma das parcelas = 0 com purchase.amount > 0, foi estornado.
+        // Detecta estorno: Stark zera amount (e installments.amount) em vez de
+        // mudar status pra voided. Qualquer purchase com valor zerado = estornada.
         var somaInst = (p.installments||[]).reduce(function(s,i){return s+(i.amount||0)},0);
-        if((p.amount||0)>0 && somaInst===0)return;
+        if((p.amount||0)===0 || somaInst===0)return;
         var oid = f.orderId || '';
         if(!oid)return;
         var dC = isoBRT((f.purchase && f.purchase.created) || f.orderDate);
