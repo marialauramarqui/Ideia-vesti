@@ -678,13 +678,6 @@ function renderCr(){
     var rDe = dDe || pDe || hojeISO;
     var rAte = dAte || pAte || rDe;
     var uniqDays=[...new Set(Object.keys(entradasByDay).concat(Object.keys(saidasByDay)))].sort();
-    // Saldo cumulativo dia-a-dia desde o primeiro dia com dado.
-    // Saldo[d] = Saldo[d-1] + Entradas[d] - Saidas[d]
-    var saldoByDay={}, acc=0;
-    uniqDays.forEach(function(d){
-        acc += (entradasByDay[d]||0) - (saidasByDay[d]||0);
-        saldoByDay[d] = acc;
-    });
     // Soma entradas/saidas no range filtrado
     var entradasRng=0, saidasRng=0;
     uniqDays.forEach(function(d){
@@ -693,12 +686,8 @@ function renderCr(){
             saidasRng += saidasByDay[d]||0;
         }
     });
-    // Saldo no fim do range = saldo acumulado no ultimo dia <= rAte
-    // (= saldo[ontem] + entradas[hoje] - saidas[hoje], onde saldo[ontem] eh
-    //  o cumulativo do dia anterior na sequencia de dados disponiveis)
-    var saldoFim = 0;
-    var ultimo = uniqDays.filter(function(x){return x<=rAte}).pop();
-    if(ultimo!==undefined) saldoFim = saldoByDay[ultimo];
+    // Saldo do periodo = entradas[range] - saidas[range]   (nao cumulativo)
+    var saldoFim = entradasRng - saidasRng;
     document.getElementById('crEntradas').textContent=fmtC(entradasRng);
     document.getElementById('crSaidas').textContent=fmtC(saidasRng);
     document.getElementById('crSaldo').textContent=fmtC(saldoFim);
