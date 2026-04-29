@@ -684,7 +684,12 @@ function renderCr(){
     var rDe = dDe || pDe || hojeISO;
     var rAte = dAte || pAte || rDe;
     var uniqDays=[...new Set(Object.keys(entradasByDay).concat(Object.keys(saidasByDay)))].sort();
-    // Soma entradas/saidas no range filtrado
+    // Saldo cumulativo a partir do primeiro dia com saida (= primeiro dia em
+    // que a Stark realmente liquidou parcelas, marca o inicio da operacao real
+    // — ignora periodo de pre-producao com vendas mas sem liquidacoes).
+    var startCum = uniqDays.find(function(d){return (saidasByDay[d]||0) > 0});
+    if(!startCum) startCum = uniqDays[0] || rDe;
+    // Soma entradas/saidas no range filtrado (KPIs Entradas/Saidas)
     var entradasRng=0, saidasRng=0;
     uniqDays.forEach(function(d){
         if(d>=rDe && d<=rAte){
@@ -692,8 +697,14 @@ function renderCr(){
             saidasRng += saidasByDay[d]||0;
         }
     });
-    // Saldo do periodo = entradas[range] - saidas[range]   (nao cumulativo)
-    var saldoFim = entradasRng - saidasRng;
+    // Saldo cumulativo ate o ultimo dia do range (saldo[rAte])
+    // = soma (entradas - saidas) de todos os dias entre startCum e rAte
+    var saldoFim = 0;
+    uniqDays.forEach(function(d){
+        if(d>=startCum && d<=rAte){
+            saldoFim += (entradasByDay[d]||0) - (saidasByDay[d]||0);
+        }
+    });
     document.getElementById('crEntradas').textContent=fmtC(entradasRng);
     document.getElementById('crSaidas').textContent=fmtC(saidasRng);
     document.getElementById('crSaldo').textContent=fmtC(saldoFim);
