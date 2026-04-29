@@ -648,23 +648,11 @@ function renderCr(){
 
     // === KPIs Saldo Stark — 100% via API ===
     //
-    // Formula:
-    //   Saldo[hoje] = Saldo[ontem] + Entradas[hoje] - Saidas[hoje]
-    //
-    //   onde Entradas[hoje] considera que a Stark so retem 20% das vendas
-    //   (os outros 80% sao antecipados via VP imediatamente, nao entram no
-    //    saldo da Stark). Entao:
-    //     Entradas_no_saldo = 20% × purchase.amount[hoje]
-    //
-    //   E Saidas = liquidacoes Stark no dia (installment paid full amount).
-    //
-    // KPIs visuais:
-    //   Card Entradas: 100% das vendas no dia (purchase.amount) — informativo
-    //   Card Saidas:   100% das liquidacoes Stark no dia (installment paid)
-    //   Card Saldo:    cumulativo aplicando 20% nas entradas, descontando saidas
+    // Entradas[d] = vendas do dia (purchase.amount BRT)
+    // Saidas[d]   = liquidacoes Stark no dia (installment.amount paid por due BRT)
+    // Saldo[d]    = Saldo[d-1] + Entradas[d] - Saidas[d]   (cumulativo simples)
     var SALDO_MARCO_ZERO = null;       // null = auto (1o dia com saida) | '2026-04-22'
     var SALDO_INICIAL = 0;             // saldo no Marco Zero
-    var TAXA_RETENCAO = 0.20;          // 20% retido pela Stark (Stark antecipa 80%)
     var entradasByDay={}, saidasByDay={};
     (window.INVOICES.faturas||[]).forEach(function(f){
         if(isTestMarca(f.nomeFantasia))return;
@@ -700,12 +688,11 @@ function renderCr(){
             saidasRng += saidasByDay[d]||0;
         }
     });
-    // Saldo[t] = Saldo[t-1] + 0.20 × Entradas[t] - Saidas[t]
-    //   (Stark retem so 20% das vendas; 80% saiu como antec via VP)
+    // Saldo[t] = Saldo[t-1] + Entradas[t] - Saidas[t]   (cumulativo simples)
     var saldoFim = SALDO_INICIAL;
     uniqDays.forEach(function(d){
         if(d>=startCum && d<=rAte){
-            saldoFim += TAXA_RETENCAO * (entradasByDay[d]||0) - (saidasByDay[d]||0);
+            saldoFim += (entradasByDay[d]||0) - (saidasByDay[d]||0);
         }
     });
     document.getElementById('crEntradas').textContent=fmtC(entradasRng);
