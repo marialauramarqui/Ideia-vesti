@@ -1485,12 +1485,20 @@ function _olFmt(v){
     return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 function _onlogBuildExportData(){
-    var od=(typeof ONLOG_DATA!=='undefined'?ONLOG_DATA:null);
-    if(!od||!od.pedidos){alert('Sem dados para exportar.');return null}
-    var rows=_onlogFilterRows(od);
-    rows.sort(function(a,b){return (b.data||'').localeCompare(a.data||'')||(b.orderNumber||0)-(a.orderNumber||0)});
-    if(!rows.length){alert('Nenhum pedido com os filtros atuais.');return null}
-    return rows;
+    try{
+        var od=(typeof ONLOG_DATA!=='undefined'?ONLOG_DATA:null);
+        console.log('[export] ONLOG_DATA:',od&&od.pedidos?od.pedidos.length+' pedidos':'NULO');
+        if(!od||!od.pedidos){alert('ONLOG_DATA nao carregou. Recarregue a pagina (Ctrl+F5).');return null}
+        var rows=_onlogFilterRows(od);
+        console.log('[export] apos filtros:',rows.length,'linhas');
+        rows.sort(function(a,b){return (b.data||'').localeCompare(a.data||'')||(b.orderNumber||0)-(a.orderNumber||0)});
+        if(!rows.length){alert('Nenhum pedido bate com os filtros atuais.\nDe='+(document.getElementById('olFDe')||{}).value+' Ate='+(document.getElementById('olFAte')||{}).value);return null}
+        return rows;
+    }catch(e){
+        alert('Erro ao montar dados: '+e.message);
+        console.error('[export] erro em _onlogBuildExportData:',e);
+        return null;
+    }
 }
 function onlogExportExcel(){
     var rows=_onlogBuildExportData();if(!rows)return;
