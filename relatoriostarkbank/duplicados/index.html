@@ -27,7 +27,10 @@ th{background:#FAFBFC;color:var(--mut);font-weight:600;font-size:11px;text-trans
 td.r,th.r{text-align:right}
 tr.ord{background:#FFF6E6}
 tr.ord td{font-weight:600}
-tr.dup td{color:var(--r)}
+tr.first{background:#D4F4DD}
+tr.first td{color:#0a6e3d}
+tr.dupl{background:#FFD4D4}
+tr.dupl td{color:#a31515}
 .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
 .badge.dup{background:var(--r);color:#fff}
 .badge.ok{background:var(--g);color:#fff}
@@ -143,7 +146,11 @@ function render(){
     }
     var html = [];
     dupOrderIds.sort(function(a,b){return byOrder[b].length - byOrder[a].length}).forEach(function(oid){
-        var lst = byOrder[oid];
+        var lst = byOrder[oid].slice().sort(function(a,b){
+            var ca=(a.purchase&&a.purchase.created)||'';
+            var cb=(b.purchase&&b.purchase.created)||'';
+            return ca.localeCompare(cb); // mais antigo primeiro
+        });
         var total = lst.reduce(function(s,f){return s + ((f.purchase&&f.purchase.amount)||0)/100}, 0);
         var marca = lst[0].nomeFantasia || '?';
         var cust = lst[0].customerName || (lst[0].purchase && lst[0].purchase.holderName) || '?';
@@ -155,14 +162,25 @@ function render(){
             '<td class="r">'+lst.length+'</td>'+
             '<td class="r">'+fmtC(total)+'</td><td></td></tr>'
         );
-        lst.forEach(function(f){
+        // Renderiza: duplicados (mais novos) PRIMEIRO no DOM (em cima),
+        // primeiro pago (mais antigo) POR ULTIMO no DOM (em baixo).
+        // lst esta em ordem cronologica (mais antigo -> mais novo).
+        // Ja' que queremos mais novo primeiro: itera reverse.
+        lst.slice().reverse().forEach(function(f, idx){
             var p = f.purchase || {};
             var when = isoBRTfull(p.created);
             var amt = (p.amount||0)/100;
+            // idx=0 (no array reverso) = mais novo = duplicado.
+            // o ultimo do array reverso = mais antigo = primeiro pago.
+            var isFirst = (idx === lst.length-1);
+            var rowCls = isFirst ? 'first' : 'dupl';
+            var rowBadge = isFirst
+                ? '<span class="badge ok">PAGO 1º</span>'
+                : '<span class="badge dup">DUPLICADO</span>';
             html.push(
-                '<tr class="dup"><td colspan="2" style="padding-left:32px"><span class="mono">purchase '+f.transactionId+'</span></td>'+
+                '<tr class="'+rowCls+'"><td colspan="2" style="padding-left:32px"><span class="mono">purchase '+f.transactionId+'</span> '+rowBadge+'</td>'+
                 '<td>'+(p.holderName||'')+'</td>'+
-                '<td>'+when+'</td>'+
+                '<td>'+when+' BRT</td>'+
                 '<td class="r">'+(p.installmentCount||1)+' parc</td>'+
                 '<td class="r">'+fmtC(amt)+'</td>'+
                 '<td><span class="mono">'+(p.cardEnding?'card '+p.cardEnding:'')+' '+(p.endToEndId||'')+'</span></td></tr>'
