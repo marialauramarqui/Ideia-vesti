@@ -66,12 +66,11 @@ tr.dupl td{color:#a31515}
             <th>Pedido (orderId)</th>
             <th>Marca</th>
             <th>Cliente</th>
-            <th>Data compra (BRT)</th>
+            <th>Hora(s) BRT</th>
             <th class="r">Purchases</th>
             <th class="r">Valor total</th>
-            <th>Detalhes</th>
         </tr></thead>
-        <tbody id="tbody"><tr><td colspan="7" class="empty">Carregando…</td></tr></tbody>
+        <tbody id="tbody"><tr><td colspan="6" class="empty">Carregando…</td></tr></tbody>
     </table></div>
 </div>
 
@@ -147,51 +146,33 @@ function render(){
 
     var tbody = document.getElementById('tbody');
     if(!dupOrderIds.length){
-        tbody.innerHTML = '<tr><td colspan="7" class="empty">Nenhum pedido com duplicidade'+(fOrd?' (busca: '+fOrd+')':'')+'</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="empty">Nenhum pedido com duplicidade'+(fOrd?' (busca: '+fOrd+')':'')+'</td></tr>';
         return;
     }
     var html = [];
     dupOrderIds.sort(function(a,b){return byOrder[b].length - byOrder[a].length}).forEach(function(oid){
         var lst = byOrder[oid].slice().sort(function(a,b){
-            var ca=(a.purchase&&a.purchase.created)||'';
-            var cb=(b.purchase&&b.purchase.created)||'';
-            return ca.localeCompare(cb); // mais antigo primeiro
+            return ((a.purchase&&a.purchase.created)||'').localeCompare((b.purchase&&b.purchase.created)||'');
         });
         var total = lst.reduce(function(s,f){return s + ((f.purchase&&f.purchase.amount)||0)/100}, 0);
         var marca = lst[0].nomeFantasia || '?';
         var cust = lst[0].customerName || (lst[0].purchase && lst[0].purchase.holderName) || '?';
-        var dt = isoBRT(lst[0].purchase && lst[0].purchase.created);
-        var dupBadge = lst.length>1 ? '<span class="badge dup">DUPLICADO</span>' : '<span class="badge ok">único</span>';
+        var dtFirst = isoBRTfull(lst[0].purchase && lst[0].purchase.created);
+        var dtLast  = isoBRTfull(lst[lst.length-1].purchase && lst[lst.length-1].purchase.created);
+        var isDup = lst.length > 1;
+        var rowCls = isDup ? 'dupl' : 'first';
+        var badge = isDup ? '<span class="badge dup">DUPLICADO</span>' : '<span class="badge ok">único</span>';
+        var horas = isDup ? (dtFirst+' BRT → '+dtLast+' BRT') : (dtFirst+' BRT');
         html.push(
-            '<tr class="ord"><td><span class="mono">'+oid+'</span> '+dupBadge+'</td>'+
-            '<td>'+marca+'</td><td>'+cust+'</td><td>'+dt+'</td>'+
+            '<tr class="'+rowCls+'">'+
+            '<td><span class="mono">'+oid+'</span> '+badge+'</td>'+
+            '<td>'+marca+'</td>'+
+            '<td>'+cust+'</td>'+
+            '<td>'+horas+'</td>'+
             '<td class="r">'+lst.length+'</td>'+
-            '<td class="r">'+fmtC(total)+'</td><td></td></tr>'
+            '<td class="r">'+fmtC(total)+'</td>'+
+            '</tr>'
         );
-        // Renderiza: duplicados (mais novos) PRIMEIRO no DOM (em cima),
-        // primeiro pago (mais antigo) POR ULTIMO no DOM (em baixo).
-        // lst esta em ordem cronologica (mais antigo -> mais novo).
-        // Ja' que queremos mais novo primeiro: itera reverse.
-        lst.slice().reverse().forEach(function(f, idx){
-            var p = f.purchase || {};
-            var when = isoBRTfull(p.created);
-            var amt = (p.amount||0)/100;
-            // idx=0 (no array reverso) = mais novo = duplicado.
-            // o ultimo do array reverso = mais antigo = primeiro pago.
-            var isFirst = (idx === lst.length-1);
-            var rowCls = isFirst ? 'first' : 'dupl';
-            var rowBadge = isFirst
-                ? '<span class="badge ok">PAGO 1º</span>'
-                : '<span class="badge dup">DUPLICADO</span>';
-            html.push(
-                '<tr class="'+rowCls+'"><td colspan="2" style="padding-left:32px"><span class="mono">purchase '+f.transactionId+'</span> '+rowBadge+' <span class="mono" style="color:#637282">'+(p.status||'')+'</span></td>'+
-                '<td>'+(p.holderName||'')+'</td>'+
-                '<td>'+when+' BRT</td>'+
-                '<td class="r">'+(p.installmentCount||1)+' parc</td>'+
-                '<td class="r">'+fmtC(amt)+'</td>'+
-                '<td><span class="mono">'+(p.cardEnding?'card '+p.cardEnding:'')+' '+(p.endToEndId||'')+'</span></td></tr>'
-            );
-        });
     });
     tbody.innerHTML = html.join('');
 }
