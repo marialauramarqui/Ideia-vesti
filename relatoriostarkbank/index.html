@@ -153,6 +153,7 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
 
     <div class="kpis" id="kpisCp">
         <div class="kpi orange"><div class="lbl">Empresas</div><div class="val" id="kEmp">--</div><div class="ks">no periodo</div></div>
+        <div class="kpi teal"><div class="lbl">Pedidos</div><div class="val" id="kPed">--</div><div class="ks">unicos</div></div>
         <div class="kpi blue"><div class="lbl">Parcelas</div><div class="val" id="kParc">--</div><div class="ks">total</div></div>
         <div class="kpi"><div class="lbl">Taxa VestiPago</div><div class="val" id="kFeeVp">R$ --</div><div class="ks" id="kFeeVpPct">--</div></div>
         <div class="kpi orange"><div class="lbl">Taxa Antifraude</div><div class="val" id="kFeeAf">R$ --</div><div class="ks" id="kFeeAfPct">--</div></div>
@@ -162,8 +163,9 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
     </div>
     <div class="kpis" id="kpisCr" style="display:none">
         <div class="kpi orange"><div class="lbl">Empresas</div><div class="val" id="crEmp">--</div><div class="ks">no periodo</div></div>
-        <div class="kpi blue"><div class="lbl">Pedidos</div><div class="val" id="crPed">--</div><div class="ks">total</div></div>
-        <div class="kpi green"><div class="lbl">Pedidos pagos</div><div class="val" id="crPedPg">--</div><div class="ks">cliente quitou</div></div>
+        <div class="kpi teal"><div class="lbl">Pedidos</div><div class="val" id="crPedQty">--</div><div class="ks">unicos</div></div>
+        <div class="kpi blue"><div class="lbl">Parcelas</div><div class="val" id="crPed">--</div><div class="ks">total</div></div>
+        <div class="kpi green"><div class="lbl">Parcelas pagas</div><div class="val" id="crPedPg">--</div><div class="ks">liquidadas</div></div>
         <div class="kpi purple"><div class="lbl">Valor bruto</div><div class="val" id="crGross">R$ --</div><div class="ks">amount total</div></div>
         <div class="kpi orange"><div class="lbl">Taxas</div><div class="val" id="crFee">R$ --</div><div class="ks">fees Starkbank</div></div>
         <div class="kpi blue"><div class="lbl">Valor líquido</div><div class="val" id="crLiq">R$ --</div><div class="ks">cai na Starkbank</div></div>
@@ -401,7 +403,7 @@ function getFiltered(){
 }
 
 function sumTotals(rows){
-    var t={gross:0,vp:0,af:0,antec:0,net:0,n:0,emp:{}};
+    var t={gross:0,vp:0,af:0,antec:0,net:0,n:0,emp:{},peds:{}};
     rows.forEach(function(p){
         t.gross+=p.grossValue||0;
         t.vp+=p.vpValue||0;
@@ -410,8 +412,10 @@ function sumTotals(rows){
         t.net+=p.netValue||0;
         t.n+=1;
         if(p.companyId)t.emp[p.companyId]=1;
+        if(p.orderId)t.peds[p.orderId]=1;
     });
     t.empCount=Object.keys(t.emp).length;
+    t.pedCount=Object.keys(t.peds).length;
     return t;
 }
 
@@ -430,6 +434,7 @@ function renderCp(){
     var dates=Object.keys(byDate).sort();
 
     document.getElementById('kEmp').textContent=fmtN(tot.empCount);
+    document.getElementById('kPed').textContent=fmtN(tot.pedCount);
     document.getElementById('kParc').textContent=fmtN(tot.n);
     function pct(v){return tot.gross>0?(v/tot.gross*100).toFixed(2).replace('.',',')+'% bruto':'--'}
     document.getElementById('kFeeVp').textContent=fmtC(tot.vp);
@@ -547,7 +552,7 @@ function renderCr(){
     var tb=document.getElementById('tbodyCr');
     if(!window.INVOICES||!window.INVOICES.faturas){
         tb.innerHTML='<tr><td colspan="10" class="empty" style="color:#E17055">invoices.js nao carregou — rode fetch_invoices.py</td></tr>';
-        ['crEmp','crPed','crPedPg','crGross','crFee','crLiq','crEntradas','crSaidas','crSaldo'].forEach(function(id){document.getElementById(id).textContent='--'});
+        ['crEmp','crPedQty','crPed','crPedPg','crGross','crFee','crLiq','crEntradas','crSaidas','crSaldo'].forEach(function(id){document.getElementById(id).textContent='--'});
         return;
     }
     try{
@@ -634,6 +639,7 @@ function renderCr(){
     });
     var tot=sumInsts(allI);
     document.getElementById('crEmp').textContent=fmtN(Object.keys(empSet).length);
+    document.getElementById('crPedQty').textContent=fmtN(Object.keys(pedSet).length);
     document.getElementById('crPed').textContent=fmtN(tot.n);
     document.getElementById('crPedPg').textContent=fmtN(tot.nPg);
     document.getElementById('crGross').textContent=fmtC(tot.vRec+tot.vAr);
