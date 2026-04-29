@@ -216,6 +216,29 @@ function render(){
             '<td class="r">'+fmtC(total)+'</td>'+
             '</tr>'
         );
+        // Detalhe das purchases pagas (somente se duplicado).
+        // Ordem: 1a paga em baixo (verde), duplicado em cima (vermelho mais escuro).
+        if(isDup){
+            lst.slice().reverse().forEach(function(f, idx){
+                var p = f.purchase || {};
+                var when = isoBRTfull(p.created);
+                var amt = (p.amount||0)/100;
+                var isFirstPay = (idx === lst.length-1);
+                var detCls = isFirstPay ? 'first' : 'dupl';
+                var detBadge = isFirstPay
+                    ? '<span class="badge ok">PAGO 1º</span>'
+                    : '<span class="badge dup">DUPLICADO</span>';
+                html.push(
+                    '<tr class="'+detCls+'">'+
+                    '<td colspan="2" style="padding-left:32px"><span class="mono">fatura '+f.transactionId+'</span> '+detBadge+' <span class="mono" style="color:#637282">'+(p.status||'')+'</span></td>'+
+                    '<td>'+(p.holderName||'')+'</td>'+
+                    '<td>'+when+' BRT</td>'+
+                    '<td class="r">'+(p.installmentCount||1)+' parc</td>'+
+                    '<td class="r">'+fmtC(amt)+'</td>'+
+                    '</tr>'
+                );
+            });
+        }
     });
     tbody.innerHTML = html.join('');
 }
