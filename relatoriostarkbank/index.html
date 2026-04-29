@@ -171,8 +171,8 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
         <div class="kpi blue"><div class="lbl">Valor líquido</div><div class="val" id="crLiq">R$ --</div><div class="ks">cai na Starkbank</div></div>
     </div>
     <div class="kpis" id="kpisCrSaldo" style="display:none">
-        <div class="kpi green"><div class="lbl">Entradas hoje</div><div class="val" id="crEntradas">R$ --</div><div class="ks">parcelas liquidando</div></div>
-        <div class="kpi red"><div class="lbl">Saídas hoje</div><div class="val" id="crSaidas">R$ --</div><div class="ks">antecipações pagas</div></div>
+        <div class="kpi green" style="display:none"><div class="lbl">Entradas hoje</div><div class="val" id="crEntradas">R$ --</div><div class="ks">parcelas liquidando</div></div>
+        <div class="kpi red" style="display:none"><div class="lbl">Saídas hoje</div><div class="val" id="crSaidas">R$ --</div><div class="ks">antecipações pagas</div></div>
         <div class="kpi teal"><div class="lbl">Saldo carteira</div><div class="val" id="crSaldo">R$ --</div><div class="ks">acumulado</div></div>
     </div>
 
@@ -354,7 +354,7 @@ function switchTab(which){
     document.getElementById('subtabs').style.display = isCr?'none':'flex';
     document.getElementById('kpisCp').style.display  = isCr?'none':'grid';
     document.getElementById('kpisCr').style.display  = isCr?'grid':'none';
-    document.getElementById('kpisCrSaldo').style.display = isCr?'grid':'none';
+    document.getElementById('kpisCrSaldo').style.display = 'none';
     document.getElementById('cardCp').style.display  = isCr?'none':'block';
     document.getElementById('cardCr').style.display  = isCr?'block':'none';
     document.getElementById('lblDataDe').textContent  = isCr?'Data de recebimento (de)':'Data a pagar (de)';
