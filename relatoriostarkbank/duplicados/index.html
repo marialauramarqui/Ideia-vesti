@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="refresh" content="3600">
 <title>Pagamentos duplicados — StarkBank</title>
 <style>
 :root{--bg:#F7F9FA;--bd:#E6E8EB;--tx:#1B2733;--mut:#637282;--p:#6C5CE7;--g:#10B981;--r:#E17055;--y:#F39C12;--b:#3498DB}
@@ -38,9 +39,28 @@ tr.dupl td{color:#a31515}
 .mono{font-family:Consolas,Monaco,monospace;font-size:11px;color:var(--mut)}
 .link-back{font-size:12px;color:var(--p);text-decoration:none}
 .link-back:hover{text-decoration:underline}
+#login{position:fixed;inset:0;background:#F7F9FA;display:flex;align-items:center;justify-content:center;z-index:9999}
+#login .box{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:32px 36px;box-shadow:0 8px 24px rgba(0,0,0,.06);min-width:300px}
+#login h2{margin:0 0 16px;font-size:18px;text-align:center}
+#login input{width:100%;padding:10px 12px;border:1px solid var(--bd);border-radius:6px;font-size:14px;margin-bottom:10px}
+#login button{width:100%;padding:10px 12px;border:none;background:var(--p);color:#fff;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer}
+#login button:hover{opacity:.9}
+#login .err{color:var(--r);font-size:12px;margin-top:6px;min-height:16px}
+#main{display:none}
 </style>
 </head>
 <body>
+
+<div id="login">
+    <div class="box">
+        <h2>Acesso restrito</h2>
+        <input type="password" id="loginPwd" placeholder="Senha" autofocus>
+        <button id="loginBtn">Entrar</button>
+        <div class="err" id="loginErr"></div>
+    </div>
+</div>
+
+<div id="main">
 <a href="../" class="link-back">← Voltar pro dashboard principal</a>
 <h1>Pagamentos duplicados — StarkBank</h1>
 <div class="sub" id="status">Carregando dados…</div>
@@ -74,8 +94,31 @@ tr.dupl td{color:#a31515}
     </table></div>
 </div>
 
-<script src="../invoices.js"></script>
+</div><!-- /#main -->
+
 <script>
+// ===== Gate de senha (frontend simples, nao protege bytes) =====
+(function(){
+    var PWD='Mudar123';
+    var STO='dup_auth';
+    function unlock(){
+        document.getElementById('login').style.display='none';
+        document.getElementById('main').style.display='block';
+        // injeta scripts depois do unlock
+        var s1=document.createElement('script'); s1.src='../invoices.js'; s1.onload=initApp;
+        document.body.appendChild(s1);
+    }
+    if(sessionStorage.getItem(STO)==='1'){ unlock(); return; }
+    document.getElementById('loginBtn').addEventListener('click', tryLogin);
+    document.getElementById('loginPwd').addEventListener('keydown', function(e){if(e.key==='Enter')tryLogin()});
+    function tryLogin(){
+        var v=document.getElementById('loginPwd').value;
+        if(v===PWD){ sessionStorage.setItem(STO,'1'); unlock(); }
+        else { document.getElementById('loginErr').textContent='Senha incorreta'; }
+    }
+})();
+
+function initApp(){
 function isoBRT(s){
     if(!s)return '';
     var str=String(s);
@@ -181,6 +224,7 @@ function render(){
     document.getElementById(id).addEventListener('input', render);
 });
 render();
+}// /initApp
 </script>
 </body>
 </html>
