@@ -1508,13 +1508,44 @@ function _onlogBuildExportData(){
     return rows;
 }
 function onlogExportExcel(){
-    console.log('[onlog] export click, XLSX=',typeof XLSX);
     var rows=_onlogBuildExportData();if(!rows)return;
-    if(typeof XLSX==='undefined'){
-        if(confirm('Biblioteca XLSX nao carregou (CDN bloqueado?).\\nBaixar como CSV (abre no Excel)?'))onlogExportCsv(rows);
-        return;
-    }
-    try{ _onlogDoExport(rows) }catch(e){ alert('Erro: '+e.message); console.error(e) }
+    try{ _onlogExportXlsHtml(rows) }catch(e){ alert('Erro ao exportar: '+e.message); console.error(e) }
+}
+function _onlogExportXlsHtml(rows){
+    var headers=['Data','CS','Marca','DomainID','Pedido','Cliente','Cidade','UF','Servico','Status','Cancelado','Tem Etiqueta','Etiqueta URL','Tracking','CNPJ Marca','Valor Pedido','Cotacao BIA','Valor Ana FINAL','Valor Postagem','Margem','Postagem Fonte'];
+    function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+    var moneyCols={15:1,16:1,17:1,18:1,19:1};
+    var style='<style>td{mso-number-format:"\\@";vertical-align:top}'+
+        ' .m{mso-number-format:"\\0022R$ \\0022#,##0.00"}'+
+        ' th{background:#6C5CE7;color:#fff;font-weight:bold;text-align:center}'+
+        ' .tot{background:#FFE9A8;font-weight:bold}</style>';
+    var html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">'+
+        '<head><meta charset="UTF-8">'+style+'</head><body><table border="1" cellspacing="0">';
+    html+='<tr>'+headers.map(function(h){return '<th>'+esc(h)+'</th>'}).join('')+'</tr>';
+    var totVal=0,totBia=0,totAna=0,totPost=0,totMargem=0;
+    rows.forEach(function(p){
+        var statusLbl=p.cancelado?'Cancelado':(p.statusOnlog||onlogStatusPt(p.status));
+        var serv=(p.provider||'').replace(/^vesti\s*-\s*/i,'');
+        var cells=[p.data||'',p.cs||'',p.marca||'',p.dominioId||'',p.orderNumber||'',p.cliente||'',p.cidade||'',p.uf||'',serv,statusLbl,p.cancelado?'SIM':'NAO',p.comEtiqueta?'SIM':'NAO',p.etiquetaUrl||'',p.trackingCode||'',p.cnpj||'',(p.valor==null?'':p.valor),(p.cotacaoBia==null?'':p.cotacaoBia),(p.valorAnaFinal==null?'':p.valorAnaFinal),(p.valorPostagem==null?'':p.valorPostagem),(p.margemOnlog==null?'':p.margemOnlog),p.postagemFonte||''];
+        totVal+=(p.valor||0);
+        if(p.cotacaoBia!=null)totBia+=p.cotacaoBia;
+        if(p.valorAnaFinal!=null)totAna+=p.valorAnaFinal;
+        if(p.valorPostagem!=null)totPost+=p.valorPostagem;
+        if(p.margemOnlog!=null)totMargem+=p.margemOnlog;
+        html+='<tr>'+cells.map(function(v,i){
+            if(moneyCols[i]&&typeof v==='number')return '<td class="m">'+v.toFixed(2)+'</td>';
+            return '<td>'+esc(v)+'</td>';
+        }).join('')+'</tr>';
+    });
+    function tm(v){return '<td class="m tot">'+v.toFixed(2)+'</td>'}
+    html+='<tr class="tot"><td>TOTAL</td><td></td><td></td><td></td><td>'+rows.length+' pedidos</td>'+
+        '<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>'+
+        tm(totVal)+tm(totBia)+tm(totAna)+tm(totPost)+tm(totMargem)+'<td></td></tr>';
+    html+='</table></body></html>';
+    var blob=new Blob(['﻿'+html],{type:'application/vnd.ms-excel'});
+    var de=document.getElementById('olFDe').value,ate=document.getElementById('olFAte').value;
+    var nome='pedidos_onlog'+(de?'_'+de:'')+(ate?'_'+ate:'')+'.xls';
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nome;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);document.body.removeChild(a)},100);
 }
 function onlogExportCsv(rows){
     if(!rows)rows=_onlogBuildExportData();if(!rows)return;
