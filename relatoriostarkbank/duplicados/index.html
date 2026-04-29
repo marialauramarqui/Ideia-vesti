@@ -99,6 +99,10 @@ function isoBRTfull(s){
 function fmtC(v){return 'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}
 function fmtN(v){return Number(v||0).toLocaleString('pt-BR')}
 function isTestMarca(n){var s=(n||'').toLowerCase().trim();return s==='andressa vesti'||s==='andressa - teste'||s==='sandbox'}
+// Status considerados validos pra deteccao de duplicidade — pago/confirmado/pendente.
+// Exclui: voided, denied, failed, refunded, cancelled, canceled, etc.
+var STATUS_VALIDOS = {paid:1, confirmed:1, created:1, pending:1, processing:1};
+function statusValido(s){return !!STATUS_VALIDOS[(s||'').toLowerCase()]}
 
 var faturas = (window.INVOICES && window.INVOICES.faturas) || [];
 document.getElementById('status').textContent = 'Snapshot: ' + (window.INVOICES ? window.INVOICES.geradoEm : '?') + ' · ' + faturas.length + ' purchases na API';
@@ -113,6 +117,8 @@ function render(){
     var byOrder = {};
     faturas.forEach(function(f){
         if(isTestMarca(f.nomeFantasia))return;
+        // Filtra status: so pago/confirmado/pendente. Ignora denied/voided/failed.
+        if(!statusValido(f.purchase && f.purchase.status))return;
         var oid = f.orderId || '';
         if(!oid)return;
         var dC = isoBRT((f.purchase && f.purchase.created) || f.orderDate);
@@ -178,7 +184,7 @@ function render(){
                 ? '<span class="badge ok">PAGO 1º</span>'
                 : '<span class="badge dup">DUPLICADO</span>';
             html.push(
-                '<tr class="'+rowCls+'"><td colspan="2" style="padding-left:32px"><span class="mono">purchase '+f.transactionId+'</span> '+rowBadge+'</td>'+
+                '<tr class="'+rowCls+'"><td colspan="2" style="padding-left:32px"><span class="mono">purchase '+f.transactionId+'</span> '+rowBadge+' <span class="mono" style="color:#637282">'+(p.status||'')+'</span></td>'+
                 '<td>'+(p.holderName||'')+'</td>'+
                 '<td>'+when+' BRT</td>'+
                 '<td class="r">'+(p.installmentCount||1)+' parc</td>'+
