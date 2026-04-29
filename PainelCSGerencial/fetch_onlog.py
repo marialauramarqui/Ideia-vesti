@@ -124,13 +124,26 @@ def fetch_rows(conn) -> list[dict]:
 def _is_onlog_postado(provider: str) -> bool:
     """Filtra provider names que NAO sao postagens reais via Onlog.
 
-    Onlog opera multiplas transportadoras (Jadlog, Loggi, Total Express, OnLog Red, etc),
-    todas com delivery_provider_provider='onlog'. Mas a flag tambem aparece em pedidos
-    de retirada-em-loja, excursao, motoboy etc que nunca sao postados. Filtramos.
-    Ficam: tudo que comeca com "Vesti - " (postagens reais via integracao Vesti).
+    Onlog opera multiplas transportadoras (Jadlog, Total Express, OnLog Red, Loggi, Correios,
+    JeT, etc), todas com delivery_provider_provider='onlog'. Mas a flag tambem aparece em
+    pedidos que nunca sao postados via transportadora. Filtramos os nao-postados:
+    retirada em loja, excursao/onibus, motoboy, uber, a combinar.
     """
     p = (provider or "").strip().lower()
-    return p.startswith("vesti - ") or p.startswith("vesti -") or p.startswith("vesti -")
+    if not p:
+        return False
+    NAO_POSTADOS = (
+        "retirada em loja",
+        "excurs",  # excursão / excursao / ônibus em "Excursão / Ônibus"
+        "motoboy",
+        "uber",
+        "a combinar",
+        "a combinar.",
+    )
+    for prefix in NAO_POSTADOS:
+        if p.startswith(prefix):
+            return False
+    return True
 
 
 def build(rows: list[dict], companies: dict[str, dict]) -> dict:
