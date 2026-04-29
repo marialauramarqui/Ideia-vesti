@@ -648,23 +648,20 @@ function renderCr(){
 
     // === KPIs Saldo Stark — modelo 20% retido (100% via API) ===
     //
-    // Regra de negocio: a Stark Bank retem 20% de cada venda como garantia
-    // (os outros 80% sao antecipados pra marca via VP). O "saldo Stark" eh
-    // o acumulado dos 20% de todas as vendas que ainda nao foram liquidadas
-    // pela Stark.
+    // Regra de negocio: a Stark Bank retem 20% de cada venda como garantia.
+    // O "saldo Stark" eh o acumulado dos 20% de todas as vendas que a Stark
+    // ainda nao nos pagou. Como nao temos visibilidade de QUANDO a Stark
+    // libera esse 20%, o saldo so cresce com vendas — nunca diminui aqui.
     //
     // KPIs:
     //   Card Entradas: 100% das vendas no dia (purchase.amount)
     //   Card Saidas:   100% das transferencias Stark no dia (installment paid)
-    //   Card Saldo:    20% × (cumul Entradas - cumul Saidas) cumulativo desde
-    //                  Marco Zero ate o ultimo dia do range filtrado.
+    //                  — informativo apenas, NAO subtrai do saldo
+    //   Card Saldo:    SALDO_INICIAL + 20% × cumul Entradas, desde Marco Zero
+    //                  ate o ultimo dia do range filtrado.
     //
-    // Formula: S[t] = S[t-1] + 0.20 × (Entradas[t] - Saidas[t])
-    //   = SALDO_INICIAL + 0.20 × Σ (Entradas[d] - Saidas[d]) ∀ d ∈ [Marco Zero, t]
-    //
-    // Interpretacao:
-    //   - Saldo subindo:  Stark esta retendo (mais vendas do que liquidacoes)
-    //   - Saldo caindo:   houve repasse de lote / Stark liberou mais que reteve
+    // Formula: S[t] = S[t-1] + 0.20 × Entradas[t]
+    //   = SALDO_INICIAL + 0.20 × Σ Entradas[d] ∀ d ∈ [Marco Zero, t]
     var SALDO_MARCO_ZERO = null;       // null = auto (1o dia com saida) | '2026-04-22'
     var SALDO_INICIAL = 0;             // saldo no Marco Zero
     var TAXA_RETENCAO = 0.20;          // 20% retido pela Stark
@@ -703,12 +700,13 @@ function renderCr(){
             saidasRng += saidasByDay[d]||0;
         }
     });
-    // Saldo cumulativo retido ate rAte (modelo 20%):
-    // = SALDO_INICIAL + TAXA_RETENCAO × Σ (ent - sai) de startCum ate rAte
+    // Saldo cumulativo retido ate rAte (modelo 20% so de entradas):
+    // = SALDO_INICIAL + TAXA_RETENCAO × Σ Entradas[d] de startCum ate rAte
+    // (nao subtrai saidas — nao sabemos quando Stark libera o 20% retido)
     var saldoFim = SALDO_INICIAL;
     uniqDays.forEach(function(d){
         if(d>=startCum && d<=rAte){
-            saldoFim += TAXA_RETENCAO * ((entradasByDay[d]||0) - (saidasByDay[d]||0));
+            saldoFim += TAXA_RETENCAO * (entradasByDay[d]||0);
         }
     });
     document.getElementById('crEntradas').textContent=fmtC(entradasRng);
