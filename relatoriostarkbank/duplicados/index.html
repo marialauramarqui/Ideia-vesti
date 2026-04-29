@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Pagamentos duplicados — StarkBank</title>
+<style>
+:root{--bg:#F7F9FA;--bd:#E6E8EB;--tx:#1B2733;--mut:#637282;--p:#6C5CE7;--g:#10B981;--r:#E17055;--y:#F39C12;--b:#3498DB}
+*{box-sizing:border-box}
+body{font:14px/1.4 -apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--tx);margin:0;padding:24px}
+h1{font-size:20px;margin:0 0 6px}
+.sub{color:var(--mut);font-size:12px;margin-bottom:16px}
+.filters{display:flex;gap:12px;flex-wrap:wrap;background:#fff;padding:12px;border:1px solid var(--bd);border-radius:8px;margin-bottom:14px}
+.filters label{font-size:11px;color:var(--mut);display:block;margin-bottom:2px}
+.filters input{font:14px sans-serif;padding:6px 10px;border:1px solid var(--bd);border-radius:6px;background:#fff;min-width:160px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:#fff;border:1px solid var(--bd);border-radius:8px;padding:10px 14px}
+.kpi .lbl{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+.kpi .val{font-size:20px;font-weight:700;margin-top:4px}
+.kpi.r .val{color:var(--r)}
+.kpi.g .val{color:var(--g)}
+.kpi.b .val{color:var(--b)}
+.tbl-card{background:#fff;border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+.tbl-card h3{margin:0;padding:14px 18px;border-bottom:1px solid var(--bd);font-size:14px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--bd)}
+th{background:#FAFBFC;color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+td.r,th.r{text-align:right}
+tr.ord{background:#FFF6E6}
+tr.ord td{font-weight:600}
+tr.dup td{color:var(--r)}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.badge.dup{background:var(--r);color:#fff}
+.badge.ok{background:var(--g);color:#fff}
+.empty{text-align:center;color:var(--mut);padding:40px}
+.mono{font-family:Consolas,Monaco,monospace;font-size:11px;color:var(--mut)}
+.link-back{font-size:12px;color:var(--p);text-decoration:none}
+.link-back:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<a href="../" class="link-back">← Voltar pro dashboard principal</a>
+<h1>Pagamentos duplicados — StarkBank</h1>
+<div class="sub" id="status">Carregando dados…</div>
+
+<div class="filters">
+    <div><label>Data da compra (de)</label><input type="date" id="fDe"></div>
+    <div><label>Data da compra (até)</label><input type="date" id="fAte"></div>
+    <div><label>ID do pedido (orderId)</label><input type="text" id="fOrderId" placeholder="ex: 69eac78a..."></div>
+    <div><label>Marca</label><input type="text" id="fMarca" placeholder="filtrar por nome"></div>
+</div>
+
+<div class="kpis">
+    <div class="kpi"><div class="lbl">Pedidos analisados</div><div class="val" id="kPed">--</div></div>
+    <div class="kpi r"><div class="lbl">Pedidos com duplicidade</div><div class="val" id="kDup">--</div></div>
+    <div class="kpi r"><div class="lbl">Pagamentos duplicados</div><div class="val" id="kPag">--</div></div>
+    <div class="kpi r"><div class="lbl">Valor duplicado</div><div class="val" id="kVal">R$ --</div></div>
+</div>
+
+<div class="tbl-card">
+    <h3>Pedidos com mais de uma purchase no Stark</h3>
+    <div style="overflow-x:auto"><table id="tbl">
+        <thead><tr>
+            <th>Pedido (orderId)</th>
+            <th>Marca</th>
+            <th>Cliente</th>
+            <th>Data compra (BRT)</th>
+            <th class="r">Purchases</th>
+            <th class="r">Valor total</th>
+            <th>Detalhes</th>
+        </tr></thead>
+        <tbody id="tbody"><tr><td colspan="7" class="empty">Carregando…</td></tr></tbody>
+    </table></div>
+</div>
+
+<script src="../invoices.js"></script>
+<script>
+function isoBRT(s){
+    if(!s)return '';
+    var str=String(s);
+    if(/[zZ]$|[+\-]\d{2}:?\d{2}$/.test(str.substring(10))){
+        var d=new Date(str);
+        if(!isNaN(d)){
+            var brt=new Date(d.getTime()-3*3600000);
+            return brt.toISOString().substring(0,10);
+        }
+    }
+    return str.substring(0,10);
+}
+function isoBRTfull(s){
+    if(!s)return '';
+    var d=new Date(s);
+    if(isNaN(d))return s;
+    var brt=new Date(d.getTime()-3*3600000);
+    return brt.toISOString().substring(0,16).replace('T',' ');
+}
+function fmtC(v){return 'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function fmtN(v){return Number(v||0).toLocaleString('pt-BR')}
+function isTestMarca(n){var s=(n||'').toLowerCase().trim();return s==='andressa vesti'||s==='andressa - teste'||s==='sandbox'}
+
+var faturas = (window.INVOICES && window.INVOICES.faturas) || [];
+document.getElementById('status').textContent = 'Snapshot: ' + (window.INVOICES ? window.INVOICES.geradoEm : '?') + ' · ' + faturas.length + ' purchases na API';
+
+function render(){
+    var fDe = document.getElementById('fDe').value;
+    var fAte = document.getElementById('fAte').value;
+    var fOrd = (document.getElementById('fOrderId').value||'').trim().toLowerCase();
+    var fMarca = (document.getElementById('fMarca').value||'').trim().toLowerCase();
+
+    // Agrupa por orderId
+    var byOrder = {};
+    faturas.forEach(function(f){
+        if(isTestMarca(f.nomeFantasia))return;
+        var oid = f.orderId || '';
+        if(!oid)return;
+        var dC = isoBRT((f.purchase && f.purchase.created) || f.orderDate);
+        // filtros
+        if(fDe && (!dC || dC<fDe))return;
+        if(fAte && (!dC || dC>fAte))return;
+        if(fOrd && oid.toLowerCase().indexOf(fOrd)<0)return;
+        if(fMarca && (f.nomeFantasia||'').toLowerCase().indexOf(fMarca)<0)return;
+        (byOrder[oid] = byOrder[oid] || []).push(f);
+    });
+
+    var orderIds = Object.keys(byOrder);
+    var dupIds = orderIds.filter(function(o){return byOrder[o].length > 1});
+    var dupOrderIds = (fOrd ? orderIds : dupIds);  // se filtrar por id, mostra mesmo se 1 só
+
+    var totPagDup = 0, totVal = 0;
+    dupIds.forEach(function(o){
+        totPagDup += byOrder[o].length;
+        byOrder[o].forEach(function(f){totVal += ((f.purchase&&f.purchase.amount)||0)/100});
+    });
+
+    document.getElementById('kPed').textContent = fmtN(orderIds.length);
+    document.getElementById('kDup').textContent = fmtN(dupIds.length);
+    document.getElementById('kPag').textContent = fmtN(totPagDup);
+    document.getElementById('kVal').textContent = fmtC(totVal);
+
+    var tbody = document.getElementById('tbody');
+    if(!dupOrderIds.length){
+        tbody.innerHTML = '<tr><td colspan="7" class="empty">Nenhum pedido com duplicidade'+(fOrd?' (busca: '+fOrd+')':'')+'</td></tr>';
+        return;
+    }
+    var html = [];
+    dupOrderIds.sort(function(a,b){return byOrder[b].length - byOrder[a].length}).forEach(function(oid){
+        var lst = byOrder[oid];
+        var total = lst.reduce(function(s,f){return s + ((f.purchase&&f.purchase.amount)||0)/100}, 0);
+        var marca = lst[0].nomeFantasia || '?';
+        var cust = lst[0].customerName || (lst[0].purchase && lst[0].purchase.holderName) || '?';
+        var dt = isoBRT(lst[0].purchase && lst[0].purchase.created);
+        var dupBadge = lst.length>1 ? '<span class="badge dup">DUPLICADO</span>' : '<span class="badge ok">único</span>';
+        html.push(
+            '<tr class="ord"><td><span class="mono">'+oid+'</span> '+dupBadge+'</td>'+
+            '<td>'+marca+'</td><td>'+cust+'</td><td>'+dt+'</td>'+
+            '<td class="r">'+lst.length+'</td>'+
+            '<td class="r">'+fmtC(total)+'</td><td></td></tr>'
+        );
+        lst.forEach(function(f){
+            var p = f.purchase || {};
+            var when = isoBRTfull(p.created);
+            var amt = (p.amount||0)/100;
+            html.push(
+                '<tr class="dup"><td colspan="2" style="padding-left:32px"><span class="mono">purchase '+f.transactionId+'</span></td>'+
+                '<td>'+(p.holderName||'')+'</td>'+
+                '<td>'+when+'</td>'+
+                '<td class="r">'+(p.installmentCount||1)+' parc</td>'+
+                '<td class="r">'+fmtC(amt)+'</td>'+
+                '<td><span class="mono">'+(p.cardEnding?'card '+p.cardEnding:'')+' '+(p.endToEndId||'')+'</span></td></tr>'
+            );
+        });
+    });
+    tbody.innerHTML = html.join('');
+}
+
+['fDe','fAte','fOrderId','fMarca'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', render);
+});
+render();
+</script>
+</body>
+</html>
