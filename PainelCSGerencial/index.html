@@ -1518,27 +1518,13 @@ function onlogExportExcel(){
 }
 function onlogExportCsv(rows){
     if(!rows)rows=_onlogBuildExportData();if(!rows)return;
-    var BOM=String.fromCharCode(0xFEFF);
-    var NL=String.fromCharCode(13)+String.fromCharCode(10);
-    var cols=["Data","CS","Marca","DomainID","Pedido","Cliente","Cidade","UF","Servico","Status","Cancelado","Tem Etiqueta","Etiqueta URL","Tracking","CNPJ Marca","Valor Pedido","Cotacao BIA","Valor Ana FINAL","Valor Postagem","Margem","Postagem Fonte"];
-    function csv(v){if(v==null)return "";var s=String(v).replace(/"/g,"""");return /[";,]|
-/.test(s)?"""+s+""":s}
-    var lines=[cols.join(";")];
-    rows.forEach(function(p){
-        var statusLbl=p.cancelado?"Cancelado":(p.statusOnlog||onlogStatusPt(p.status));
-        var serv=(p.provider||"").replace(/^vesti\s*-\s*/i,"");
-        var v=[p.data||"",p.cs||"",p.marca||"",p.dominioId||"",p.orderNumber||"",p.cliente||"",p.cidade||"",p.uf||"",serv,statusLbl,p.cancelado?"SIM":"NAO",p.comEtiqueta?"SIM":"NAO",p.etiquetaUrl||"",p.trackingCode||"",p.cnpj||"",(p.valor||0).toFixed(2).replace(".",","),(p.cotacaoBia==null?"":p.cotacaoBia.toFixed(2).replace(".",",")),(p.valorAnaFinal==null?"":p.valorAnaFinal.toFixed(2).replace(".",",")),(p.valorPostagem==null?"":p.valorPostagem.toFixed(2).replace(".",",")),(p.margemOnlog==null?"":p.margemOnlog.toFixed(2).replace(".",",")),p.postagemFonte||""];
-        lines.push(v.map(csv).join(";"));
-    });
-    var blob=new Blob([BOM+lines.join(NL)],{type:"text/csv;charset=utf-8"});
-    var de=document.getElementById("olFDe").value,ate=document.getElementById("olFAte").value;
-    var nome="pedidos_onlog"+(de?"_"+de:"")+(ate?"_"+ate:"")+".csv";
-    var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=nome;document.body.appendChild(a);a.click();document.body.removeChild(a);
-}
+    var cols=['Data','CS','Marca','DomainID','Pedido','Cliente','Cidade','UF','Servico','Status','Cancelado','Tem Etiqueta','Etiqueta URL','Tracking','CNPJ Marca','Valor Pedido','Cotacao BIA','Valor Ana FINAL','Valor Postagem','Margem','Postagem Fonte'];
+    function csv(v){if(v==null)return '';var s=String(v).replace(/"/g,'""');return /[";,\n]/.test(s)?'"'+s+'"':s}
     var lines=[cols.join(';')];
     rows.forEach(function(p){
         var statusLbl=p.cancelado?'Cancelado':(p.statusOnlog||onlogStatusPt(p.status));
-        var v=[p.data||'',p.cs||'',p.marca||'',p.dominioId||'',p.orderNumber||'',p.cliente||'',p.cidade||'',p.uf||'',(p.provider||'').replace(/^vesti\s*-\s*/i,''),statusLbl,p.cancelado?'SIM':'NAO',p.comEtiqueta?'SIM':'NAO',p.etiquetaUrl||'',p.trackingCode||'',p.cnpj||'',(p.valor||0).toFixed(2).replace('.',','),(p.cotacaoBia==null?'':p.cotacaoBia.toFixed(2).replace('.',',')),(p.valorAnaFinal==null?'':p.valorAnaFinal.toFixed(2).replace('.',',')),(p.valorPostagem==null?'':p.valorPostagem.toFixed(2).replace('.',',')),(p.margemOnlog==null?'':p.margemOnlog.toFixed(2).replace('.',',')),p.postagemFonte||''];
+        var serv=(p.provider||'').replace(/^vesti\s*-\s*/i,'');
+        var v=[p.data||'',p.cs||'',p.marca||'',p.dominioId||'',p.orderNumber||'',p.cliente||'',p.cidade||'',p.uf||'',serv,statusLbl,p.cancelado?'SIM':'NAO',p.comEtiqueta?'SIM':'NAO',p.etiquetaUrl||'',p.trackingCode||'',p.cnpj||'',(p.valor||0).toFixed(2).replace('.',','),(p.cotacaoBia==null?'':p.cotacaoBia.toFixed(2).replace('.',',')),(p.valorAnaFinal==null?'':p.valorAnaFinal.toFixed(2).replace('.',',')),(p.valorPostagem==null?'':p.valorPostagem.toFixed(2).replace('.',',')),(p.margemOnlog==null?'':p.margemOnlog.toFixed(2).replace('.',',')),p.postagemFonte||''];
         lines.push(v.map(csv).join(';'));
     });
     var blob=new Blob(['\ufeff'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
