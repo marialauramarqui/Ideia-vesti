@@ -646,19 +646,11 @@ function renderCr(){
     document.getElementById('crFee').textContent=fmtC(tot.fee);
     document.getElementById('crLiq').textContent=fmtC(tot.liq);
 
-    // === KPIs Saldo Stark — modelo 80/20 retido ===
-    // Stark antecipa 80% via VP pro marca (no D+1 da compra) e retem 20%
-    // ate a parcela liquidar (em D+30/60/90...). Saldo Stark = vendas que
-    // ainda nao tiveram nem antecipacao nem liquidacao.
-    //
-    // Entradas[d] = vendas brutas (purchase.amount BRT) — 100% entra no saldo Stark
-    // Saidas[d]   = (1) parcelas Stark liquidadas no dia (instalment paid por due)
-    //             + (2) antecipacoes VP pagas (CP antec gross por payDate)
+    // === KPIs Saldo Stark — 100% via API ===
+    // Entradas[d] = vendas no dia (purchase.amount BRT)
+    // Saidas[d]   = o que a Stark liquidou no dia (installment.amount paid por due)
     // Saldo[d]    = Saldo[d-1] + Entradas[d] - Saidas[d]
-    //
-    // No fim do ciclo (todas as parcelas liquidadas + antec processada),
-    // saldo retorna a 0 — se aproxima do "20% retido" enquanto antec ja saiu
-    // mas parcelas ainda nao liquidaram.
+    //               = compromisso pendente da Stark (parcelas a liberar futuramente)
     var entradasByDay={}, saidasByDay={};
     (window.INVOICES.faturas||[]).forEach(function(f){
         if(isTestMarca(f.nomeFantasia))return;
@@ -673,15 +665,6 @@ function renderCr(){
             saidasByDay[d] = (saidasByDay[d]||0) + (i.amount||0)/100;
         });
     });
-    // Adiciona antecipacoes VP pagas pras marcas como saida (modelo 80/20)
-    if(window.DADOS && window.DADOS.pagamentos){
-        window.DADOS.pagamentos.forEach(function(p){
-            if(isTestMarca(p.nomeFantasia))return;
-            if(!p.isAntecipacao)return;
-            var d=(p.payDate||'').substring(0,10); if(!d)return;
-            saidasByDay[d] = (saidasByDay[d]||0) + (p.grossValue||0);
-        });
-    }
     // Determina range pra mostrar — prioriza filtros preenchidos:
     //   1. Data Recebimento (dDe/dAte) — afeta saidas (due paid)
     //   2. Data da Compra (pDe/pAte)   — afeta entradas (purchase.created)
