@@ -76,6 +76,35 @@ def read_planilha(xlsx_path: Path) -> list[dict]:
     return out
 
 
+def detect_quinzenas(rows: list[dict]) -> list[tuple[str, str]]:
+    """Retorna TODAS as quinzenas (de, ate) cobertas pelas datas da planilha.
+    Permite ingerir planilhas que cobrem mais de uma quinzena (ex: mes inteiro)."""
+    halves = set()
+    for r in rows:
+        d = r.get("Data")
+        s = ""
+        if isinstance(d, datetime):
+            s = d.date().isoformat()
+        elif isinstance(d, str):
+            s = d[:10]
+        if not s:
+            continue
+        try:
+            y, mo, dia = int(s[:4]), int(s[5:7]), int(s[8:10])
+        except ValueError:
+            continue
+        halves.add((y, mo, 1 if dia <= 15 else 2))
+    from calendar import monthrange
+    out = []
+    for y, mo, half in sorted(halves):
+        mes = f"{y:04d}-{mo:02d}"
+        if half == 1:
+            out.append((f"{mes}-01", f"{mes}-15"))
+        else:
+            out.append((f"{mes}-16", f"{mes}-{monthrange(y, mo)[1]:02d}"))
+    return out
+
+
 def detect_quinzena(rows: list[dict]) -> tuple[str, str]:
     min_d = None
     for r in rows:
@@ -276,37 +305,13 @@ def compare(planilha: dict, fabric: dict) -> tuple[int, list, list, list]:
     return ok, dif, only_p, only_f
 
 
-def main() -> None:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("xlsx", help="Caminho da planilha do Diogo")
-    ap.add_argument("--de", help="Data inicial (default: detectado)")
-    ap.add_argument("--ate", help="Data final (default: detectado)")
-    args = ap.parse_args()
+def process_quinzena(raw: list[dict], de: str, ate: str, onlog_data: dict, xlsx_path: Path, diogo_total: float | None) -> dict:
+    """Processa UMA quinzena: aggregate -> merge com snapshot -> patch onlog_data ->
+    compare -> escreve onlog_diff_<de>_<ate>.json. Retorna o dict de saida.
 
-    xlsx_path = Path(args.xlsx)
-    if not xlsx_path.exists():
-        print(f"ERRO: nao achei {xlsx_path}")
-        sys.exit(1)
-    if not ONLOG_JSON.exists():
-        print(f"ERRO: {ONLOG_JSON} nao existe. Rode py fetch_onlog.py antes.")
-        sys.exit(1)
-
-    print(f"[1/4] Lendo planilha: {xlsx_path.name}")
-    raw = read_planilha(xlsx_path)
-    print(f"      {len(raw)} linhas brutas")
-    diogo_total = detect_diogo_total(raw)
-    if diogo_total is not None:
-        print(f"      [linha totalizadora detectada] Diogo cobra: R$ {diogo_total:,.2f}")
-
-    if args.de and args.ate:
-        de, ate = args.de, args.ate
-    else:
-        de, ate = detect_quinzena(raw)
-        if not de:
-            print("ERRO: nao consegui detectar quinzena. Use --de/--ate.")
-            sys.exit(1)
-    print(f"      quinzena: {de} a {ate}")
-
+    onlog_data e' mutado in-place (patches acumulam). Quem chama escreve no disco.
+    """
+    print(f"\n=== Quinzena {de} a {ate} ===")
     print(f"[2/4] Agregando planilha (CodigoVolume)")
     planilha, pa_vesti = aggregate_planilha(raw, de, ate)
     print(f"      {len(planilha)} pedidos novos com CodigoVolume; {len(pa_vesti)} PA VESTI novos")
@@ -368,14 +373,12 @@ def main() -> None:
     print(f"      {len(planilha)} pedidos finais com CodigoVolume")
     print(f"      {len(pa_vesti)} postagens avulsas PA VESTI (sem pedido) - total R$ {pa_total:,.2f}")
 
-    print(f"[3/4] Lendo Fabric (onlog_data.json)")
-    onlog_data = json.loads(ONLOG_JSON.read_text(encoding="utf-8"))
+    print(f"[3/4] Filtrando Fabric")
     fabric = filter_fabric(onlog_data.get("pedidos", []), de, ate)
     print(f"      {len(fabric)} pedidos do Fabric na quinzena")
 
-    print(f"[3.5/4] Patch onlog_data.json com valores da planilha (postagem + margem)")
+    print(f"[3.5/4] Patch onlog_data com valores da planilha (postagem + margem)")
     n_upd, n_skip = patch_onlog_data(onlog_data, planilha, de, ate)
-    ONLOG_JSON.write_text(json.dumps(onlog_data, ensure_ascii=False), encoding="utf-8")
     print(f"      {n_upd} pedidos atualizados (postagem + margem); {n_skip} sem match na planilha")
 
     print(f"[4/4] Comparando")
@@ -536,10 +539,51 @@ def main() -> None:
     # Salva por quinzena: onlog_diff_<de>_<ate>.json (multi-quinzenas)
     out_quinzena = ROOT / f"onlog_diff_{de}_{ate}.json"
     out_quinzena.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
-    # Mantem onlog_diff.json como ultimo ingerido (compat)
-    (ROOT / "onlog_diff.json").write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"\n>> {out_quinzena.name} escrito ({out_quinzena.stat().st_size//1024} KB)")
-    print(f">> Agora rode: py merge_data.py && py build_html.py")
+    print(f">> {out_quinzena.name} escrito ({out_quinzena.stat().st_size//1024} KB)")
+    return out
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("xlsx", help="Caminho da planilha do Diogo")
+    ap.add_argument("--de", help="Data inicial (default: detectado)")
+    ap.add_argument("--ate", help="Data final (default: detectado)")
+    args = ap.parse_args()
+
+    xlsx_path = Path(args.xlsx)
+    if not xlsx_path.exists():
+        print(f"ERRO: nao achei {xlsx_path}")
+        sys.exit(1)
+    if not ONLOG_JSON.exists():
+        print(f"ERRO: {ONLOG_JSON} nao existe. Rode py fetch_onlog.py antes.")
+        sys.exit(1)
+
+    print(f"[1/4] Lendo planilha: {xlsx_path.name}")
+    raw = read_planilha(xlsx_path)
+    print(f"      {len(raw)} linhas brutas")
+    diogo_total = detect_diogo_total(raw)
+    if diogo_total is not None:
+        print(f"      [linha totalizadora detectada] Diogo cobra: R$ {diogo_total:,.2f}")
+
+    if args.de and args.ate:
+        ranges = [(args.de, args.ate)]
+    else:
+        ranges = detect_quinzenas(raw)
+        if not ranges:
+            print("ERRO: nao consegui detectar nenhuma quinzena. Use --de/--ate.")
+            sys.exit(1)
+    print(f"      quinzenas detectadas: {', '.join(f'{a}..{b}' for a,b in ranges)}")
+
+    onlog_data = json.loads(ONLOG_JSON.read_text(encoding="utf-8"))
+    last_out = None
+    for de, ate in ranges:
+        last_out = process_quinzena(raw, de, ate, onlog_data, xlsx_path, diogo_total)
+    # Escreve onlog_data uma vez no final (com patches acumulados de todas as quinzenas)
+    ONLOG_JSON.write_text(json.dumps(onlog_data, ensure_ascii=False), encoding="utf-8")
+    # Mantem onlog_diff.json como compat (ultima quinzena processada)
+    if last_out is not None:
+        (ROOT / "onlog_diff.json").write_text(json.dumps(last_out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"\n>> {len(ranges)} quinzena(s) processada(s). Agora rode: py merge_data.py && py build_html.py")
 
 
 if __name__ == "__main__":
