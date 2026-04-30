@@ -120,13 +120,19 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
     <div class="tabs">
         <div class="tab active" data-tab="cp" onclick="switchTab('cp')">CP · Contas a Pagar</div>
         <div class="tab" data-tab="cr" onclick="switchTab('cr')">CR · Contas a Receber</div>
+        <div class="tab" data-tab="aud" onclick="switchTab('aud')">Auditoria</div>
     </div>
     <div class="subtabs" id="subtabs">
         <div class="subtab active" data-sub="fluxo" onclick="switchSub('fluxo')">Fluxo</div>
         <div class="subtab" data-sub="antec" onclick="switchSub('antec')">Antecipação</div>
     </div>
+    <div class="subtabs" id="subtabsAud" style="display:none">
+        <div class="subtab active" data-audsub="api" onclick="switchAudSub('api')">CR Stark API</div>
+        <div class="subtab" data-audsub="vesti" onclick="switchAudSub('vesti')">CR Stark Vesti</div>
+        <div class="subtab" data-audsub="antec" onclick="switchAudSub('antec')">Antecipação</div>
+    </div>
 
-    <div class="filters">
+    <div class="filters" id="filtersDefault">
         <div class="fg">
             <label id="lblDataDe">Data a pagar (de)</label>
             <input type="date" id="fDataDe">
@@ -149,6 +155,13 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
             <datalist id="empresaList"></datalist>
         </div>
         <button class="clear-btn" onclick="clearAllFilters()">Limpar</button>
+    </div>
+    <div class="filters" id="filtersAntec" style="display:none">
+        <div class="fg">
+            <label>Auditoria · dia</label>
+            <input type="date" id="fAudDia">
+        </div>
+        <button class="clear-btn" onclick="document.getElementById('fAudDia').value='';render()">Limpar</button>
     </div>
 
     <div class="kpis" id="kpisCp">
@@ -197,6 +210,33 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
                     </tr>
                 </thead>
                 <tbody id="tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="kpis" id="kpisAud" style="display:none">
+        <div class="kpi green"><div class="lbl" id="kAudEntLbl">Entradas (período)</div><div class="val" id="kAudEnt">R$ --</div><div class="ks">soma bruta</div></div>
+        <div class="kpi red"><div class="lbl" id="kAudSaiLbl">Saídas (período)</div><div class="val" id="kAudSai">R$ --</div><div class="ks">soma bruta</div></div>
+        <div class="kpi teal"><div class="lbl" id="kAudSldLbl">Saldo final</div><div class="val" id="kAudSld">R$ --</div><div class="ks">acumulado</div></div>
+    </div>
+
+    <div class="tbl-card" id="cardAud" style="display:none">
+        <div class="tbl-head">
+            <h3 id="hAud">Auditoria · CR Stark API</h3>
+            <span class="count" id="audCount">--</span>
+            <span class="count" id="audInfo" style="margin-left:auto;color:var(--mut)">pivot: 01/04 a 22/04 (acumulado); a partir de 23/04 dia único</span>
+        </div>
+        <div class="tbl-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th class="r">Entradas (bruto)</th>
+                        <th class="r">Saídas (bruto)</th>
+                        <th class="r">Saldo</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyAud"></tbody>
             </table>
         </div>
     </div>
@@ -316,8 +356,11 @@ function fmtDT(s){if(!s)return '-';var d=isoBRTDate(s);if(d.length<10)return s;v
 function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 
 var DADOS=null;
-var TAB='cp';      // 'cp' | 'cr'
+var TAB='cp';      // 'cp' | 'cr' | 'aud'
 var SUB='fluxo';   // 'fluxo' | 'antec' (so usado quando TAB='cp')
+var AUD_SUB='api'; // 'api' | 'vesti' | 'antec' (so usado quando TAB='aud')
+var AUD_PIVOT_START='2026-04-01'; // limite inferior do periodo cumulativo da 1a linha
+var AUD_PIVOT='2026-04-22'; // primeira linha = acumulado de [AUD_PIVOT_START, AUD_PIVOT]
 var openSet={}; // chaves: 'D:yyyy-mm-dd' (dia), 'C:yyyy-mm-dd|companyId' (empresa)
 
 function init(){
@@ -337,7 +380,7 @@ function init(){
     });
     // Sem filtro default: mostra todas as datas (pagas em datas passadas + a receber futuras).
     // A linha do dia atual ganha destaque visual em renderCr.
-    ['fDataDe','fDataAte','fPagoDe','fPagoAte'].forEach(function(id){document.getElementById(id).addEventListener('change',render)});
+    ['fDataDe','fDataAte','fPagoDe','fPagoAte','fAudDia'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('change',render)});
     document.getElementById('fEmpresa').addEventListener('input',render);
     render();
 }
@@ -350,16 +393,38 @@ function clearAllFilters(){
 function switchTab(which){
     TAB=which;
     document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.dataset.tab===which)});
-    var isCr=(which==='cr');
-    document.getElementById('subtabs').style.display = isCr?'none':'flex';
-    document.getElementById('kpisCp').style.display  = isCr?'none':'grid';
-    document.getElementById('kpisCr').style.display  = isCr?'grid':'none';
-    document.getElementById('kpisCrSaldo').style.display = 'none';
-    document.getElementById('cardCp').style.display  = isCr?'none':'block';
-    document.getElementById('cardCr').style.display  = isCr?'block':'none';
-    document.getElementById('lblDataDe').textContent  = isCr?'Data de recebimento (de)':'Data a pagar (de)';
-    document.getElementById('lblDataAte').textContent = isCr?'Data de recebimento (até)':'Data a pagar (até)';
+    var isCr=(which==='cr'), isAud=(which==='aud'), isCp=(which==='cp');
+    document.getElementById('subtabs').style.display    = isCp?'flex':'none';
+    document.getElementById('subtabsAud').style.display = isAud?'flex':'none';
+    document.getElementById('kpisCp').style.display     = isCp?'grid':'none';
+    document.getElementById('kpisCr').style.display     = isCr?'grid':'none';
+    document.getElementById('kpisCrSaldo').style.display= 'none';
+    document.getElementById('kpisAud').style.display    = isAud?'grid':'none';
+    document.getElementById('cardCp').style.display     = isCp?'block':'none';
+    document.getElementById('cardCr').style.display     = isCr?'block':'none';
+    document.getElementById('cardAud').style.display    = isAud?'block':'none';
+    document.getElementById('lblDataDe').textContent    = isCr?'Data de recebimento (de)':'Data a pagar (de)';
+    document.getElementById('lblDataAte').textContent   = isCr?'Data de recebimento (até)':'Data a pagar (até)';
+    // Filtro especifico ja eh tratado em switchAudSub; aqui garantimos o default fora da aba aud.
+    if(!isAud){
+        document.getElementById('filtersDefault').style.display='flex';
+        document.getElementById('filtersAntec').style.display='none';
+    } else {
+        var antec=(AUD_SUB==='antec');
+        document.getElementById('filtersDefault').style.display = antec?'none':'flex';
+        document.getElementById('filtersAntec').style.display   = antec?'flex':'none';
+    }
     openSet={};
+    render();
+}
+function switchAudSub(which){
+    AUD_SUB=which;
+    document.querySelectorAll('#subtabsAud .subtab').forEach(function(t){t.classList.toggle('active',t.dataset.audsub===which)});
+    var t={api:'CR Stark API',vesti:'CR Stark Vesti',antec:'Antecipação'}[which];
+    document.getElementById('hAud').textContent='Auditoria · '+t;
+    var isAntec=(which==='antec');
+    document.getElementById('filtersDefault').style.display = isAntec?'none':'flex';
+    document.getElementById('filtersAntec').style.display   = isAntec?'flex':'none';
     render();
 }
 function switchSub(which){
@@ -421,7 +486,153 @@ function sumTotals(rows){
 
 function render(){
     if(TAB==='cr'){ renderCr(); return; }
+    if(TAB==='aud'){ renderAud(); return; }
     renderCp();
+}
+
+// === Auditoria ===
+//
+// Subabas:
+//  - 'api'  : usa window.INVOICES (Starkbank API).
+//             Entradas[d] = soma purchase.amount (BRT) das compras criadas em d.
+//             Saidas[d]   = soma installment.amount das parcelas com status='paid' no due=d (BRT).
+//  - 'vesti': usa window.DADOS.pagamentos (fluxo + antecipacao CP).
+//             Entradas[d] = soma grossValue por customerPaidAt=d (data da compra).
+//             Saidas[d]   = soma grossValue por payDate=d (data de recebimento).
+//  - 'antec': mesmo que 'vesti' mas filtrado a apenas isAntecipacao=true,
+//             grupando saidas por payDate (data a pagar).
+//
+// Pivot (AUD_PIVOT='2026-04-22'): primeira linha = acumulado de tudo ate o pivot
+// (entradas e saidas somadas, saldo = entradas - saidas, base zero).
+// Para datas > pivot: saldo[d] = saldo[d-1] + entradas[d] - saidas[d].
+function audAggregate(){
+    var entByDay={}, saiByDay={};
+    var faturas=(window.INVOICES&&window.INVOICES.faturas)||[];
+    var pags=(DADOS&&DADOS.pagamentos)||[];
+
+    if(AUD_SUB==='api' || AUD_SUB==='vesti'){
+        // Saidas[d] = soma BRUTA de TODAS as installments do CR cujo due (BRT) = d.
+        // Mesmo criterio do filtro "Data de recebimento" da aba CR — independe de status.
+        faturas.forEach(function(f){
+            if(isTestMarca(f.nomeFantasia))return;
+            ((f.purchase&&f.purchase.installments)||[]).forEach(function(i){
+                var d=isoBRTDate(i.due); if(!d)return;
+                saiByDay[d]=(saiByDay[d]||0)+(i.amount||0)/100;
+            });
+        });
+    }
+    if(AUD_SUB==='api'){
+        // Entradas[d] = soma installment.amount BRT (todas as parcelas) das faturas
+        // cuja data da compra (purchase.created || orderDate, BRT) = d.
+        // Replica exatamente o filtro "Data da compra" da aba CR (KPI Valor bruto).
+        faturas.forEach(function(f){
+            if(isTestMarca(f.nomeFantasia))return;
+            var p=f.purchase||{};
+            var dC=isoBRTDate(p.created)||isoBRTDate(f.orderDate);
+            if(!dC) return;
+            (p.installments||[]).forEach(function(i){
+                entByDay[dC]=(entByDay[dC]||0)+(i.amount||0)/100;
+            });
+        });
+    } else if(AUD_SUB==='vesti'){
+        // Entradas[d] = soma grossValue de CP (fluxo + antecipacao) por customerPaidAt = d.
+        // Saidas iguais a CR Stark API (vem do CR).
+        pags.forEach(function(p){
+            if(isTestMarca(p.nomeFantasia))return;
+            var dC=(p.customerPaidAt||'').substring(0,10);
+            if(dC) entByDay[dC]=(entByDay[dC]||0)+(p.grossValue||0);
+        });
+    } else if(AUD_SUB==='antec'){
+        // Antecipacao por data a pagar (payDate). Soh listagem — sem pivot/saldo.
+        pags.forEach(function(p){
+            if(isTestMarca(p.nomeFantasia))return;
+            if(!p.isAntecipacao)return;
+            var dP=(p.payDate||'').substring(0,10);
+            if(dP) saiByDay[dP]=(saiByDay[dP]||0)+(p.grossValue||0);
+        });
+    }
+    return {entByDay:entByDay, saiByDay:saiByDay};
+}
+
+function renderAud(){
+    var tb=document.getElementById('tbodyAud');
+    var needsApi=(AUD_SUB==='api'||AUD_SUB==='vesti');
+    if(needsApi && (!window.INVOICES||!window.INVOICES.faturas)){
+        tb.innerHTML='<tr><td colspan="4" class="empty" style="color:#E17055">invoices.js nao carregou</td></tr>';
+        ['kAudEnt','kAudSai','kAudSld'].forEach(function(id){document.getElementById(id).textContent='--'});
+        return;
+    }
+    var agg=audAggregate();
+    var dDe=document.getElementById('fDataDe').value;
+    var dAte=document.getElementById('fDataAte').value;
+
+    // Subaba Antecipacao: filtro de DIA UNICO (fAudDia). Sem dia escolhido, mostra
+    // tudo. Listagem flat por data a pagar — sem pivot/saldo.
+    if(AUD_SUB==='antec'){
+        var dia=(document.getElementById('fAudDia')||{}).value||'';
+        document.getElementById('kAudEntLbl').textContent='—';
+        document.getElementById('kAudSaiLbl').textContent=dia?('Antecipações em '+fmtD(dia)):'Antecipações (todas)';
+        document.getElementById('kAudSldLbl').textContent='Dias com antecipação';
+        var days=Object.keys(agg.saiByDay).sort();
+        var totA=0, nDays=0;
+        var html=days.map(function(d){
+            if(dia && d!==dia) return '';
+            var v=agg.saiByDay[d]||0;
+            totA+=v; nDays++;
+            return '<tr><td><strong>'+fmtD(d)+'</strong></td>'+
+                '<td class="money" style="color:#B2BEC3">—</td>'+
+                '<td class="money" style="color:var(--r)">'+fmtC(v)+'</td>'+
+                '<td class="money" style="color:#B2BEC3">—</td></tr>';
+        }).join('');
+        document.getElementById('kAudEnt').textContent='—';
+        document.getElementById('kAudSai').textContent=fmtC(totA);
+        document.getElementById('kAudSld').textContent=fmtN(nDays);
+        document.getElementById('audCount').textContent=dia?(nDays?'1 dia':'sem antecipação no dia'):fmtN(nDays)+' dia(s) com antecipação';
+        tb.innerHTML=html||'<tr><td colspan="4" class="empty">Sem antecipações '+(dia?'em '+fmtD(dia):'')+'</td></tr>';
+        return;
+    }
+
+    document.getElementById('kAudEntLbl').textContent='Entradas (período)';
+    document.getElementById('kAudSaiLbl').textContent='Saídas (período)';
+    document.getElementById('kAudSldLbl').textContent='Saldo final';
+
+    var allDays=[...new Set(Object.keys(agg.entByDay).concat(Object.keys(agg.saiByDay)))].sort();
+    var pivot=AUD_PIVOT;
+    var entCum=0, saiCum=0;
+    allDays.forEach(function(d){
+        if(d>=AUD_PIVOT_START && d<=pivot){
+            entCum+=agg.entByDay[d]||0;
+            saiCum+=agg.saiByDay[d]||0;
+        }
+    });
+    var rows=[];
+    var saldo=entCum-saiCum;
+    rows.push({date:pivot, ent:entCum, sai:saiCum, saldo:saldo, isPivot:true});
+    allDays.filter(function(d){return d>pivot}).forEach(function(d){
+        var e=agg.entByDay[d]||0, s=agg.saiByDay[d]||0;
+        saldo = saldo + e - s;
+        rows.push({date:d, ent:e, sai:s, saldo:saldo, isPivot:false});
+    });
+
+    var totEnt=0, totSai=0, saldoFinal=null, shown=0;
+    var html=rows.map(function(r){
+        if(dDe && r.date<dDe) return '';
+        if(dAte && r.date>dAte) return '';
+        totEnt+=r.ent; totSai+=r.sai; saldoFinal=r.saldo; shown++;
+        var lbl=r.isPivot?fmtD(r.date)+' <span class="badge sm">acumulado ≤ pivot</span>':fmtD(r.date);
+        return '<tr>'+
+            '<td><strong>'+lbl+'</strong></td>'+
+            '<td class="money" style="color:var(--g)">'+fmtC(r.ent)+'</td>'+
+            '<td class="money" style="color:var(--r)">'+fmtC(r.sai)+'</td>'+
+            '<td class="money total">'+fmtC(r.saldo)+'</td>'+
+        '</tr>';
+    }).join('');
+    if(saldoFinal===null && rows.length) saldoFinal=rows[rows.length-1].saldo;
+    document.getElementById('kAudEnt').textContent=fmtC(totEnt);
+    document.getElementById('kAudSai').textContent=fmtC(totSai);
+    document.getElementById('kAudSld').textContent=fmtC(saldoFinal||0);
+    document.getElementById('audCount').textContent=fmtN(shown)+' dia(s)';
+    tb.innerHTML=html||'<tr><td colspan="4" class="empty">Sem dados</td></tr>';
 }
 
 function renderCp(){
