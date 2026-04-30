@@ -1,0 +1,72 @@
+name: Onlog Ingest (planilha do Diogo)
+
+on:
+  workflow_dispatch:
+    inputs:
+      xlsx_path:
+        description: 'Caminho do .xlsx no repo (ex: PainelCSGerencial/_uploads/diogo_2026-04-30.xlsx)'
+        required: true
+        type: string
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias Python
+        run: pip install openpyxl
+
+      - name: Validar arquivo
+        run: |
+          if [ ! -f "${{ inputs.xlsx_path }}" ]; then
+            echo "ERRO: arquivo nao existe: ${{ inputs.xlsx_path }}"
+            exit 1
+          fi
+          echo "OK: ${{ inputs.xlsx_path }} ($(stat -c%s "${{ inputs.xlsx_path }}") bytes)"
+
+      - name: Rodar ingest_diogo_onlog
+        working-directory: PainelCSGerencial
+        run: |
+          python ingest_diogo_onlog.py "../${{ inputs.xlsx_path }}"
+
+      - name: Re-merge e re-build
+        working-directory: PainelCSGerencial
+        run: |
+          python merge_data.py
+          python build_html.py
+
+      - name: Commit e push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add PainelCSGerencial/onlog_data.json PainelCSGerencial/onlog_diff_*.json PainelCSGerencial/dashboard_full_data.js PainelCSGerencial/index.html PainelCSGerencial/divergencias.csv PainelCSGerencial/so_planilha.csv PainelCSGerencial/so_fabric.csv 2>/dev/null || true
+          git diff --cached --quiet && echo "sem mudancas" || git commit -m "Onlog ingest: $(basename '${{ inputs.xlsx_path }}')"
+          git push
+
+      - name: Publicar no repo PainelCSGerencial (GitHub Pages)
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          set -e
+          git clone --depth 1 "https://x-access-token:${GH_PAT}@github.com/marialauramarqui/PainelCSGerencial.git" /tmp/pcs-publish
+          cp PainelCSGerencial/index.html /tmp/pcs-publish/index.html
+          cp PainelCSGerencial/dashboard_full_data.js /tmp/pcs-publish/dashboard_full_data.js
+          cd /tmp/pcs-publish
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html dashboard_full_data.js
+          if git diff --cached --quiet; then
+            echo "sem mudancas para publicar"
+          else
+            git commit -m "Onlog ingest $(date +'%Y-%m-%d %H:%M')"
+            git push
+          fi
