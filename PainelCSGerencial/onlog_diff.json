@@ -3,25 +3,25 @@
     "de": "2026-04-16",
     "ate": "2026-04-30"
   },
-  "geradoEm": "2026-04-30T18:11:36.096476",
-  "planilhaArquivo": "2026-04-30-18-11_AnalisarPostagens-544407-20260430.xlsx",
+  "geradoEm": "2026-04-30T15:38:11.880362",
+  "planilhaArquivo": "MI & co atual.xlsx",
   "resumo": {
     "ok": 244,
     "divergencias": 7,
     "divergenciasPedidos": 7,
-    "soPlanilha": 22,
+    "soPlanilha": 25,
     "soFabric": 15,
-    "nPlanilha": 273,
+    "nPlanilha": 276,
     "nFabric": 314,
-    "totalPedidosPostagem": 14390.06,
+    "totalPedidosPostagem": 14842.48,
     "totalPaVesti": 795.63,
-    "totalGeralPostagem": 15185.69,
-    "totalCobrarPedidos": 15829.07,
+    "totalGeralPostagem": 15638.11,
+    "totalCobrarPedidos": 16326.73,
     "totalCobrarPa": 875.19,
-    "totalCobrarMarcas": 16704.26,
-    "custoDiogo": 15185.69,
+    "totalCobrarMarcas": 17201.92,
+    "custoDiogo": 15638.11,
     "diogoDetectado": false,
-    "margemVesti": 1518.57,
+    "margemVesti": 1563.81,
     "nPaVesti": 17
   },
   "paVesti": [
@@ -250,112 +250,112 @@
   "cobrancaPorMarca": [
     {
       "domainId": "14035",
-      "marca": "",
+      "marca": "Anne Blánc",
       "nPedidos": 130,
       "postagem": 6458.65,
       "cobrar": 7104.52
     },
     {
       "domainId": "1355848",
-      "marca": "",
+      "marca": "Arary",
       "nPedidos": 49,
       "postagem": 2875.85,
       "cobrar": 3163.43
     },
     {
       "domainId": "1942933",
-      "marca": "",
-      "nPedidos": 33,
-      "postagem": 1516.28,
-      "cobrar": 1667.91
+      "marca": "Mi&co",
+      "nPedidos": 36,
+      "postagem": 1968.7,
+      "cobrar": 2165.57
     },
     {
       "domainId": "268016",
-      "marca": "",
+      "marca": "Chocolate Doce",
       "nPedidos": 17,
       "postagem": 800.49,
       "cobrar": 880.54
     },
     {
       "domainId": "1514922",
-      "marca": "",
+      "marca": " Era Uma Vez",
       "nPedidos": 9,
       "postagem": 784.04,
       "cobrar": 862.44
     },
     {
       "domainId": "1737229",
-      "marca": "",
+      "marca": "KAESSI",
       "nPedidos": 11,
       "postagem": 657.19,
       "cobrar": 722.91
     },
     {
       "domainId": "157680",
-      "marca": "",
+      "marca": "Le Ricard Online",
       "nPedidos": 8,
       "postagem": 560.85,
       "cobrar": 616.94
     },
     {
       "domainId": "1703736",
-      "marca": "",
+      "marca": "FIRE",
       "nPedidos": 3,
       "postagem": 167.88,
       "cobrar": 184.67
     },
     {
       "domainId": "15",
-      "marca": "",
+      "marca": "Murano Jeans",
       "nPedidos": 1,
       "postagem": 134.09,
       "cobrar": 147.5
     },
     {
       "domainId": "1266888",
-      "marca": "",
+      "marca": "Aline Confecções",
       "nPedidos": 2,
       "postagem": 108.86,
       "cobrar": 119.75
     },
     {
       "domainId": "1805647",
-      "marca": "",
+      "marca": "CVL Moda - CD Nova Friburgo",
       "nPedidos": 3,
       "postagem": 97.8,
       "cobrar": 107.58
     },
     {
       "domainId": "2005999",
-      "marca": "",
+      "marca": "Issa Modas",
       "nPedidos": 2,
       "postagem": 79.5,
       "cobrar": 87.45
     },
     {
       "domainId": "2007005",
-      "marca": "",
+      "marca": "UNBRAND",
       "nPedidos": 2,
       "postagem": 47.55,
       "cobrar": 52.31
     },
     {
       "domainId": "1570446",
-      "marca": "",
+      "marca": "Shalen Modas",
       "nPedidos": 1,
       "postagem": 36.21,
       "cobrar": 39.83
     },
     {
       "domainId": "1606915",
-      "marca": "",
+      "marca": "SUB WAY Store",
       "nPedidos": 1,
       "postagem": 33.02,
       "cobrar": 36.32
     },
     {
       "domainId": "1956465",
-      "marca": "",
+      "marca": "Porã",
       "nPedidos": 1,
       "postagem": 31.8,
       "cobrar": 34.98
@@ -610,8 +610,8 @@
   },
   "divergencias": [
     {
-      "orderNumber": 61,
-      "marca": "Shalen Modas",
+      "orderNumber": 2,
+      "marca": "Issa Modas",
       "campo": "Cancelado",
       "planilha": "(postado pela Onlog)",
       "fabric": "CANCELADO no Vesti"
@@ -624,22 +624,8 @@
       "fabric": "CANCELADO no Vesti"
     },
     {
-      "orderNumber": 6695,
-      "marca": "Chocolate Doce",
-      "campo": "Cancelado",
-      "planilha": "(postado pela Onlog)",
-      "fabric": "CANCELADO no Vesti"
-    },
-    {
-      "orderNumber": 2,
-      "marca": "Issa Modas",
-      "campo": "Cancelado",
-      "planilha": "(postado pela Onlog)",
-      "fabric": "CANCELADO no Vesti"
-    },
-    {
-      "orderNumber": 5951,
-      "marca": "Anne Blánc",
+      "orderNumber": 7,
+      "marca": "UNBRAND",
       "campo": "Cancelado",
       "planilha": "(postado pela Onlog)",
       "fabric": "CANCELADO no Vesti"
@@ -652,8 +638,22 @@
       "fabric": "CANCELADO no Vesti"
     },
     {
-      "orderNumber": 7,
-      "marca": "UNBRAND",
+      "orderNumber": 6695,
+      "marca": "Chocolate Doce",
+      "campo": "Cancelado",
+      "planilha": "(postado pela Onlog)",
+      "fabric": "CANCELADO no Vesti"
+    },
+    {
+      "orderNumber": 61,
+      "marca": "Shalen Modas",
+      "campo": "Cancelado",
+      "planilha": "(postado pela Onlog)",
+      "fabric": "CANCELADO no Vesti"
+    },
+    {
+      "orderNumber": 5951,
+      "marca": "Anne Blánc",
       "campo": "Cancelado",
       "planilha": "(postado pela Onlog)",
       "fabric": "CANCELADO no Vesti"
@@ -661,85 +661,14 @@
   ],
   "soPlanilha": [
     {
-      "codigoVolume": "268016_6735",
-      "orderNumber": "6735",
-      "cliente": "LEIDIENE MARQUES BARBOSA LIMA",
-      "cidade": "RIO DE JANEIRO",
-      "uf": "RJ",
-      "status": "ARQUIVO RECEBIDO",
-      "postagem": 114.55
-    },
-    {
-      "codigoVolume": "1266888_658",
-      "orderNumber": "658",
-      "cliente": "ADRIANA DE ALMEIDA MACARONE",
-      "cidade": "SE3O BERNARDO DO CAMPO",
-      "uf": "SP",
-      "status": "OBJETO CRIADO",
-      "postagem": 21.06
-    },
-    {
-      "codigoVolume": "14035_6177",
-      "orderNumber": "6177",
-      "cliente": "SOLANGE BARBOSA DE ALMEIDA",
-      "cidade": "FORMOSA",
-      "uf": "GO",
-      "status": "TRANSFERENCIA",
-      "postagem": 44.03
-    },
-    {
-      "codigoVolume": "14035_6198",
-      "orderNumber": "6198",
-      "cliente": "RAYANNA MONTELO",
-      "cidade": "PALMAS",
-      "uf": "TO",
-      "status": "OBJETO CRIADO",
-      "postagem": 38.11
-    },
-    {
-      "codigoVolume": "1805647_1158",
-      "orderNumber": "1158",
-      "cliente": "JULIA GABRIELA DE SOUZA ROSA",
-      "cidade": "SANTARE9M",
-      "uf": "PA",
-      "status": "OBJETO CRIADO",
-      "postagem": 58.1
-    },
-    {
-      "codigoVolume": "14035_6195",
-      "orderNumber": "6195",
-      "cliente": "EDUARDA LIMA",
-      "cidade": "FRANCA",
-      "uf": "SP",
-      "status": "OBJETO CRIADO",
-      "postagem": 26.44
-    },
-    {
-      "codigoVolume": "14035_6193",
-      "orderNumber": "6193",
-      "cliente": "SIMONE ALBUQUERQUE DOS SANTOS D AVILA",
-      "cidade": "CAMPO GRANDE",
-      "uf": "MS",
-      "status": "OBJETO CRIADO",
-      "postagem": 32.67
-    },
-    {
-      "codigoVolume": "14035_6179",
-      "orderNumber": "6179",
-      "cliente": "THAIRINE NOBRE",
-      "cidade": "BELO HORIZONTE",
+      "codigoVolume": "14035_6200",
+      "orderNumber": "6200",
+      "cliente": "HELIA MARIZA PEREIRA",
+      "cidade": "SANTOS DUMONT",
       "uf": "MG",
       "status": "OBJETO CRIADO",
-      "postagem": 49.53
-    },
-    {
-      "codigoVolume": "14035_6189",
-      "orderNumber": "6189",
-      "cliente": "SIMONE ALBUQUERQUE DOS SANTOS D AVILA",
-      "cidade": "CAMPO GRANDE",
-      "uf": "MS",
-      "status": "OBJETO CRIADO",
-      "postagem": 33.57
+      "postagem": 53.69,
+      "data": "2026-04-29"
     },
     {
       "codigoVolume": "14035_6199",
@@ -748,25 +677,18 @@
       "cidade": "RONDONF3POLIS",
       "uf": "MT",
       "status": "OBJETO CRIADO",
-      "postagem": 36.5
+      "postagem": 36.5,
+      "data": "2026-04-29"
     },
     {
-      "codigoVolume": "14035_6182",
-      "orderNumber": "6182",
-      "cliente": "NATE1LIA CORREIA",
-      "cidade": "BRASEDLIA",
-      "uf": "DF",
-      "status": "OBJETO CRIADO",
-      "postagem": 38.44
-    },
-    {
-      "codigoVolume": "14035_6196",
-      "orderNumber": "6196",
-      "cliente": "BARROS JULIANA",
-      "cidade": "BOA VISTA",
-      "uf": "RR",
-      "status": "ETIQUETA EMITIDA",
-      "postagem": 197.16
+      "codigoVolume": "14035_6177",
+      "orderNumber": "6177",
+      "cliente": "SOLANGE BARBOSA DE ALMEIDA",
+      "cidade": "FORMOSA",
+      "uf": "GO",
+      "status": "TRANSFERENCIA",
+      "postagem": 44.03,
+      "data": "2026-04-29"
     },
     {
       "codigoVolume": "14035_6187",
@@ -775,7 +697,58 @@
       "cidade": "APARECIDA DE GOIE2NIA",
       "uf": "GO",
       "status": "OBJETO CRIADO",
-      "postagem": 38.38
+      "postagem": 38.38,
+      "data": "2026-04-29"
+    },
+    {
+      "codigoVolume": "1942933_268",
+      "orderNumber": "268",
+      "cliente": "BIANCA SANCHES",
+      "cidade": "SOROCABA",
+      "uf": "SP",
+      "status": "ENTREGUE",
+      "postagem": 139.81,
+      "data": "2026-04-20"
+    },
+    {
+      "codigoVolume": "1942933_263",
+      "orderNumber": "263",
+      "cliente": "CRISTINA JERNIMO DE",
+      "cidade": "ARARAS",
+      "uf": "SP",
+      "status": "ETIQUETA EMITIDA",
+      "postagem": 24.57,
+      "data": "2026-04-30"
+    },
+    {
+      "codigoVolume": "1266888_658",
+      "orderNumber": "658",
+      "cliente": "ADRIANA DE ALMEIDA MACARONE",
+      "cidade": "SE3O BERNARDO DO CAMPO",
+      "uf": "SP",
+      "status": "OBJETO CRIADO",
+      "postagem": 21.06,
+      "data": "2026-04-29"
+    },
+    {
+      "codigoVolume": "1805647_1158",
+      "orderNumber": "1158",
+      "cliente": "JULIA GABRIELA DE SOUZA ROSA",
+      "cidade": "SANTARE9M",
+      "uf": "PA",
+      "status": "OBJETO CRIADO",
+      "postagem": 58.1,
+      "data": "2026-04-29"
+    },
+    {
+      "codigoVolume": "14035_6196",
+      "orderNumber": "6196",
+      "cliente": "BARROS JULIANA",
+      "cidade": "BOA VISTA",
+      "uf": "RR",
+      "status": "ETIQUETA EMITIDA",
+      "postagem": 197.16,
+      "data": "2026-04-29"
     },
     {
       "codigoVolume": "1514922_1028",
@@ -784,70 +757,18 @@
       "cidade": "SE3O PAULO",
       "uf": "SP",
       "status": "ETIQUETA EMITIDA",
-      "postagem": 26.65
+      "postagem": 26.65,
+      "data": "2026-04-29"
     },
     {
-      "codigoVolume": "14035_6200",
-      "orderNumber": "6200",
-      "cliente": "HELIA MARIZA PEREIRA",
-      "cidade": "SANTOS DUMONT",
-      "uf": "MG",
+      "codigoVolume": "1942933_203",
+      "orderNumber": "203",
+      "cliente": "ELDER DANIEL DE MENDONA LEMOS",
+      "cidade": "BOA VISTA",
+      "uf": "RR",
       "status": "OBJETO CRIADO",
-      "postagem": 53.69
-    },
-    {
-      "codigoVolume": "14035_6188",
-      "orderNumber": "6188",
-      "cliente": "DANIELLA MARTINS BESSA",
-      "cidade": "CARMO DO RIO VERDE",
-      "uf": "GO",
-      "status": "OBJETO CRIADO",
-      "postagem": 52.91
-    },
-    {
-      "codigoVolume": "1514922_1025",
-      "orderNumber": "1025",
-      "cliente": "FERNANDES",
-      "cidade": "SE3O PAULO",
-      "uf": "SP",
-      "status": "OBJETO CRIADO",
-      "postagem": 58.1
-    },
-    {
-      "codigoVolume": "1355848_4143",
-      "orderNumber": "4143",
-      "cliente": "JULIANA BEZERRA DE ANDRADE",
-      "cidade": "ARARAQUARA",
-      "uf": "SP",
-      "status": "ETIQUETA EMITIDA",
-      "postagem": 23.28
-    },
-    {
-      "codigoVolume": "1355848_4142",
-      "orderNumber": "4142",
-      "cliente": "MARLI APARECIDA CERQUEIRA",
-      "cidade": "ORLE2NDIA",
-      "uf": "SP",
-      "status": "ARQUIVO RECEBIDO",
-      "postagem": 19.45
-    },
-    {
-      "codigoVolume": "14035_6183",
-      "orderNumber": "6183",
-      "cliente": "SAMARA RIBEIRO",
-      "cidade": "BELO HORIZONTE",
-      "uf": "MG",
-      "status": "OBJETO CRIADO",
-      "postagem": 29.55
-    },
-    {
-      "codigoVolume": "14035_6197",
-      "orderNumber": "6197",
-      "cliente": "JAMILA STOCO GOBBI JOSE",
-      "cidade": "VITF3RIA",
-      "uf": "ES",
-      "status": "ETIQUETA EMITIDA",
-      "postagem": 33.35
+      "postagem": 235.31,
+      "data": "2026-04-16"
     },
     {
       "codigoVolume": "1355848_4139",
@@ -856,20 +777,173 @@
       "cidade": "BORDA DA MATA",
       "uf": "MG",
       "status": "TRANSFERENCIA",
-      "postagem": 45.04
+      "postagem": 45.04,
+      "data": "2026-04-29"
+    },
+    {
+      "codigoVolume": "14035_6193",
+      "orderNumber": "6193",
+      "cliente": "SIMONE ALBUQUERQUE DOS SANTOS D AVILA",
+      "cidade": "CAMPO GRANDE",
+      "uf": "MS",
+      "status": "OBJETO CRIADO",
+      "postagem": 32.67,
+      "data": "2026-04-29"
+    },
+    {
+      "codigoVolume": "14035_6182",
+      "orderNumber": "6182",
+      "cliente": "NATE1LIA CORREIA",
+      "cidade": "BRASEDLIA",
+      "uf": "DF",
+      "status": "OBJETO CRIADO",
+      "postagem": 38.44,
+      "data": "2026-04-29"
+    },
+    {
+      "codigoVolume": "14035_6198",
+      "orderNumber": "6198",
+      "cliente": "RAYANNA MONTELO",
+      "cidade": "PALMAS",
+      "uf": "TO",
+      "status": "OBJETO CRIADO",
+      "postagem": 38.11,
+      "data": "2026-04-29"
+    },
+    {
+      "codigoVolume": "14035_6179",
+      "orderNumber": "6179",
+      "cliente": "THAIRINE NOBRE",
+      "cidade": "BELO HORIZONTE",
+      "uf": "MG",
+      "status": "OBJETO CRIADO",
+      "postagem": 49.53,
+      "data": "2026-04-29"
+    },
+    {
+      "codigoVolume": "14035_6197",
+      "orderNumber": "6197",
+      "cliente": "JAMILA STOCO GOBBI JOSE",
+      "cidade": "VITF3RIA",
+      "uf": "ES",
+      "status": "ETIQUETA EMITIDA",
+      "postagem": 33.35,
+      "data": "2026-04-29"
+    },
+    {
+      "codigoVolume": "14035_6195",
+      "orderNumber": "6195",
+      "cliente": "EDUARDA LIMA",
+      "cidade": "FRANCA",
+      "uf": "SP",
+      "status": "OBJETO CRIADO",
+      "postagem": 26.44,
+      "data": "2026-04-29"
+    },
+    {
+      "codigoVolume": "14035_6188",
+      "orderNumber": "6188",
+      "cliente": "DANIELLA MARTINS BESSA",
+      "cidade": "CARMO DO RIO VERDE",
+      "uf": "GO",
+      "status": "OBJETO CRIADO",
+      "postagem": 52.91,
+      "data": "2026-04-29"
+    },
+    {
+      "codigoVolume": "14035_6189",
+      "orderNumber": "6189",
+      "cliente": "SIMONE ALBUQUERQUE DOS SANTOS D AVILA",
+      "cidade": "CAMPO GRANDE",
+      "uf": "MS",
+      "status": "OBJETO CRIADO",
+      "postagem": 33.57,
+      "data": "2026-04-29"
+    },
+    {
+      "codigoVolume": "1355848_4142",
+      "orderNumber": "4142",
+      "cliente": "MARLI APARECIDA CERQUEIRA",
+      "cidade": "ORLE2NDIA",
+      "uf": "SP",
+      "status": "ARQUIVO RECEBIDO",
+      "postagem": 19.45,
+      "data": "2026-04-29"
+    },
+    {
+      "codigoVolume": "268016_6735",
+      "orderNumber": "6735",
+      "cliente": "LEIDIENE MARQUES BARBOSA LIMA",
+      "cidade": "RIO DE JANEIRO",
+      "uf": "RJ",
+      "status": "ARQUIVO RECEBIDO",
+      "postagem": 114.55,
+      "data": "2026-04-29"
+    },
+    {
+      "codigoVolume": "14035_6183",
+      "orderNumber": "6183",
+      "cliente": "SAMARA RIBEIRO",
+      "cidade": "BELO HORIZONTE",
+      "uf": "MG",
+      "status": "OBJETO CRIADO",
+      "postagem": 29.55,
+      "data": "2026-04-29"
+    },
+    {
+      "codigoVolume": "1514922_1025",
+      "orderNumber": "1025",
+      "cliente": "FERNANDES",
+      "cidade": "SE3O PAULO",
+      "uf": "SP",
+      "status": "OBJETO CRIADO",
+      "postagem": 58.1,
+      "data": "2026-04-29"
+    },
+    {
+      "codigoVolume": "1355848_4143",
+      "orderNumber": "4143",
+      "cliente": "JULIANA BEZERRA DE ANDRADE",
+      "cidade": "ARARAQUARA",
+      "uf": "SP",
+      "status": "ETIQUETA EMITIDA",
+      "postagem": 23.28,
+      "data": "2026-04-29"
     }
   ],
   "soFabric": [
     {
-      "data": "2026-04-18",
-      "orderNumber": 4050,
-      "marca": "Arary",
-      "cliente": "Maria Cristiane Macedo Silva",
-      "cidade": "São Paulo",
+      "data": "2026-04-29",
+      "orderNumber": 6170,
+      "marca": "Anne Blánc",
+      "cliente": "Camilla Da Costa Silvério",
+      "cidade": "Bauru",
       "uf": "SP",
       "cancelado": false,
-      "status": "SENT",
-      "valor": 1008.35
+      "status": "WAITING",
+      "valor": 502.82
+    },
+    {
+      "data": "2026-04-29",
+      "orderNumber": 6171,
+      "marca": "Anne Blánc",
+      "cliente": "Helia Mariza Pereira",
+      "cidade": "Santos Dumont",
+      "uf": "MG",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 1001.39
+    },
+    {
+      "data": "2026-04-25",
+      "orderNumber": 1012,
+      "marca": " Era Uma Vez",
+      "cliente": "Keila De Souza Duarte",
+      "cidade": "Italva",
+      "uf": "RJ",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 1690.41
     },
     {
       "data": "2026-04-29",
@@ -883,15 +957,48 @@
       "valor": 226.48
     },
     {
-      "data": "2026-04-25",
-      "orderNumber": 1012,
+      "data": "2026-04-28",
+      "orderNumber": 1017,
       "marca": " Era Uma Vez",
-      "cliente": "Keila De Souza Duarte",
-      "cidade": "Italva",
-      "uf": "RJ",
+      "cliente": "Aline Amereles",
+      "cidade": "Londrina",
+      "uf": "PR",
       "cancelado": false,
       "status": "WAITING",
-      "valor": 1690.41
+      "valor": 4317.61
+    },
+    {
+      "data": "2026-04-18",
+      "orderNumber": 4050,
+      "marca": "Arary",
+      "cliente": "Maria Cristiane Macedo Silva",
+      "cidade": "São Paulo",
+      "uf": "SP",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 1008.35
+    },
+    {
+      "data": "2026-04-28",
+      "orderNumber": 6169,
+      "marca": "Anne Blánc",
+      "cliente": "Gélri Cunha Machado",
+      "cidade": "Belém",
+      "uf": "PA",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 321.51
+    },
+    {
+      "data": "2026-04-29",
+      "orderNumber": 6172,
+      "marca": "Anne Blánc",
+      "cliente": "Ana Carolina Antonacci Cruz",
+      "cidade": "Contagem",
+      "uf": "MG",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 616.33
     },
     {
       "data": "2026-04-28",
@@ -906,14 +1013,14 @@
     },
     {
       "data": "2026-04-28",
-      "orderNumber": 6169,
-      "marca": "Anne Blánc",
-      "cliente": "Gélri Cunha Machado",
-      "cidade": "Belém",
-      "uf": "PA",
+      "orderNumber": 9,
+      "marca": "Ain Roupas",
+      "cliente": "Ana Patricia Rodriguesdacruz",
+      "cidade": "Cajamar",
+      "uf": "SP",
       "cancelado": false,
       "status": "WAITING",
-      "valor": 321.51
+      "valor": 780.78
     },
     {
       "data": "2026-04-16",
@@ -927,6 +1034,17 @@
       "valor": 483.64
     },
     {
+      "data": "2026-04-29",
+      "orderNumber": 6173,
+      "marca": "Anne Blánc",
+      "cliente": "Daniela Pedreira Guimaraes Barbosa",
+      "cidade": "Salvador",
+      "uf": "BA",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 570.03
+    },
+    {
       "data": "2026-04-28",
       "orderNumber": 4131,
       "marca": "Arary",
@@ -936,17 +1054,6 @@
       "cancelado": false,
       "status": "WAITING",
       "valor": 33.18
-    },
-    {
-      "data": "2026-04-28",
-      "orderNumber": 9,
-      "marca": "Ain Roupas",
-      "cliente": "Ana Patricia Rodriguesdacruz",
-      "cidade": "Cajamar",
-      "uf": "SP",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 780.78
     },
     {
       "data": "2026-04-29",
@@ -960,28 +1067,6 @@
       "valor": 229.4
     },
     {
-      "data": "2026-04-28",
-      "orderNumber": 1017,
-      "marca": " Era Uma Vez",
-      "cliente": "Aline Amereles",
-      "cidade": "Londrina",
-      "uf": "PR",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 4317.61
-    },
-    {
-      "data": "2026-04-29",
-      "orderNumber": 6171,
-      "marca": "Anne Blánc",
-      "cliente": "Helia Mariza Pereira",
-      "cidade": "Santos Dumont",
-      "uf": "MG",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 1001.39
-    },
-    {
       "data": "2026-04-29",
       "orderNumber": 6176,
       "marca": "Anne Blánc",
@@ -991,39 +1076,6 @@
       "cancelado": false,
       "status": "WAITING",
       "valor": 466.73
-    },
-    {
-      "data": "2026-04-29",
-      "orderNumber": 6173,
-      "marca": "Anne Blánc",
-      "cliente": "Daniela Pedreira Guimaraes Barbosa",
-      "cidade": "Salvador",
-      "uf": "BA",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 570.03
-    },
-    {
-      "data": "2026-04-29",
-      "orderNumber": 6172,
-      "marca": "Anne Blánc",
-      "cliente": "Ana Carolina Antonacci Cruz",
-      "cidade": "Contagem",
-      "uf": "MG",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 616.33
-    },
-    {
-      "data": "2026-04-29",
-      "orderNumber": 6170,
-      "marca": "Anne Blánc",
-      "cliente": "Camilla Da Costa Silvério",
-      "cidade": "Bauru",
-      "uf": "SP",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 502.82
     }
   ],
   "_planilhaSnapshot": {
@@ -1415,10 +1467,10 @@
       },
       "1942933_333": {
         "codigoVolume": "1942933_333",
-        "orderNumber": 333,
+        "orderNumber": "333",
         "domainId": "1942933",
-        "cliente": "Fernanda",
-        "cidade": "São Paulo",
+        "cliente": "FERNANDA",
+        "cidade": "SE3O PAULO",
         "uf": "SP",
         "status": "OBJETO CRIADO",
         "data": "2026-04-27",
@@ -1426,10 +1478,10 @@
       },
       "1942933_332": {
         "codigoVolume": "1942933_332",
-        "orderNumber": 332,
+        "orderNumber": "332",
         "domainId": "1942933",
-        "cliente": "Morghana Miranda",
-        "cidade": "Campinas",
+        "cliente": "MORGHANA MIRANDA",
+        "cidade": "CAMPINAS",
         "uf": "SP",
         "status": "ETIQUETA EMITIDA",
         "data": "2026-04-27",
@@ -1536,10 +1588,10 @@
       },
       "1942933_328": {
         "codigoVolume": "1942933_328",
-        "orderNumber": 328,
+        "orderNumber": "328",
         "domainId": "1942933",
-        "cliente": "Laíz Gonçalves Castilho",
-        "cidade": "Macaé",
+        "cliente": "LAEDZ GONE7ALVES CASTILHO",
+        "cidade": "MACAE9",
         "uf": "RJ",
         "status": "ARQUIVO RECEBIDO",
         "data": "2026-04-26",
@@ -1734,45 +1786,45 @@
       },
       "1942933_324": {
         "codigoVolume": "1942933_324",
-        "orderNumber": 324,
+        "orderNumber": "324",
         "domainId": "1942933",
-        "cliente": "Jamili Maria",
-        "cidade": "Ibimirim",
+        "cliente": "JAMILI MARIA",
+        "cidade": "IBIMIRIM",
         "uf": "PE",
         "status": "ETIQUETA EMITIDA",
         "data": "2026-04-25",
-        "postagem": 52.73
+        "postagem": 105.46
       },
       "1942933_323": {
         "codigoVolume": "1942933_323",
-        "orderNumber": 323,
+        "orderNumber": "323",
         "domainId": "1942933",
-        "cliente": "Ana Maria Pereira",
-        "cidade": "Arapongas",
+        "cliente": "ANA MARIA PEREIRA",
+        "cidade": "ARAPONGAS",
         "uf": "PR",
-        "status": "OBJETO CRIADO",
+        "status": "ENTRADA",
         "data": "2026-04-25",
         "postagem": 85.56
       },
       "1942933_322": {
         "codigoVolume": "1942933_322",
-        "orderNumber": 322,
+        "orderNumber": "322",
         "domainId": "1942933",
-        "cliente": "Caroll Carrera",
-        "cidade": "Santos",
+        "cliente": "CAROLL CARRERA",
+        "cidade": "SANTOS",
         "uf": "SP",
-        "status": "OBJETO EM TRANSFERÊNCIA - POR FAVOR AGUARDE",
+        "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-25",
         "postagem": 10.33
       },
       "1942933_321": {
         "codigoVolume": "1942933_321",
-        "orderNumber": 321,
+        "orderNumber": "321",
         "domainId": "1942933",
-        "cliente": "Caroll Carrera",
-        "cidade": "Santos",
+        "cliente": "CAROLL CARRERA",
+        "cidade": "SANTOS",
         "uf": "SP",
-        "status": "OBJETO POSTADO APÓS O HORÁRIO LIMITE DA UNIDADE",
+        "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-25",
         "postagem": 11.38
       },
@@ -1943,21 +1995,21 @@
       },
       "1942933_318": {
         "codigoVolume": "1942933_318",
-        "orderNumber": 318,
+        "orderNumber": "318",
         "domainId": "1942933",
-        "cliente": "Gisa Sulzbacher",
-        "cidade": "Estância Velha",
+        "cliente": "GISA SULZBACHER",
+        "cidade": "ESTE2NCIA VELHA",
         "uf": "RS",
-        "status": "ENTRADA",
+        "status": "ENTREGUE",
         "data": "2026-04-24",
         "postagem": 34.22
       },
       "1942933_316": {
         "codigoVolume": "1942933_316",
-        "orderNumber": 316,
+        "orderNumber": "316",
         "domainId": "1942933",
-        "cliente": "Carine",
-        "cidade": "Florianópolis",
+        "cliente": "CARINE",
+        "cidade": "FLORIANF3POLIS",
         "uf": "SC",
         "status": "ETIQUETA EMITIDA",
         "data": "2026-04-24",
@@ -1965,13 +2017,13 @@
       },
       "1942933_315": {
         "codigoVolume": "1942933_315",
-        "orderNumber": 315,
+        "orderNumber": "315",
         "domainId": "1942933",
-        "cliente": "Erika Ribeiro Pedrosa",
-        "cidade": "Londrina",
+        "cliente": "ERIKA RIBEIRO PEDROSA",
+        "cidade": "LONDRINA",
         "uf": "PR",
-        "status": "OBJETO CRIADO",
-        "data": "2026-04-24",
+        "status": "OBJETO EM TRANSFERÊNCIA - POR FAVOR AGUARDE",
+        "data": "2026-04-23",
         "postagem": 48.31
       },
       "268016_6713": {
@@ -2284,10 +2336,10 @@
       },
       "1942933_314": {
         "codigoVolume": "1942933_314",
-        "orderNumber": 314,
+        "orderNumber": "314",
         "domainId": "1942933",
-        "cliente": "Lessandra ",
-        "cidade": "Franca",
+        "cliente": "LESSANDRA",
+        "cidade": "FRANCA",
         "uf": "SP",
         "status": "OBJETO CRIADO",
         "data": "2026-04-23",
@@ -2295,10 +2347,10 @@
       },
       "1942933_313": {
         "codigoVolume": "1942933_313",
-        "orderNumber": 313,
+        "orderNumber": "313",
         "domainId": "1942933",
-        "cliente": "Bruna Thome Carvalho",
-        "cidade": "Londrina",
+        "cliente": "BRUNA THOME CARVALHO",
+        "cidade": "LONDRINA",
         "uf": "PR",
         "status": "OBJETO CRIADO",
         "data": "2026-04-23",
@@ -2306,10 +2358,10 @@
       },
       "1942933_308": {
         "codigoVolume": "1942933_308",
-        "orderNumber": 308,
+        "orderNumber": "308",
         "domainId": "1942933",
-        "cliente": "Sofia Calabresi Dianas",
-        "cidade": "Bauru",
+        "cliente": "SOFIA CALABRESI DIANAS",
+        "cidade": "BAURU",
         "uf": "SP",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-23",
@@ -2504,10 +2556,10 @@
       },
       "1942933_307": {
         "codigoVolume": "1942933_307",
-        "orderNumber": 307,
+        "orderNumber": "307",
         "domainId": "1942933",
-        "cliente": "Claudia Lorenzato Rinaldi",
-        "cidade": "Ribeirão Preto",
+        "cliente": "CLAUDIA LORENZATO RINALDI",
+        "cidade": "RIBEIRE3O PRETO",
         "uf": "SP",
         "status": "OBJETO EM TRANSFERÊNCIA - POR FAVOR AGUARDE",
         "data": "2026-04-22",
@@ -2658,32 +2710,32 @@
       },
       "1942933_300": {
         "codigoVolume": "1942933_300",
-        "orderNumber": 300,
+        "orderNumber": "300",
         "domainId": "1942933",
-        "cliente": "Roberta Lucchetta",
-        "cidade": "Tietê",
+        "cliente": "ROBERTA LUCCHETTA",
+        "cidade": "TIETEA",
         "uf": "SP",
-        "status": "OBJETO EM TRANSFERÊNCIA - POR FAVOR AGUARDE",
+        "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-21",
         "postagem": 43.01
       },
       "1942933_299": {
         "codigoVolume": "1942933_299",
-        "orderNumber": 299,
+        "orderNumber": "299",
         "domainId": "1942933",
-        "cliente": "Elenice Brumer",
-        "cidade": "Piedade",
+        "cliente": "ELENICE BRUMER",
+        "cidade": "PIEDADE",
         "uf": "SP",
-        "status": "OBJETO EM TRANSFERÊNCIA - POR FAVOR AGUARDE",
+        "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-21",
         "postagem": 15.72
       },
       "1942933_298": {
         "codigoVolume": "1942933_298",
-        "orderNumber": 298,
+        "orderNumber": "298",
         "domainId": "1942933",
-        "cliente": "Alínea Car",
-        "cidade": "Ipatinga",
+        "cliente": "ALEDNEA CAR",
+        "cidade": "IPATINGA",
         "uf": "MG",
         "status": "OBJETO EM TRANSFERÊNCIA - POR FAVOR AGUARDE",
         "data": "2026-04-21",
@@ -2691,13 +2743,13 @@
       },
       "1942933_297": {
         "codigoVolume": "1942933_297",
-        "orderNumber": 297,
+        "orderNumber": "297",
         "domainId": "1942933",
-        "cliente": "Tatiana Borges",
-        "cidade": "Santos",
+        "cliente": "TATIANA BORGES",
+        "cidade": "SANTOS",
         "uf": "SP",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
-        "data": "2026-04-21",
+        "data": "2026-04-20",
         "postagem": 10.72
       },
       "157680_7980": {
@@ -2944,10 +2996,10 @@
       },
       "1942933_296": {
         "codigoVolume": "1942933_296",
-        "orderNumber": 296,
+        "orderNumber": "296",
         "domainId": "1942933",
-        "cliente": "Andrieli Cristina Riedel",
-        "cidade": "Xaxim",
+        "cliente": "ANDRIELI CRISTINA RIEDEL",
+        "cidade": "XAXIM",
         "uf": "SC",
         "status": "OBJETO CRIADO",
         "data": "2026-04-20",
@@ -2999,10 +3051,10 @@
       },
       "1942933_290": {
         "codigoVolume": "1942933_290",
-        "orderNumber": 290,
+        "orderNumber": "290",
         "domainId": "1942933",
-        "cliente": "Jackeline Ceciliato",
-        "cidade": "Tatuí",
+        "cliente": "JACKELINE CECILIATO",
+        "cidade": "TATUED",
         "uf": "SP",
         "status": "OBJETO EM TRANSFERÊNCIA - POR FAVOR AGUARDE",
         "data": "2026-04-19",
@@ -3120,13 +3172,13 @@
       },
       "1942933_287": {
         "codigoVolume": "1942933_287",
-        "orderNumber": 287,
+        "orderNumber": "287",
         "domainId": "1942933",
-        "cliente": "Ingret Martins",
-        "cidade": "Santana de Parnaíba",
+        "cliente": "INGRET MARTINS",
+        "cidade": "SANTANA DE PARNAEDBA",
         "uf": "SP",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
-        "data": "2026-04-18",
+        "data": "2026-04-17",
         "postagem": 14.23
       },
       "157680_7962": {
@@ -3417,10 +3469,10 @@
       },
       "1942933_286": {
         "codigoVolume": "1942933_286",
-        "orderNumber": 286,
+        "orderNumber": "286",
         "domainId": "1942933",
-        "cliente": "Kamilla Cardoso Gomes",
-        "cidade": "Montes Claros",
+        "cliente": "KAMILLA CARDOSO GOMES",
+        "cidade": "MONTES CLAROS",
         "uf": "MG",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-17",
@@ -3428,10 +3480,10 @@
       },
       "1942933_285": {
         "codigoVolume": "1942933_285",
-        "orderNumber": 285,
+        "orderNumber": "285",
         "domainId": "1942933",
-        "cliente": "Janaina Costaviana",
-        "cidade": "Unaí",
+        "cliente": "JANAINA COSTAVIANA",
+        "cidade": "UNAED",
         "uf": "MG",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-17",
@@ -3439,10 +3491,10 @@
       },
       "1942933_284": {
         "codigoVolume": "1942933_284",
-        "orderNumber": 284,
+        "orderNumber": "284",
         "domainId": "1942933",
-        "cliente": "Anselmo Provazi Pesci",
-        "cidade": "Nova Independência",
+        "cliente": "ANSELMO PROVAZI PESCI",
+        "cidade": "NOVA INDEPENDEANCIA",
         "uf": "SP",
         "status": "OBJETO EM TRANSFERÊNCIA - POR FAVOR AGUARDE",
         "data": "2026-04-17",
@@ -3450,35 +3502,35 @@
       },
       "1942933_283": {
         "codigoVolume": "1942933_283",
-        "orderNumber": 283,
+        "orderNumber": "283",
         "domainId": "1942933",
-        "cliente": "Gleiciany Pereira Costa",
-        "cidade": "Palmas",
+        "cliente": "GLEICIANY PEREIRA COSTA",
+        "cidade": "PALMAS",
         "uf": "TO",
-        "status": "OBJETO NÃO ENTREGUE - CARTEIRO NÃO ATENDIDO",
+        "status": "OBJETO SAIU PARA ENTREGA AO DESTINATÁRIO",
         "data": "2026-04-17",
         "postagem": 57.4
       },
       "1942933_281": {
         "codigoVolume": "1942933_281",
-        "orderNumber": 281,
+        "orderNumber": "281",
         "domainId": "1942933",
-        "cliente": "Keli Ferraz",
-        "cidade": "Pradópolis",
+        "cliente": "KELI FERRAZ",
+        "cidade": "PRADF3POLIS",
         "uf": "SP",
-        "status": "OBJETO EM TRANSFERÊNCIA - POR FAVOR AGUARDE",
-        "data": "2026-04-17",
+        "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
+        "data": "2026-04-22",
         "postagem": 19.14
       },
       "1942933_279": {
         "codigoVolume": "1942933_279",
-        "orderNumber": 279,
+        "orderNumber": "279",
         "domainId": "1942933",
-        "cliente": "Adriana De Araújo Lima Moreira",
-        "cidade": "Belo Horizonte",
+        "cliente": "ADRIANA DE ARAFAJO LIMA MOREIRA",
+        "cidade": "BELO HORIZONTE",
         "uf": "MG",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
-        "data": "2026-04-17",
+        "data": "2026-04-16",
         "postagem": 42.3
       },
       "157680_7933": {
@@ -3692,10 +3744,10 @@
       },
       "1942933_278": {
         "codigoVolume": "1942933_278",
-        "orderNumber": 278,
+        "orderNumber": "278",
         "domainId": "1942933",
-        "cliente": "Natália N Monteiro",
-        "cidade": "Salvador",
+        "cliente": "NATE1LIA N MONTEIRO",
+        "cidade": "SALVADOR",
         "uf": "BA",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-16",
@@ -3703,10 +3755,10 @@
       },
       "1942933_276": {
         "codigoVolume": "1942933_276",
-        "orderNumber": 276,
+        "orderNumber": "276",
         "domainId": "1942933",
-        "cliente": "Tany Clia Lopes Dos Reis",
-        "cidade": "Aparecida de Goiânia",
+        "cliente": "TANY CLIA LOPES DOS REIS",
+        "cidade": "APARECIDA DE GOIE2NIA",
         "uf": "GO",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-16",
@@ -3714,10 +3766,10 @@
       },
       "1942933_274": {
         "codigoVolume": "1942933_274",
-        "orderNumber": 274,
+        "orderNumber": "274",
         "domainId": "1942933",
-        "cliente": "Ramille Garcia",
-        "cidade": "Lagoa Santa",
+        "cliente": "RAMILLE GARCIA",
+        "cidade": "LAGOA SANTA",
         "uf": "MG",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-16",
@@ -3725,10 +3777,10 @@
       },
       "1942933_273": {
         "codigoVolume": "1942933_273",
-        "orderNumber": 273,
+        "orderNumber": "273",
         "domainId": "1942933",
-        "cliente": "Patricia Erthal Da Cunha",
-        "cidade": "Brusque",
+        "cliente": "PATRICIA ERTHAL DA CUNHA",
+        "cidade": "BRUSQUE",
         "uf": "SC",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-16",
@@ -3736,10 +3788,10 @@
       },
       "1942933_272": {
         "codigoVolume": "1942933_272",
-        "orderNumber": 272,
+        "orderNumber": "272",
         "domainId": "1942933",
-        "cliente": "Paula Daniela Hermann Corres",
-        "cidade": "Salto",
+        "cliente": "PAULA DANIELA HERMANN CORRES",
+        "cidade": "SALTO",
         "uf": "SP",
         "status": "ENTREGUE",
         "data": "2026-04-16",
@@ -3747,10 +3799,10 @@
       },
       "1942933_271": {
         "codigoVolume": "1942933_271",
-        "orderNumber": 271,
+        "orderNumber": "271",
         "domainId": "1942933",
-        "cliente": "Bianca Sanches",
-        "cidade": "Sorocaba",
+        "cliente": "BIANCA SANCHES",
+        "cidade": "SOROCABA",
         "uf": "SP",
         "status": "ENTREGUE",
         "data": "2026-04-16",
@@ -4030,6 +4082,39 @@
         "status": "ETIQUETA EMITIDA",
         "data": "2026-04-29",
         "postagem": 26.65
+      },
+      "1942933_203": {
+        "codigoVolume": "1942933_203",
+        "orderNumber": "203",
+        "domainId": "1942933",
+        "cliente": "ELDER DANIEL DE MENDONA LEMOS",
+        "cidade": "BOA VISTA",
+        "uf": "RR",
+        "status": "OBJETO CRIADO",
+        "data": "2026-04-16",
+        "postagem": 235.31
+      },
+      "1942933_268": {
+        "codigoVolume": "1942933_268",
+        "orderNumber": "268",
+        "domainId": "1942933",
+        "cliente": "BIANCA SANCHES",
+        "cidade": "SOROCABA",
+        "uf": "SP",
+        "status": "ENTREGUE",
+        "data": "2026-04-20",
+        "postagem": 139.81
+      },
+      "1942933_263": {
+        "codigoVolume": "1942933_263",
+        "orderNumber": "263",
+        "domainId": "1942933",
+        "cliente": "CRISTINA JERNIMO DE",
+        "cidade": "ARARAS",
+        "uf": "SP",
+        "status": "ETIQUETA EMITIDA",
+        "data": "2026-04-30",
+        "postagem": 24.57
       }
     },
     "paVesti": [
