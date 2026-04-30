@@ -309,8 +309,63 @@ def main() -> None:
 
     print(f"[2/4] Agregando planilha (CodigoVolume)")
     planilha, pa_vesti = aggregate_planilha(raw, de, ate)
+    print(f"      {len(planilha)} pedidos novos com CodigoVolume; {len(pa_vesti)} PA VESTI novos")
+
+    # Merge com snapshot anterior (se existir) - permite subir planilhas parciais (ex: 1 dia)
+    # sem perder dados ja ingeridos da mesma quinzena.
+    prev_path = ROOT / f"onlog_diff_{de}_{ate}.json"
+    if prev_path.exists():
+        try:
+            prev = json.loads(prev_path.read_text(encoding="utf-8"))
+            snap = prev.get("_planilhaSnapshot") or {}
+            old_p = snap.get("planilha") or {}
+            old_pa = snap.get("paVesti") or []
+            # Bootstrap: se nao tem snapshot mas o onlog_data.json ja tem patches da mesma
+            # quinzena (postagemFonte=planilha-diogo), reconstroi a partir deles.
+            if not old_p:
+                onlog_data_tmp = json.loads(ONLOG_JSON.read_text(encoding="utf-8"))
+                for p in onlog_data_tmp.get("pedidos", []):
+                    d = p.get("data") or ""
+                    if not d or d < de or d > ate:
+                        continue
+                    if p.get("postagemFonte") != "planilha-diogo":
+                        continue
+                    cv = f'{p.get("dominioId","")}_{p.get("orderNumber","")}'
+                    old_p[cv] = {
+                        "codigoVolume": cv,
+                        "orderNumber": p.get("orderNumber"),
+                        "domainId": p.get("dominioId", ""),
+                        "cliente": p.get("cliente", ""),
+                        "cidade": p.get("cidade", ""),
+                        "uf": p.get("uf", ""),
+                        "status": p.get("statusOnlog", ""),
+                        "data": d,
+                        "postagem": p.get("valorPostagem", 0.0) or 0.0,
+                    }
+                # Bootstrap PA VESTI a partir do diff antigo
+                if not old_pa:
+                    old_pa = prev.get("paVesti") or []
+                if old_p or old_pa:
+                    print(f"      [merge/bootstrap] reconstruido {len(old_p)} pedidos + {len(old_pa)} PA do estado existente")
+            # Merge: novos sobrescrevem antigos pela mesma chave
+            merged_p = dict(old_p)
+            merged_p.update(planilha)
+            # PA VESTI: dedup por codigoInterno
+            seen = {p.get("codigoInterno") or f"{p.get('data','')}_{p.get('numeroNF','')}_{p.get('postagem',0)}" for p in pa_vesti}
+            merged_pa = list(pa_vesti)
+            for p in old_pa:
+                k = p.get("codigoInterno") or f"{p.get('data','')}_{p.get('numeroNF','')}_{p.get('postagem',0)}"
+                if k not in seen:
+                    merged_pa.append(p)
+                    seen.add(k)
+            print(f"      [merge] snapshot anterior: {len(old_p)} pedidos + {len(old_pa)} PA -> total apos merge: {len(merged_p)} + {len(merged_pa)}")
+            planilha = merged_p
+            pa_vesti = merged_pa
+        except Exception as e:
+            print(f"      [merge] aviso: nao foi possivel ler snapshot anterior ({e}). Seguindo sem merge.")
+
     pa_total = round(sum(p["postagem"] for p in pa_vesti), 2)
-    print(f"      {len(planilha)} pedidos unicos com CodigoVolume")
+    print(f"      {len(planilha)} pedidos finais com CodigoVolume")
     print(f"      {len(pa_vesti)} postagens avulsas PA VESTI (sem pedido) - total R$ {pa_total:,.2f}")
 
     print(f"[3/4] Lendo Fabric (onlog_data.json)")
@@ -472,6 +527,11 @@ def main() -> None:
             "status": p.get("status", ""),
             "valor": p.get("valor"),
         } for p in only_f],
+        # Snapshot para permitir merge incremental em re-ingestoes da mesma quinzena
+        "_planilhaSnapshot": {
+            "planilha": planilha,
+            "paVesti": pa_vesti,
+        },
     }
     # Salva por quinzena: onlog_diff_<de>_<ate>.json (multi-quinzenas)
     out_quinzena = ROOT / f"onlog_diff_{de}_{ate}.json"
