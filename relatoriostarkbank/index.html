@@ -406,14 +406,8 @@ function switchTab(which){
     document.getElementById('lblDataDe').textContent    = isCr?'Data de recebimento (de)':'Data a pagar (de)';
     document.getElementById('lblDataAte').textContent   = isCr?'Data de recebimento (até)':'Data a pagar (até)';
     // Filtro especifico ja eh tratado em switchAudSub; aqui garantimos o default fora da aba aud.
-    if(!isAud){
-        document.getElementById('filtersDefault').style.display='flex';
-        document.getElementById('filtersAntec').style.display='none';
-    } else {
-        var antec=(AUD_SUB==='antec');
-        document.getElementById('filtersDefault').style.display = antec?'none':'flex';
-        document.getElementById('filtersAntec').style.display   = antec?'flex':'none';
-    }
+    document.getElementById('filtersDefault').style.display = isAud?'none':'flex';
+    document.getElementById('filtersAntec').style.display   = isAud?'flex':'none';
     openSet={};
     render();
 }
@@ -422,9 +416,8 @@ function switchAudSub(which){
     document.querySelectorAll('#subtabsAud .subtab').forEach(function(t){t.classList.toggle('active',t.dataset.audsub===which)});
     var t={api:'CR Stark API',vesti:'CR Stark Vesti',antec:'Antecipação'}[which];
     document.getElementById('hAud').textContent='Auditoria · '+t;
-    var isAntec=(which==='antec');
-    document.getElementById('filtersDefault').style.display = isAntec?'none':'flex';
-    document.getElementById('filtersAntec').style.display   = isAntec?'flex':'none';
+    document.getElementById('filtersDefault').style.display = 'none';
+    document.getElementById('filtersAntec').style.display   = 'flex';
     render();
 }
 function switchSub(which){
@@ -563,13 +556,12 @@ function renderAud(){
         return;
     }
     var agg=audAggregate();
-    var dDe=document.getElementById('fDataDe').value;
-    var dAte=document.getElementById('fDataAte').value;
+    // Auditoria usa filtro de dia unico (fAudDia). Vazio = mostra tudo.
+    var dia=(document.getElementById('fAudDia')||{}).value||'';
 
     // Subaba Antecipacao: filtro de DIA UNICO (fAudDia). Sem dia escolhido, mostra
     // tudo. Listagem flat por data a pagar — sem pivot/saldo.
     if(AUD_SUB==='antec'){
-        var dia=(document.getElementById('fAudDia')||{}).value||'';
         document.getElementById('kAudEntLbl').textContent='—';
         document.getElementById('kAudSaiLbl').textContent=dia?('Antecipações em '+fmtD(dia)):'Antecipações (todas)';
         document.getElementById('kAudSldLbl').textContent='Dias com antecipação';
@@ -616,8 +608,7 @@ function renderAud(){
 
     var totEnt=0, totSai=0, saldoFinal=null, shown=0;
     var html=rows.map(function(r){
-        if(dDe && r.date<dDe) return '';
-        if(dAte && r.date>dAte) return '';
+        if(dia && r.date!==dia) return '';
         totEnt+=r.ent; totSai+=r.sai; saldoFinal=r.saldo; shown++;
         var lbl=r.isPivot?fmtD(r.date)+' <span class="badge sm">acumulado ≤ pivot</span>':fmtD(r.date);
         return '<tr>'+
