@@ -1356,6 +1356,25 @@ function _onlogBuildDiogoIdx(){
                 _quinzena:d.quinzena||null,
             });
         });
+        (d.paVesti||[]).forEach(function(x){
+            // Postagens avulsas (PA VESTI) - estao na planilha do Diogo mas nao tem pedido Vesti correspondente
+            idx.soPlanilha.push({
+                _origem:'planilha-only',
+                _paVesti:true,
+                dominioId:'',
+                orderNumber:x.numeroNF||x.codigoInterno||'',
+                cliente:x.cliente||'',
+                cidade:x.cidade||'',
+                uf:x.uf||'',
+                statusOnlog:x.status||'',
+                valorPostagem:x.postagem,
+                data:x.data||((d.quinzena&&d.quinzena.de)||''),
+                _operador:x.operador||'',
+                _modalidade:x.modalidade||'',
+                _codigoInterno:x.codigoInterno||'',
+                _quinzena:d.quinzena||null,
+            });
+        });
     });
     return _onlogDiogoIdx=idx;
 }
@@ -1467,7 +1486,11 @@ function updateOnlog(){
         // chip de origem (mostrado SEMPRE que tiver alguma marcacao relevante)
         var chip='';
         if(origem==='planilha-only'){
-            chip='<div style="margin-top:3px"><span style="background:#F39C12;color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700" title="Pedido aparece SO na planilha do Diogo, nao foi encontrado nos dados Vesti">&#128203; SO NA PLANILHA</span></div>';
+            if(p._paVesti){
+                chip='<div style="margin-top:3px"><span style="background:#6C5CE7;color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700" title="Postagem avulsa PA VESTI - aparece na planilha do Diogo mas nao tem pedido Vesti correspondente">&#128230; PA VESTI</span></div>';
+            } else {
+                chip='<div style="margin-top:3px"><span style="background:#F39C12;color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700" title="Pedido aparece SO na planilha do Diogo, nao foi encontrado nos dados Vesti">&#128203; SO NA PLANILHA</span></div>';
+            }
         } else if(origem==='soFabric'){
             chip='<div style="margin-top:3px"><span style="background:#E17055;color:#fff;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700" title="Pedido esta nos dados Vesti dentro de uma quinzena ja conferida, mas NAO esta na planilha do Diogo">&#9888; SO DADOS VESTI</span></div>';
         } else if(origem==='both'){
@@ -1483,16 +1506,18 @@ function updateOnlog(){
             }).join('<br>')+'</div>';
         }
         if(p._origem==='planilha-only'){
-            // sintetico: poucos dados; preenche o que tiver e marca '(planilha)' nas colunas Vesti
             var pl='<span style="color:#B2BEC3;font-style:italic">(planilha)</span>';
+            var marcaCell=p._paVesti?'<span style="color:#6C5CE7;font-weight:600">PA VESTI</span>':pl;
+            var pedidoLbl=p._paVesti?('NF '+esc(p.orderNumber||'-')):('#'+esc(p.orderNumber));
+            var servCell=p._paVesti?('<span style="font-size:11px;color:var(--g)">'+esc(p._operador||'')+(p._modalidade?' / '+esc(p._modalidade):'')+'</span>'):pl;
             return '<tr style="'+rowBg+'">'+
-                '<td style="white-space:nowrap;color:var(--g)" title="data da quinzena - planilha nao traz data exata por pedido">'+esc(p.data||'-')+'</td>'+
+                '<td style="white-space:nowrap;color:var(--g)" title="data conforme planilha">'+esc(p.data||'-')+'</td>'+
                 '<td>'+pl+'</td>'+
-                '<td>'+pl+'</td>'+
-                '<td style="white-space:nowrap;font-family:monospace">#'+esc(p.orderNumber)+chip+'</td>'+
+                '<td>'+marcaCell+'</td>'+
+                '<td style="white-space:nowrap;font-family:monospace">'+pedidoLbl+chip+'</td>'+
                 '<td>'+esc(p.cliente||'-')+divergTxt+'</td>'+
                 '<td style="white-space:nowrap">'+esc((p.cidade||'-')+(p.uf?'/'+p.uf:''))+'</td>'+
-                '<td style="font-size:11px;color:var(--g)">'+pl+'</td>'+
+                '<td>'+servCell+'</td>'+
                 '<td style="font-size:11px;color:var(--s);font-weight:600" title="status real da Onlog (planilha)">'+esc(p.statusOnlog||'-')+'</td>'+
                 '<td>'+pl+'</td>'+
                 '<td style="text-align:right">'+pl+'</td>'+
