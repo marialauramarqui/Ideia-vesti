@@ -472,7 +472,7 @@ table.dt tr:hover td{background:#FAFAFA}
         <div class="filter-group"><label>Dia unico:</label><input type="date" class="f-input" id="olFDia" onchange="onlogSetDia()" style="width:150px" title="Seleciona um dia especifico"></div>
         <div class="filter-group"><label>Etiqueta:</label><select class="f-select" id="olFEtiq" onchange="updateOnlog()"><option value="">Todos</option><option value="com">Com etiqueta</option><option value="sem">Sem etiqueta</option></select></div>
         <div class="filter-group"><label>Status:</label><select class="f-select" id="olFStatus" onchange="updateOnlog()"><option value="">Todos</option></select></div>
-        <div class="filter-group"><label title="Cruzamento com a planilha do Diogo">Origem:</label><select class="f-select" id="olFOrigem" onchange="updateOnlog()" title="Cruzamento com a planilha do Diogo"><option value="">Todos</option><option value="planilha">So na planilha (Diogo)</option><option value="vesti">So dados Vesti</option></select></div>
+        <div class="filter-group"><label title="Cruzamento com a planilha do Diogo">Origem:</label><select class="f-select" id="olFOrigem" onchange="updateOnlog()" title="Cruzamento com a planilha do Diogo"><option value="">Todos</option><option value="planilha">So na planilha (nao tem no Vesti)</option><option value="vesti">So no Vesti (nao tem na planilha)</option><option value="ambos">Nos dois (planilha e Vesti)</option></select></div>
         <button class="f-btn" onclick="onlogClearFilters()">Limpar</button>
         <button class="f-btn" onclick="onlogExportExcel()" style="background:#00B894;color:#fff;font-weight:700" title="Exporta os pedidos filtrados para Excel">&#128221; Excel</button>
         <button class="f-btn" onclick="onlogExportCsv()" style="background:#0984E3;color:#fff;font-weight:700" title="Exporta CSV (alternativa, sempre funciona)">CSV</button>
@@ -1450,21 +1450,29 @@ function _onlogFilterRows(od){
     if(st==='__CANCELED__')rows=rows.filter(function(p){return p.cancelado});
     else if(st)rows=rows.filter(function(p){return !p.cancelado && (p.status||'').toUpperCase()===st});
     if(orig==='planilha'){
-        // Apenas pedidos que estao na planilha do Diogo (matched no Vesti + so-na-planilha sinteticos)
-        rows=rows.filter(function(p){return p.postagemFonte==='planilha-diogo'});
+        // SO na planilha (nao tem no Vesti): apenas sinteticos soPlanilha
+        rows=[];
         var syn=idx.soPlanilha.slice();
         if(de)syn=syn.filter(function(p){return (p.data||'')>=de});
         if(ate)syn=syn.filter(function(p){return (p.data||'')<=ate});
-        // marca/CS nao se aplicam aos sinteticos (sem dado) - so incluir se nao houver filtro restritivo
         if(!fcsGlobal&&!selCoLow)rows=rows.concat(syn);
+        else {
+            // Aplica filtro de marca aos sinteticos (que ja tem remetente)
+            if(selCoLow)syn=syn.filter(function(p){return (p.marca||'').toLowerCase().indexOf(selCoLow)>=0});
+            rows=rows.concat(syn);
+        }
     } else if(orig==='vesti'){
-        // Apenas pedidos da Vesti (mesmo que estejam na planilha tambem) - nao adiciona sinteticos
+        // SO no Vesti (nao tem na planilha): pedidos Vesti que nao foram patcheados pela planilha
+        rows=rows.filter(function(p){return p.postagemFonte!=='planilha-diogo'});
+    } else if(orig==='ambos'){
+        // Nos dois (planilha e Vesti): pedidos Vesti com match na planilha
+        rows=rows.filter(function(p){return p.postagemFonte==='planilha-diogo'});
     } else {
         // Todos: Vesti + sinteticos so-na-planilha
         var syn2=idx.soPlanilha.slice();
         if(de)syn2=syn2.filter(function(p){return (p.data||'')>=de});
         if(ate)syn2=syn2.filter(function(p){return (p.data||'')<=ate});
-        if(!fcsGlobal&&!selCoLow)rows=rows.concat(syn2);
+        if(!fcsGlobal)rows=rows.concat(selCoLow?syn2.filter(function(p){return (p.marca||'').toLowerCase().indexOf(selCoLow)>=0}):syn2);
     }
     return rows;
 }
