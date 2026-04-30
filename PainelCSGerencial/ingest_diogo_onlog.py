@@ -192,6 +192,8 @@ def aggregate_planilha(rows: list[dict], de: str, ate: str) -> tuple[dict, list]
                 "status": r.get("Status") or "",
                 "data": d_str,
                 "postagem": 0.0,
+                "remetente": r.get("Remetente") or "",
+                "valorDeclarado": parse_val_br(r.get("ValorDeclarado")),
             }
         if v is not None:
             by[cv]["postagem"] += v
@@ -519,6 +521,8 @@ def process_quinzena(raw: list[dict], de: str, ate: str, onlog_data: dict, xlsx_
             "status": p["status"],
             "postagem": round(p["postagem"], 2),
             "data": p.get("data", ""),
+            "remetente": p.get("remetente", ""),
+            "valorDeclarado": p.get("valorDeclarado"),
         } for p in only_p],
         "soFabric": [{
             "data": p.get("data"),

@@ -3,7 +3,7 @@
     "de": "2026-04-01",
     "ate": "2026-04-15"
   },
-  "geradoEm": "2026-04-30T15:38:11.863362",
+  "geradoEm": "2026-04-30T15:49:06.708108",
   "planilhaArquivo": "MI & co atual.xlsx",
   "resumo": {
     "ok": 202,
@@ -554,37 +554,70 @@
       "valor": 1724.67
     },
     {
-      "data": "2026-04-15",
-      "orderNumber": 5913,
-      "marca": "Anne Blánc",
-      "cliente": "Glória Cardoso ",
-      "cidade": "Carlos Chagas",
-      "uf": "MG",
+      "data": "2026-04-03",
+      "orderNumber": 838,
+      "marca": "KAESSI",
+      "cliente": "Elisabeth Gomes Andrade",
+      "cidade": "Americana",
+      "uf": "SP",
       "cancelado": false,
-      "status": "WAITING",
-      "valor": 640.59
+      "status": "SENT",
+      "valor": 514.17
     },
     {
-      "data": "2026-04-14",
-      "orderNumber": 990,
+      "data": "2026-04-08",
+      "orderNumber": 970,
       "marca": " Era Uma Vez",
-      "cliente": "Barion Bertoletti",
-      "cidade": "Goiânia",
-      "uf": "GO",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 2725.78
-    },
-    {
-      "data": "2026-04-14",
-      "orderNumber": 989,
-      "marca": " Era Uma Vez",
-      "cliente": "Leticia Wallauer",
-      "cidade": "Carazinho",
+      "cliente": "Carla Rossana Mendonça Fernandes",
+      "cidade": "Tucunduva",
       "uf": "RS",
       "cancelado": false,
       "status": "WAITING",
-      "valor": 591.44
+      "valor": 594.47
+    },
+    {
+      "data": "2026-04-11",
+      "orderNumber": 978,
+      "marca": " Era Uma Vez",
+      "cliente": "Mnica Niemerch Barbosa Costa",
+      "cidade": "Porto Velho",
+      "uf": "RO",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 621.62
+    },
+    {
+      "data": "2026-04-14",
+      "orderNumber": 673,
+      "marca": "FIRE",
+      "cliente": "Nataniel Junior Gonsalves",
+      "cidade": "Carmo do Paranaíba",
+      "uf": "MG",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 726.08
+    },
+    {
+      "data": "2026-04-06",
+      "orderNumber": 3963,
+      "marca": "Arary",
+      "cliente": "Vanessa",
+      "cidade": "Papanduva",
+      "uf": "SC",
+      "cancelado": false,
+      "status": "SENT",
+      "valor": 1784.25
+    },
+    {
+      "data": "2026-04-10",
+      "orderNumber": 974,
+      "marca": " Era Uma Vez",
+      "cliente": "Gilmara Ferreira De Almeida",
+      "cidade": "Petrópolis",
+      "uf": "RJ",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 341.49
     },
     {
       "data": "2026-04-01",
@@ -599,36 +632,25 @@
     },
     {
       "data": "2026-04-10",
-      "orderNumber": 975,
-      "marca": " Era Uma Vez",
-      "cliente": "Cintia Bianchi",
-      "cidade": "Cajamar",
+      "orderNumber": 847,
+      "marca": "KAESSI",
+      "cliente": "Tálita Kitamura",
+      "cidade": "Mogi das Cruzes",
       "uf": "SP",
       "cancelado": false,
-      "status": "WAITING",
-      "valor": 319.85
+      "status": "SENT",
+      "valor": 864.49
     },
     {
       "data": "2026-04-11",
-      "orderNumber": 848,
-      "marca": "KAESSI",
-      "cliente": "Amanda Martins",
-      "cidade": "Borborema",
-      "uf": "SP",
+      "orderNumber": 979,
+      "marca": " Era Uma Vez",
+      "cliente": "Samanta Da Rocha Silva Machado",
+      "cidade": "Curitiba",
+      "uf": "PR",
       "cancelado": false,
-      "status": "SENT",
-      "valor": 394.23
-    },
-    {
-      "data": "2026-04-05",
-      "orderNumber": 1023,
-      "marca": "CVL Moda - CD Nova Friburgo",
-      "cliente": "Larissa Santos",
-      "cidade": "Itaboraí",
-      "uf": "RJ",
-      "cancelado": false,
-      "status": "SENT",
-      "valor": 420.49
+      "status": "WAITING",
+      "valor": 809.5
     },
     {
       "data": "2026-04-05",
@@ -642,26 +664,48 @@
       "valor": 1020.36
     },
     {
-      "data": "2026-04-08",
-      "orderNumber": 970,
+      "data": "2026-04-15",
+      "orderNumber": 5913,
+      "marca": "Anne Blánc",
+      "cliente": "Glória Cardoso ",
+      "cidade": "Carlos Chagas",
+      "uf": "MG",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 640.59
+    },
+    {
+      "data": "2026-04-14",
+      "orderNumber": 989,
       "marca": " Era Uma Vez",
-      "cliente": "Carla Rossana Mendonça Fernandes",
-      "cidade": "Tucunduva",
+      "cliente": "Leticia Wallauer",
+      "cidade": "Carazinho",
       "uf": "RS",
       "cancelado": false,
       "status": "WAITING",
-      "valor": 594.47
+      "valor": 591.44
     },
     {
-      "data": "2026-04-03",
-      "orderNumber": 838,
+      "data": "2026-04-14",
+      "orderNumber": 990,
+      "marca": " Era Uma Vez",
+      "cliente": "Barion Bertoletti",
+      "cidade": "Goiânia",
+      "uf": "GO",
+      "cancelado": false,
+      "status": "WAITING",
+      "valor": 2725.78
+    },
+    {
+      "data": "2026-04-11",
+      "orderNumber": 848,
       "marca": "KAESSI",
-      "cliente": "Elisabeth Gomes Andrade",
-      "cidade": "Americana",
+      "cliente": "Amanda Martins",
+      "cidade": "Borborema",
       "uf": "SP",
       "cancelado": false,
       "status": "SENT",
-      "valor": 514.17
+      "valor": 394.23
     },
     {
       "data": "2026-04-15",
@@ -686,15 +730,15 @@
       "valor": 4879.15
     },
     {
-      "data": "2026-04-06",
-      "orderNumber": 3963,
-      "marca": "Arary",
-      "cliente": "Vanessa",
-      "cidade": "Papanduva",
-      "uf": "SC",
+      "data": "2026-04-05",
+      "orderNumber": 1023,
+      "marca": "CVL Moda - CD Nova Friburgo",
+      "cliente": "Larissa Santos",
+      "cidade": "Itaboraí",
+      "uf": "RJ",
       "cancelado": false,
       "status": "SENT",
-      "valor": 1784.25
+      "valor": 420.49
     },
     {
       "data": "2026-04-15",
@@ -709,25 +753,14 @@
     },
     {
       "data": "2026-04-10",
-      "orderNumber": 974,
+      "orderNumber": 975,
       "marca": " Era Uma Vez",
-      "cliente": "Gilmara Ferreira De Almeida",
-      "cidade": "Petrópolis",
-      "uf": "RJ",
+      "cliente": "Cintia Bianchi",
+      "cidade": "Cajamar",
+      "uf": "SP",
       "cancelado": false,
       "status": "WAITING",
-      "valor": 341.49
-    },
-    {
-      "data": "2026-04-14",
-      "orderNumber": 673,
-      "marca": "FIRE",
-      "cliente": "Nataniel Junior Gonsalves",
-      "cidade": "Carmo do Paranaíba",
-      "uf": "MG",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 726.08
+      "valor": 319.85
     },
     {
       "data": "2026-04-05",
@@ -739,39 +772,6 @@
       "cancelado": false,
       "status": "SENT",
       "valor": 472.46
-    },
-    {
-      "data": "2026-04-11",
-      "orderNumber": 978,
-      "marca": " Era Uma Vez",
-      "cliente": "Mnica Niemerch Barbosa Costa",
-      "cidade": "Porto Velho",
-      "uf": "RO",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 621.62
-    },
-    {
-      "data": "2026-04-10",
-      "orderNumber": 847,
-      "marca": "KAESSI",
-      "cliente": "Tálita Kitamura",
-      "cidade": "Mogi das Cruzes",
-      "uf": "SP",
-      "cancelado": false,
-      "status": "SENT",
-      "valor": 864.49
-    },
-    {
-      "data": "2026-04-11",
-      "orderNumber": 979,
-      "marca": " Era Uma Vez",
-      "cliente": "Samanta Da Rocha Silva Machado",
-      "cidade": "Curitiba",
-      "uf": "PR",
-      "cancelado": false,
-      "status": "WAITING",
-      "valor": 809.5
     }
   ],
   "_planilhaSnapshot": {
@@ -1170,7 +1170,9 @@
         "uf": "SP",
         "status": "ENTREGUE",
         "data": "2026-04-15",
-        "postagem": 115.13
+        "postagem": 115.13,
+        "remetente": "MI&CO",
+        "valorDeclarado": 1500.0
       },
       "1942933_266": {
         "codigoVolume": "1942933_266",
@@ -1181,7 +1183,9 @@
         "uf": "GO",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-14",
-        "postagem": 50.59
+        "postagem": 50.59,
+        "remetente": "MI&CO",
+        "valorDeclarado": 534.0
       },
       "1942933_263": {
         "codigoVolume": "1942933_263",
@@ -1192,7 +1196,9 @@
         "uf": "SP",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-14",
-        "postagem": 23.72
+        "postagem": 23.72,
+        "remetente": "MI&CO",
+        "valorDeclarado": 409.0
       },
       "1942933_261": {
         "codigoVolume": "1942933_261",
@@ -1203,7 +1209,9 @@
         "uf": "SP",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-14",
-        "postagem": 9.59
+        "postagem": 9.59,
+        "remetente": "MI&CO",
+        "valorDeclarado": 32.0
       },
       "14035_5867": {
         "codigoVolume": "14035_5867",
@@ -1401,7 +1409,9 @@
         "uf": "RS",
         "status": "ENTREGUE",
         "data": "2026-04-13",
-        "postagem": 33.45
+        "postagem": 33.45,
+        "remetente": "MI&CO",
+        "valorDeclarado": 159.0
       },
       "1942933_258": {
         "codigoVolume": "1942933_258",
@@ -1412,7 +1422,9 @@
         "uf": "SP",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-13",
-        "postagem": 69.07
+        "postagem": 69.07,
+        "remetente": "MI&CO",
+        "valorDeclarado": 875.0
       },
       "1942933_257": {
         "codigoVolume": "1942933_257",
@@ -1423,7 +1435,9 @@
         "uf": "PR",
         "status": "ENTREGUE",
         "data": "2026-04-13",
-        "postagem": 63.59
+        "postagem": 63.59,
+        "remetente": "MI&CO",
+        "valorDeclarado": 563.0
       },
       "14035_5852": {
         "codigoVolume": "14035_5852",
@@ -1555,7 +1569,9 @@
         "uf": "SP",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-12",
-        "postagem": 33.25
+        "postagem": 33.25,
+        "remetente": "MI&CO",
+        "valorDeclarado": 525.0
       },
       "14035_5831": {
         "codigoVolume": "14035_5831",
@@ -1962,7 +1978,9 @@
         "uf": "RJ",
         "status": "ENTREGUE",
         "data": "2026-04-09",
-        "postagem": 96.61
+        "postagem": 96.61,
+        "remetente": "MI&CO",
+        "valorDeclarado": 1384.0
       },
       "1942933_235": {
         "codigoVolume": "1942933_235",
@@ -1973,7 +1991,9 @@
         "uf": "PI",
         "status": "ENTREGUE",
         "data": "2026-04-09",
-        "postagem": 169.51
+        "postagem": 169.51,
+        "remetente": "MI&CO",
+        "valorDeclarado": 876.0
       },
       "1942933_234": {
         "codigoVolume": "1942933_234",
@@ -1984,7 +2004,9 @@
         "uf": "SP",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-09",
-        "postagem": 10.47
+        "postagem": 10.47,
+        "remetente": "MI&CO",
+        "valorDeclarado": 120.0
       },
       "1956465_127": {
         "codigoVolume": "1956465_127",
@@ -2215,7 +2237,9 @@
         "uf": "SC",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-08",
-        "postagem": 21.83
+        "postagem": 21.83,
+        "remetente": "MI&CO",
+        "valorDeclarado": 249.0
       },
       "1942933_225": {
         "codigoVolume": "1942933_225",
@@ -2226,7 +2250,9 @@
         "uf": "SC",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-08",
-        "postagem": 21.2
+        "postagem": 21.2,
+        "remetente": "MI&CO",
+        "valorDeclarado": 127.0
       },
       "1976316_4": {
         "codigoVolume": "1976316_4",
@@ -2369,7 +2395,9 @@
         "uf": "RJ",
         "status": "ENTREGUE",
         "data": "2026-04-07",
-        "postagem": 69.34
+        "postagem": 69.34,
+        "remetente": "MI&CO",
+        "valorDeclarado": 684.0
       },
       "1942933_221": {
         "codigoVolume": "1942933_221",
@@ -2380,7 +2408,9 @@
         "uf": "MG",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-07",
-        "postagem": 25.0
+        "postagem": 25.0,
+        "remetente": "MI&CO",
+        "valorDeclarado": 180.0
       },
       "157680_7826": {
         "codigoVolume": "157680_7826",
@@ -2490,7 +2520,9 @@
         "uf": "SP",
         "status": "ENTREGUE",
         "data": "2026-04-06",
-        "postagem": 57.36
+        "postagem": 57.36,
+        "remetente": "MI&CO",
+        "valorDeclarado": 383.0
       },
       "1942933_216": {
         "codigoVolume": "1942933_216",
@@ -2501,7 +2533,9 @@
         "uf": "MG",
         "status": "ENTREGUE",
         "data": "2026-04-06",
-        "postagem": 26.11
+        "postagem": 26.11,
+        "remetente": "MI&CO",
+        "valorDeclarado": 315.0
       },
       "1942933_215": {
         "codigoVolume": "1942933_215",
@@ -2512,7 +2546,9 @@
         "uf": "SP",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-06",
-        "postagem": 17.01
+        "postagem": 17.01,
+        "remetente": "MI&CO",
+        "valorDeclarado": 80.0
       },
       "1942933_214": {
         "codigoVolume": "1942933_214",
@@ -2523,7 +2559,9 @@
         "uf": "SP",
         "status": "ENTREGUE",
         "data": "2026-04-06",
-        "postagem": 94.54
+        "postagem": 94.54,
+        "remetente": "MI&CO",
+        "valorDeclarado": 1310.0
       },
       "1942933_213": {
         "codigoVolume": "1942933_213",
@@ -2534,7 +2572,9 @@
         "uf": "MG",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-06",
-        "postagem": 21.53
+        "postagem": 21.53,
+        "remetente": "MI&CO",
+        "valorDeclarado": 160.0
       },
       "1942933_211": {
         "codigoVolume": "1942933_211",
@@ -2545,7 +2585,9 @@
         "uf": "MG",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-06",
-        "postagem": 11.31
+        "postagem": 11.31,
+        "remetente": "MI&CO",
+        "valorDeclarado": 204.0
       },
       "1993619_11": {
         "codigoVolume": "1993619_11",
@@ -2952,7 +2994,9 @@
         "uf": "RO",
         "status": "ENTREGUE",
         "data": "2026-04-01",
-        "postagem": 188.12
+        "postagem": 188.12,
+        "remetente": "MI&CO",
+        "valorDeclarado": 1110.0
       },
       "1942933_196": {
         "codigoVolume": "1942933_196",
@@ -2963,7 +3007,9 @@
         "uf": "PI",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "data": "2026-04-01",
-        "postagem": 67.66
+        "postagem": 67.66,
+        "remetente": "MI&CO",
+        "valorDeclarado": 246.0
       },
       "1956465_112": {
         "codigoVolume": "1956465_112",

@@ -1374,6 +1374,8 @@ function _onlogBuildDiogoIdx(){
                 statusOnlog:x.status||'',
                 valorPostagem:x.postagem,
                 data:x.data||((d.quinzena&&d.quinzena.de)||''),
+                marca:x.remetente||'',
+                valor:x.valorDeclarado,
                 _quinzena:d.quinzena||null,
             });
         });
@@ -1528,9 +1530,15 @@ function updateOnlog(){
         }
         if(p._origem==='planilha-only'){
             var pl='<span style="color:#B2BEC3;font-style:italic">(planilha)</span>';
-            var marcaCell=p._paVesti?'<span style="color:#6C5CE7;font-weight:600">PA VESTI</span>':pl;
+            var marcaCell;
+            if(p._paVesti)marcaCell='<span style="color:#6C5CE7;font-weight:600">PA VESTI</span>';
+            else if(p.marca)marcaCell='<b title="Remetente da planilha">'+esc(p.marca)+'</b>';
+            else marcaCell=pl;
             var pedidoLbl=p._paVesti?('NF '+esc(p.orderNumber||'-')):('#'+esc(p.orderNumber));
             var servCell=p._paVesti?('<span style="font-size:11px;color:var(--g)">'+esc(p._operador||'')+(p._modalidade?' / '+esc(p._modalidade):'')+'</span>'):pl;
+            var valorCell=(p.valor!=null)
+                ?('<span title="ValorDeclarado da planilha">R$ '+Number(p.valor).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</span>')
+                :pl;
             return '<tr style="'+rowBg+'">'+
                 '<td style="white-space:nowrap;color:var(--g)" title="data conforme planilha">'+esc(p.data||'-')+'</td>'+
                 '<td>'+pl+'</td>'+
@@ -1541,7 +1549,7 @@ function updateOnlog(){
                 '<td>'+servCell+'</td>'+
                 '<td style="font-size:11px;color:var(--s);font-weight:600" title="status real da Onlog (planilha)">'+esc(p.statusOnlog||'-')+'</td>'+
                 '<td>'+pl+'</td>'+
-                '<td style="text-align:right">'+pl+'</td>'+
+                '<td style="text-align:right;font-weight:600">'+valorCell+'</td>'+
                 '<td style="text-align:right">'+pl+'</td>'+
                 '<td style="text-align:right">'+pl+'</td>'+
                 '<td style="text-align:right;color:#0984E3;white-space:nowrap">'+_olFmt(p.valorPostagem)+'</td>'+
