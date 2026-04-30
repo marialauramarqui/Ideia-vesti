@@ -1373,7 +1373,7 @@ function _onlogBuildDiogoIdx(){
                 uf:x.uf||'',
                 statusOnlog:x.status||'',
                 valorPostagem:x.postagem,
-                data:(d.quinzena&&d.quinzena.de)||'',
+                data:x.data||((d.quinzena&&d.quinzena.de)||''),
                 _quinzena:d.quinzena||null,
             });
         });

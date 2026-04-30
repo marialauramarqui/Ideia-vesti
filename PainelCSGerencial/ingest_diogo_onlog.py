@@ -518,6 +518,7 @@ def process_quinzena(raw: list[dict], de: str, ate: str, onlog_data: dict, xlsx_
             "uf": p["uf"],
             "status": p["status"],
             "postagem": round(p["postagem"], 2),
+            "data": p.get("data", ""),
         } for p in only_p],
         "soFabric": [{
             "data": p.get("data"),
