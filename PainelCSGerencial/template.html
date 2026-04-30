@@ -476,6 +476,7 @@ table.dt tr:hover td{background:#FAFAFA}
         <button class="f-btn" onclick="onlogClearFilters()">Limpar</button>
         <button class="f-btn" onclick="onlogExportExcel()" style="background:#00B894;color:#fff;font-weight:700" title="Exporta os pedidos filtrados para Excel">&#128221; Excel</button>
         <button class="f-btn" onclick="onlogExportCsv()" style="background:#0984E3;color:#fff;font-weight:700" title="Exporta CSV (alternativa, sempre funciona)">CSV</button>
+        <button class="f-btn" onclick="document.getElementById('uploadOnlog').classList.add('show')" style="background:#F39C12;color:#fff;font-weight:700" title="Subir planilha do Diogo (atualiza dashboard pra todos)">&#128228; Subir planilha</button>
         <button class="help-btn" onclick="document.getElementById('helpOnlog').classList.add('show')" title="Como funciona">?</button>
     </div>
     <div class="tbl-card">
@@ -612,6 +613,26 @@ table.dt tr:hover td{background:#FAFAFA}
         <p>Agregado por mes da <code>created_at_iso_TIMESTAMP</code>. Serie desde jan/2025. Mes corrente pode estar parcial.</p>
     </div>
 </div>
+<!-- MODAL UPLOAD PLANILHA ONLOG -->
+<div class="modal-overlay" id="uploadOnlog" onclick="if(event.target===this)this.classList.remove('show')">
+    <div class="modal-box" style="max-width:560px">
+        <button class="close-btn" onclick="document.getElementById('uploadOnlog').classList.remove('show')">&times;</button>
+        <h3>&#128228; Subir planilha do Diogo</h3>
+        <p style="color:var(--g);font-size:13px;margin-bottom:14px">A planilha vai ser ingerida no dashboard pra <b>todos os usuarios</b>. Leva ~2-3 min pra atualizar.</p>
+        <div style="margin-bottom:12px">
+            <label style="display:block;font-weight:600;font-size:12px;margin-bottom:4px">Arquivo (.xlsx)</label>
+            <input type="file" id="onlogUploadFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px">
+        </div>
+        <div style="margin-bottom:14px">
+            <label style="display:block;font-weight:600;font-size:12px;margin-bottom:4px">Senha</label>
+            <input type="password" id="onlogUploadPwd" placeholder="senha de upload" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-family:monospace">
+        </div>
+        <div id="onlogUploadStatus" style="font-size:12px;color:var(--g);margin-bottom:10px;min-height:18px"></div>
+        <button id="onlogUploadBtn" class="f-btn" onclick="onlogDoUpload()" style="background:#00B894;color:#fff;font-weight:700;width:100%;padding:10px">Enviar</button>
+        <p style="color:var(--g);font-size:11px;margin-top:14px;line-height:1.5">A planilha eh commitada em <code>PainelCSGerencial/_uploads/</code>, dispara o GitHub Action <code>onlog-ingest.yml</code> que roda <code>ingest_diogo_onlog.py</code> + rebuild + publica. Acompanhe o progresso em <a href="https://github.com/vesti-mobi/Ideia-vesti/actions/workflows/onlog-ingest.yml" target="_blank" rel="noopener">Actions</a>.</p>
+    </div>
+</div>
+
 <!-- MODAL AJUDA ONLOG -->
 <div class="modal-overlay" id="helpOnlog" onclick="if(event.target===this)this.classList.remove('show')">
     <div class="modal-box">
@@ -1903,6 +1924,55 @@ function onlogConfRender(){
         '&bull; PA VESTI (precisa identificar marca manualmente): <b style="color:var(--s)">'+fmtBRL(totalCobrarPa)+'</b><br>'+
         '&bull; <b>Total a cobrar das marcas: '+fmtBRL(totalCobrar)+'</b> <span style="color:var(--g)">(custo Diogo &times; 1.10)</span><br>'+
         '<br>&bull; <b>Margem da Vesti</b> (cobrado - pago a Onlog): <b style="color:var(--p);font-size:15px">'+fmtBRL(margem)+'</b> <span style="color:var(--g)">(= 10% do custo Diogo)</span>';
+}
+
+// === ONLOG UPLOAD (planilha do Diogo via Cloudflare Worker) ===
+// Configurar com a URL do seu Worker apos deploy (vide PainelCSGerencial/cloudflare-worker/README.md)
+var ONLOG_UPLOAD_WORKER_URL='https://onlog-uploader.SEU-SUBDOMINIO.workers.dev';
+function _onlogUploadStatus(msg,cor){
+    var el=document.getElementById('onlogUploadStatus');
+    if(!el)return;
+    el.textContent=msg||'';
+    el.style.color=cor||'var(--g)';
+}
+function onlogDoUpload(){
+    var f=document.getElementById('onlogUploadFile').files[0];
+    var pwd=document.getElementById('onlogUploadPwd').value;
+    var btn=document.getElementById('onlogUploadBtn');
+    if(!f){_onlogUploadStatus('Escolha um arquivo .xlsx','var(--d)');return}
+    if(!pwd){_onlogUploadStatus('Digite a senha','var(--d)');return}
+    if(!ONLOG_UPLOAD_WORKER_URL||ONLOG_UPLOAD_WORKER_URL.indexOf('SEU-WORKER')>=0){
+        _onlogUploadStatus('URL do Worker nao configurada (ver cloudflare-worker/README.md)','var(--d)');return;
+    }
+    btn.disabled=true;btn.textContent='Enviando...';
+    _onlogUploadStatus('Lendo arquivo ('+(f.size/1024/1024).toFixed(2)+' MB)...','var(--g)');
+    var rd=new FileReader();
+    rd.onerror=function(){_onlogUploadStatus('Erro ao ler arquivo','var(--d)');btn.disabled=false;btn.textContent='Enviar'};
+    rd.onload=function(){
+        try{
+            var s=String(rd.result||'');
+            var b64=s.indexOf('base64,')>=0?s.split('base64,')[1]:s;
+            _onlogUploadStatus('Enviando para o servidor...','var(--g)');
+            fetch(ONLOG_UPLOAD_WORKER_URL+'/upload',{
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({password:pwd,filename:f.name,xlsxBase64:b64}),
+            }).then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j}})})
+            .then(function(res){
+                if(!res.ok){_onlogUploadStatus('ERRO: '+(res.j&&res.j.error||'falha'),'var(--d)');btn.disabled=false;btn.textContent='Enviar';return}
+                _onlogUploadStatus((res.j&&res.j.message)||'Recebido. Aguarde 2-3 min e recarregue (Ctrl+F5).','var(--s)');
+                btn.textContent='Enviado';
+                document.getElementById('onlogUploadPwd').value='';
+            }).catch(function(e){
+                _onlogUploadStatus('ERRO de rede: '+e.message,'var(--d)');
+                btn.disabled=false;btn.textContent='Enviar';
+            });
+        }catch(e){
+            _onlogUploadStatus('Erro: '+e.message,'var(--d)');
+            btn.disabled=false;btn.textContent='Enviar';
+        }
+    };
+    rd.readAsDataURL(f);
 }
 
 // === CHURN VESTIPAGO DATA ===
