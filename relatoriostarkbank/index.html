@@ -8,6 +8,7 @@
 <meta http-equiv="Expires" content="0">
 <title>StarkBank VestiPago - Recebíveis</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root{--p:#6C5CE7;--g:#00B894;--r:#E17055;--y:#F39C12;--b:#0984E3;--bg:#F5F6FA;--card:#fff;--tx:#2D3436;--mut:#636E72;--bd:#DFE6E9;--rd:14px}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -122,9 +123,10 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
         <div class="tab" data-tab="cr" onclick="switchTab('cr')">CR · Contas a Receber</div>
         <div class="tab" data-tab="aud" onclick="switchTab('aud')">Auditoria</div>
     </div>
-    <div class="subtabs" id="subtabs">
+    <div class="subtabs" id="subtabs" style="align-items:center">
         <div class="subtab active" data-sub="fluxo" onclick="switchSub('fluxo')">Fluxo</div>
         <div class="subtab" data-sub="antec" onclick="switchSub('antec')">Antecipação</div>
+        <button id="btnExcel" onclick="downloadExcel()" style="display:none;margin-left:auto;padding:7px 14px;background:#00B894;color:#fff;border:0;border-radius:8px;font:600 12px 'Inter',sans-serif;cursor:pointer">⬇ Baixar Excel</button>
     </div>
     <div class="subtabs" id="subtabsAud" style="display:none">
         <div class="subtab active" data-audsub="api" onclick="switchAudSub('api')">CR Stark API</div>
@@ -207,6 +209,7 @@ tr.parc.last td{border-bottom:2px solid #E8E4FF}
                         <th class="r">Antifraude</th>
                         <th class="r">Antecipação</th>
                         <th class="r">Valor líquido</th>
+                        <th id="thPix" style="display:none">Chave PIX</th>
                     </tr>
                 </thead>
                 <tbody id="tbody"></tbody>
@@ -285,6 +288,9 @@ window._dadosError=null;
     s2.onload=function(){window._invoicesLoaded=true};
     s2.onerror=function(){window._invoicesLoaded=true}; // invoices opcional
     document.head.appendChild(s2);
+    var s3=document.createElement('script');
+    s3.src='pix_marcas.js?v='+v;
+    document.head.appendChild(s3);
 })();
 // captura qualquer erro de JS pra nao ficar silencioso
 window.addEventListener('error',function(e){
@@ -395,6 +401,8 @@ function switchTab(which){
     document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('active',t.dataset.tab===which)});
     var isCr=(which==='cr'), isAud=(which==='aud'), isCp=(which==='cp');
     document.getElementById('subtabs').style.display    = isCp?'flex':'none';
+    document.getElementById('btnExcel').style.display   = (isCp && SUB==='antec')?'inline-block':'none';
+    document.getElementById('thPix').style.display      = (isCp && SUB==='antec')?'':'none';
     document.getElementById('subtabsAud').style.display = isAud?'flex':'none';
     document.getElementById('kpisCp').style.display     = isCp?'grid':'none';
     document.getElementById('kpisCr').style.display     = isCr?'grid':'none';
@@ -424,6 +432,9 @@ function switchSub(which){
     SUB=which;
     document.querySelectorAll('.subtab').forEach(function(t){t.classList.toggle('active',t.dataset.sub===which)});
     document.getElementById('hTbl').textContent=(which==='antec')?'Pagamentos de antecipação':'Pagamentos em fluxo';
+    var isAntec=(which==='antec');
+    document.getElementById('thPix').style.display = isAntec?'':'none';
+    document.getElementById('btnExcel').style.display = isAntec?'inline-block':'none';
     openSet={};
     render();
 }
@@ -650,7 +661,10 @@ function renderCp(){
     document.getElementById('tblCount').textContent=fmtN(tot.n)+' parcela(s) em '+fmtN(dates.length)+' dia(s)';
 
     var tb=document.getElementById('tbody');
-    if(!rows.length){tb.innerHTML='<tr><td colspan="9" class="empty">Nenhum pagamento com os filtros atuais</td></tr>';return}
+    var showPix=(SUB==='antec');
+    var COLSPAN=showPix?10:9;
+    var pixCell=showPix?'<td></td>':'';
+    if(!rows.length){tb.innerHTML='<tr><td colspan="'+COLSPAN+'" class="empty">Nenhum pagamento com os filtros atuais</td></tr>';return}
 
     var html=[];
     dates.forEach(function(date){
@@ -673,6 +687,7 @@ function renderCp(){
             '<td class="money" style="color:var(--y)">'+fmtC(t.af)+'</td>'+
             '<td class="money" style="color:var(--r)">'+fmtC(t.antec)+'</td>'+
             '<td class="money total">'+fmtC(t.net)+'</td>'+
+            pixCell+
         '</tr>');
         if(!dOpen)return;
         // agrupa por empresa dentro do dia
@@ -701,6 +716,7 @@ function renderCp(){
                 '<td class="money" style="color:var(--y)">'+fmtC(ct.af)+'</td>'+
                 '<td class="money" style="color:var(--r)">'+fmtC(ct.antec)+'</td>'+
                 '<td class="money total">'+fmtC(ct.net)+'</td>'+
+                (showPix?'<td class="mono" style="font-size:11px">'+esc(window.PIX_MARCAS?window.PIX_MARCAS.get(cLabel):'')+'</td>':'')+
             '</tr>');
             if(!cOpen)return;
             // agrupa parcelas por pedido dentro da empresa
@@ -726,6 +742,7 @@ function renderCp(){
                     '<td class="money" style="color:var(--y)">'+fmtC(ot.af)+'</td>'+
                     '<td class="money" style="color:var(--r)">'+fmtC(ot.antec)+'</td>'+
                     '<td class="money total">'+fmtC(ot.net)+'</td>'+
+                    pixCell+
                 '</tr>');
                 if(!pOpen)return;
                 oPags.forEach(function(p){
@@ -739,12 +756,59 @@ function renderCp(){
                         '<td class="money" style="color:var(--y)">'+fmtC(p.antifraudValue)+'</td>'+
                         '<td class="money" style="color:var(--r)">'+fmtC(p.antecipationValue)+'</td>'+
                         '<td class="money total">'+fmtC(p.netValue)+'</td>'+
+                        pixCell+
                     '</tr>');
                 });
             });
         });
     });
     tb.innerHTML=html.join('');
+}
+
+function downloadExcel(){
+    if(typeof XLSX==='undefined'){alert('SheetJS não carregou. Recarregue a página.');return}
+    var rows=getFiltered();
+    if(!rows.length){alert('Nenhum dado com os filtros atuais.');return}
+    // Linha agregada por (data, empresa) — uma linha por marca/dia, com PIX e totais.
+    var byKey={};
+    rows.forEach(function(p){
+        var k=(p.payDate||'')+'|'+(p.companyId||'');
+        var b=byKey[k]||(byKey[k]={
+            payDate:p.payDate||'', nomeFantasia:p.nomeFantasia||'', companyId:p.companyId||'',
+            parcelas:0, gross:0, vp:0, af:0, antec:0, net:0
+        });
+        b.parcelas++; b.gross+=p.grossValue||0; b.vp+=p.vpValue||0;
+        b.af+=p.antifraudValue||0; b.antec+=p.antecipationValue||0; b.net+=p.netValue||0;
+    });
+    var keys=Object.keys(byKey).sort();
+    var data=keys.map(function(k){
+        var r=byKey[k];
+        return {
+            'Data a pagar': r.payDate?fmtD(r.payDate):'',
+            'Empresa': r.nomeFantasia,
+            'CompanyId': r.companyId,
+            'Chave PIX': window.PIX_MARCAS?window.PIX_MARCAS.get(r.nomeFantasia):'',
+            'Parcelas': r.parcelas,
+            'Valor bruto': r.gross,
+            'Taxa VestiPago': r.vp,
+            'Taxa Antifraude': r.af,
+            'Taxa Antecipação': r.antec,
+            'Valor líquido': r.net
+        };
+    });
+    var ws=XLSX.utils.json_to_sheet(data);
+    // formato R$ nas colunas numéricas
+    var moneyCols=['F','G','H','I','J']; // bruto..líquido
+    for(var i=2;i<=data.length+1;i++){
+        moneyCols.forEach(function(c){
+            var cell=ws[c+i]; if(cell)cell.z='#,##0.00';
+        });
+    }
+    ws['!cols']=[{wch:12},{wch:28},{wch:26},{wch:30},{wch:9},{wch:12},{wch:13},{wch:13},{wch:14},{wch:13}];
+    var wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'Antecipacao');
+    var stamp=new Date().toISOString().substring(0,10);
+    XLSX.writeFile(wb,'antecipacao_'+stamp+'.xlsx');
 }
 
 function renderCr(){
