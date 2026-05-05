@@ -23,7 +23,7 @@ from pyspark.sql.types import (StructType, StructField, StringType, IntegerType,
                                LongType, BooleanType, TimestampType, DateType)
 from delta.tables import DeltaTable
 
-INVOICES_URL = "https://raw.githubusercontent.com/vesti-mobi/Ideia-vesti/main/relatoriostarkbank/invoices.js"
+INVOICES_URL = "https://raw.githubusercontent.com/vesti-mobi/Dados/main/relatoriostarkbank/invoices.js"
 # Lakehouse sem schemas custom: tabelas ficam na raiz com prefixo.
 # O `dbo/` que aparece na UI eh do SQL Analytics Endpoint, nao do Spark.
 PREFIX = "starkbank_"
