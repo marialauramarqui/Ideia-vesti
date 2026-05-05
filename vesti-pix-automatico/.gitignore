@@ -1,0 +1,12 @@
+IUGU_API_TOKENS_FINAL.csv
+IUGU*.csv
+IUGU*.xlsx
+*.env
+.streamlit/secrets.toml
+SECRETS_PARA_COLAR_NO_STREAMLIT.toml
+secrets_cliente_starter.toml
+secrets_cliente_uemtel.toml
+__pycache__/
+*.pyc
+.venv/
+venv/
