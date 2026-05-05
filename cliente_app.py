@@ -90,11 +90,16 @@ def obter_ou_criar_cliente(token, dados):
 
 
 def criar_subscription(token, customer_id, config):
+    # expires_at longe no futuro: sem isso a Iugu cria a subscription com
+    # expires_at = hoje, ela "morre" no dia da criacao e nunca cicla
+    # (foi o bug que travou a recorrencia dos testes de 23/04 e 05/05).
+    expires_at = (date.today() + timedelta(days=365 * 5)).isoformat()
     payload = {
         "customer_id": customer_id,
         "plan_identifier": config["plan_identifier"],
         "only_on_charge_success": False,
         "payable_with": "pix",
+        "expires_at": expires_at,
         "subitems": [
             {
                 "description": config["descricao"],
