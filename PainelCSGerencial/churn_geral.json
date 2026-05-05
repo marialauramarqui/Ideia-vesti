@@ -1,0 +1,187 @@
+{
+  "geradoEm": "2026-05-05T10:36:11.790643",
+  "cortemeses": 3,
+  "janelaInicio": "2026-01-01",
+  "total": [
+    {
+      "domainId": "1700627",
+      "empresa": "HELLEN MODA FEMININA",
+      "cs": "Elisa Marques",
+      "anoMesChurn": "2026-02",
+      "ultimaFaturaProdutosParou": "2026-01-15",
+      "produtosParou": [
+        {
+          "produto": "Starter",
+          "ultimaFatura": "2026-01-15"
+        }
+      ],
+      "produtosContinua": [],
+      "nProdutosParou": 1,
+      "nProdutosContinua": 0
+    },
+    {
+      "domainId": "1288059",
+      "empresa": "Worldstar Lingerie ​",
+      "cs": "Gabriela Manfré",
+      "anoMesChurn": "2026-02",
+      "ultimaFaturaProdutosParou": "2026-01-06",
+      "produtosParou": [
+        {
+          "produto": "Vesti_Light",
+          "ultimaFatura": "2026-01-06"
+        }
+      ],
+      "produtosContinua": [],
+      "nProdutosParou": 1,
+      "nProdutosContinua": 0
+    },
+    {
+      "domainId": "1169190",
+      "empresa": "WA BABY",
+      "cs": "Jennyfer Rabelo",
+      "anoMesChurn": "2026-02",
+      "ultimaFaturaProdutosParou": "2026-01-28",
+      "produtosParou": [
+        {
+          "produto": "Vesti_Light",
+          "ultimaFatura": "2026-01-28"
+        }
+      ],
+      "produtosContinua": [],
+      "nProdutosParou": 1,
+      "nProdutosContinua": 0
+    },
+    {
+      "domainId": "829798",
+      "empresa": "L2M",
+      "cs": "Thamiris Ribeiro",
+      "anoMesChurn": "2026-02",
+      "ultimaFaturaProdutosParou": "2026-01-30",
+      "produtosParou": [
+        {
+          "produto": "Plano Avançado",
+          "ultimaFatura": "2026-01-30"
+        }
+      ],
+      "produtosContinua": [
+        {
+          "produto": "Assitente do Vendedor",
+          "ultimaFatura": "2026-02-13"
+        }
+      ],
+      "nProdutosParou": 1,
+      "nProdutosContinua": 1
+    }
+  ],
+  "parcial": [
+    {
+      "domainId": "1482280",
+      "empresa": "Viotto",
+      "cs": "Jennyfer Rabelo",
+      "anoMesChurn": "2026-01",
+      "ultimaFaturaProdutosParou": "2025-12-14",
+      "produtosParou": [
+        {
+          "produto": "Assitente do Vendedor",
+          "ultimaFatura": "2025-12-14"
+        }
+      ],
+      "produtosContinua": [
+        {
+          "produto": "Vesti light",
+          "ultimaFatura": "2026-04-10"
+        }
+      ],
+      "nProdutosParou": 1,
+      "nProdutosContinua": 1
+    },
+    {
+      "domainId": "1098231",
+      "empresa": "Nega Jeans",
+      "cs": "Luana Coutinho",
+      "anoMesChurn": "2026-01",
+      "ultimaFaturaProdutosParou": "2025-12-01",
+      "produtosParou": [
+        {
+          "produto": "Filial Atacado",
+          "ultimaFatura": "2025-12-01"
+        }
+      ],
+      "produtosContinua": [
+        {
+          "produto": "Vesti Pro",
+          "ultimaFatura": "2026-04-13"
+        }
+      ],
+      "nProdutosParou": 1,
+      "nProdutosContinua": 1
+    },
+    {
+      "domainId": "820612",
+      "empresa": "MARIA DUTRA JEANS",
+      "cs": "Gabriella Busto",
+      "anoMesChurn": "2026-02",
+      "ultimaFaturaProdutosParou": "2026-01-24",
+      "produtosParou": [
+        {
+          "produto": "Assitente do Vendedor",
+          "ultimaFatura": "2026-01-24"
+        }
+      ],
+      "produtosContinua": [
+        {
+          "produto": "Plano_PRO",
+          "ultimaFatura": "2026-04-16"
+        }
+      ],
+      "nProdutosParou": 1,
+      "nProdutosContinua": 1
+    },
+    {
+      "domainId": "707072",
+      "empresa": "Barraca Willinha Tátil",
+      "cs": "Thamiris Ribeiro",
+      "anoMesChurn": "2026-02",
+      "ultimaFaturaProdutosParou": "2026-01-27",
+      "produtosParou": [
+        {
+          "produto": "Assitente do Vendedor",
+          "ultimaFatura": "2026-01-27"
+        }
+      ],
+      "produtosContinua": [
+        {
+          "produto": "Oraculo",
+          "ultimaFatura": "2026-04-05"
+        },
+        {
+          "produto": "Plano Essencial",
+          "ultimaFatura": "2026-04-10"
+        }
+      ],
+      "nProdutosParou": 1,
+      "nProdutosContinua": 2
+    },
+    {
+      "domainId": "441578",
+      "empresa": "Ópera Kids",
+      "cs": "Thamiris Ribeiro",
+      "anoMesChurn": "2026-02",
+      "ultimaFaturaProdutosParou": "2026-01-13",
+      "produtosParou": [
+        {
+          "produto": "Oraculo",
+          "ultimaFatura": "2026-01-13"
+        }
+      ],
+      "produtosContinua": [
+        {
+          "produto": "Plano Avançado",
+          "ultimaFatura": "2026-04-13"
+        }
+      ],
+      "nProdutosParou": 1,
+      "nProdutosContinua": 1
+    }
+  ]
+}

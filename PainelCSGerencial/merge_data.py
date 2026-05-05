@@ -175,6 +175,7 @@ def main() -> None:
     onlog_diffs.sort(key=lambda d: d.get("quinzena", {}).get("de", ""))
     onlog_diff = onlog_diffs[-1] if onlog_diffs else {}  # ultima como default
     t3plus = load("t3plus_data.json", {})
+    churn_geral = load("churn_geral.json", {"total": [], "parcial": []})
 
     nps = build_nps(sheets)
     csat_oraculo = build_csat_oraculo(sheets)
@@ -201,6 +202,7 @@ def main() -> None:
         + dump("ONLOG_DIFF", onlog_diff)
         + dump("ONLOG_DIFFS", onlog_diffs)
         + dump("T3PLUS_DATA", t3plus)
+        + dump("CHURN_GERAL", churn_geral)
     )
     OUT.write_text(content, encoding="utf-8")
     print(f"[merge] {OUT.name} escrito")
@@ -223,6 +225,7 @@ def main() -> None:
     else:
         print(f"  ONLOG_DIFF:           (sem conferencia ingerida)")
     print(f"  T3PLUS_DATA.empresas: {len(t3plus.get('empresas', [])) if isinstance(t3plus, dict) else 0}")
+    print(f"  CHURN_GERAL: total={len(churn_geral.get('total', []))} parcial={len(churn_geral.get('parcial', []))}")
 
 
 if __name__ == "__main__":

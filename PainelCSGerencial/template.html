@@ -180,6 +180,13 @@ table.dt tr:hover td{background:#FAFAFA}
             <div class="hl-score" style="font-size:22px;margin-top:8px" id="home-churn-sub">--</div>
             <div class="hl-meta" style="margin-top:10px">Clientes ativos na Vesti que pararam o VestiPago &rarr;</div>
         </div>
+        <div class="hl-card" style="background:linear-gradient(135deg,#D63031,#FF6B6B);cursor:pointer" onclick="switchTab('churngeral')">
+            <div class="hl-icon">&#128683;</div>
+            <div class="hl-label">Churn Geral</div>
+            <div class="hl-cargo" id="home-cg-val">--</div>
+            <div class="hl-score" style="font-size:22px;margin-top:8px" id="home-cg-sub">--</div>
+            <div class="hl-meta" style="margin-top:10px">Churn total (parou tudo) e parcial (parou 1+ produto) &rarr;</div>
+        </div>
         <div class="hl-card" style="background:linear-gradient(135deg,#0984E3,#5AA9FF);cursor:pointer" onclick="switchTab('gmv')">
             <div class="hl-icon">&#128200;</div>
             <div class="hl-label">GMV 1&ordm; Mes Completo</div>
@@ -246,6 +253,53 @@ table.dt tr:hover td{background:#FAFAFA}
                 <tbody></tbody>
             </table>
         </div>
+    </div>
+</div>
+<!-- ============ CHURN GERAL TAB ============ -->
+<div class="tab-panel" id="tab-churngeral">
+    <div class="kpi-row">
+        <div class="kpi"><div class="ki" style="background:#FDEAEA">&#128683;</div><div class="kl">Churn Total</div><div class="kv" style="color:var(--d)" id="cg-ktot">--</div><div class="ks">Pararam tudo na Vesti</div></div>
+        <div class="kpi"><div class="ki" style="background:#FFF3E0">&#9888;</div><div class="kl">Churn Parcial</div><div class="kv" style="color:var(--w)" id="cg-kpar">--</div><div class="ks">Pararam 1+ produto, seguem clientes</div></div>
+        <div class="kpi"><div class="ki" style="background:#F0EFFF">&#128202;</div><div class="kl">Empresas afetadas</div><div class="kv" style="color:var(--p)" id="cg-kafet">--</div><div class="ks">Total + Parcial</div></div>
+        <div class="kpi"><div class="ki" style="background:#E0F7F0">&#128176;</div><div class="kl">Produtos parados (parcial)</div><div class="kv" style="color:var(--s)" id="cg-kprod">--</div><div class="ks">Subscriptions interrompidas</div></div>
+    </div>
+    <div class="filters">
+        <div class="filter-group"><label>Mes do churn:</label><select class="f-select" id="cgFMes" onchange="updateChurnGeral()"><option value="">Todos</option></select></div>
+        <div class="filter-group"><label>CS:</label><select class="f-select" id="cgFCS" onchange="updateChurnGeral()"><option value="">Todos</option></select></div>
+        <div class="filter-group"><label>Buscar:</label><input type="text" class="f-input" id="cgFBusca" placeholder="Nome da empresa..." oninput="updateChurnGeral()" style="width:220px"></div>
+        <button class="f-btn" onclick="document.getElementById('cgFMes').value='';document.getElementById('cgFCS').value='';document.getElementById('cgFBusca').value='';updateChurnGeral()">Limpar</button>
+        <button class="help-btn" onclick="document.getElementById('helpChurnGeral').classList.add('show')" title="Como funciona">?</button>
+    </div>
+    <div class="tbl-card">
+        <h4>&#128683; Churn Total &middot; <span id="cg-tot-count" style="color:var(--g);font-weight:500">--</span></h4>
+        <p style="color:var(--g);font-size:12px;margin-top:-4px;margin-bottom:10px">Empresas que pararam <b>todos</b> os produtos pagos da Vesti</p>
+        <div style="max-height:380px;overflow-y:auto;overflow-x:auto">
+            <table class="dt" id="tCgTotal">
+                <thead><tr><th>Mes Churn</th><th>CS</th><th>Empresa</th><th>Produtos que tinha</th><th>Ult. Fatura</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+    <div class="tbl-card" style="margin-top:16px">
+        <h4>&#9888; Churn Parcial &middot; <span id="cg-par-count" style="color:var(--g);font-weight:500">--</span></h4>
+        <p style="color:var(--g);font-size:12px;margin-top:-4px;margin-bottom:10px">Empresas que pararam 1+ produto mas <b>continuam usando</b> outros</p>
+        <div style="max-height:520px;overflow-y:auto;overflow-x:auto">
+            <table class="dt" id="tCgParcial">
+                <thead><tr><th>Mes Churn</th><th>CS</th><th>Empresa</th><th>Produtos que parou</th><th>Produtos que continua</th><th>Ult. Fatura (parou)</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!-- MODAL AJUDA CHURN GERAL -->
+<div class="modal-overlay" id="helpChurnGeral" onclick="if(event.target===this)this.classList.remove('show')">
+    <div class="modal-box">
+        <button class="close-btn" onclick="document.getElementById('helpChurnGeral').classList.remove('show')">&times;</button>
+        <h3>Churn Geral - Como funciona</h3>
+        <p><b>Churn Total:</b> empresa onde <b>todas</b> as subscriptions Iugu estao com a ultima fatura paga ha 3+ meses. Significa que parou tudo na Vesti.</p>
+        <p><b>Churn Parcial:</b> empresa que tem pelo menos 1 produto em churn (ultima fatura ha 3+ meses) mas <b>continua pagando outros</b>. Permanece cliente, so reduziu escopo.</p>
+        <p><b>Mes do Churn</b> = mes seguinte a ultima fatura paga do produto que parou. Janela: a partir de jan/2026.</p>
+        <p>Os filtros globais (Empresa e CS na barra superior) tambem se aplicam.</p>
     </div>
 </div>
 <!-- MODAL AJUDA CHURN -->
@@ -838,7 +892,7 @@ function switchTab(t,skipPush){
     if(prev && prev!==t && !skipPush){navStack.push(prev)}
     currentTab=t;
     if(typeof closeChurnDetail==='function')closeChurnDetail();
-    var tabs=['home','csat','nps','vp','churn','gmv','top80','onlog','t3plus'];
+    var tabs=['home','csat','nps','vp','churn','churngeral','gmv','top80','onlog','t3plus'];
     tabs.forEach(function(x){
         var pan=document.getElementById('tab-'+x);if(pan)pan.classList.toggle('active',x===t);
     });
@@ -852,11 +906,11 @@ function switchTab(t,skipPush){
     // Back nav aparece fora da home
     var bn=document.getElementById('backNav');
     bn.style.display=t==='home'?'none':'block';
-    var labels={'csat':'Satisfacao (CSAT)','nps':'Satisfacao (NPS)','vp':'Novos VestiPago','churn':'Churn de Clientes','gmv':'GMV Mensal','top80':'Clientes 80+ pedidos/mes','onlog':'Frete Onlog','t3plus':'Receita T3+','home':'Geral'};
+    var labels={'csat':'Satisfacao (CSAT)','nps':'Satisfacao (NPS)','vp':'Novos VestiPago','churn':'Churn de Clientes','churngeral':'Churn Geral','gmv':'GMV Mensal','top80':'Clientes 80+ pedidos/mes','onlog':'Frete Onlog','t3plus':'Receita T3+','home':'Geral'};
     document.getElementById('breadcrumb').textContent='Voce esta em: '+(labels[t]||t);
     // Filtros globais (empresa/CS) visiveis em TODAS as paginas; KPIs globais so fora de vp/gmv/churn/home
     document.querySelector('.filters').style.display='flex';
-    var hideKpi=(t==='vp'||t==='home'||t==='churn'||t==='gmv'||t==='top80'||t==='onlog'||t==='t3plus');
+    var hideKpi=(t==='vp'||t==='home'||t==='churn'||t==='churngeral'||t==='gmv'||t==='top80'||t==='onlog'||t==='t3plus');
     document.getElementById('globalKpiRow').style.display=hideKpi?'none':'grid';
     var cd=document.getElementById('coDetail');if(cd)cd.style.display=hideKpi?'none':'';
     updateAll();
@@ -2089,6 +2143,80 @@ function updateHomeChurn(){
     var valor=CHURN_DATA.reduce(function(a,b){return a+(b.valorPerdido||0)},0);
     document.getElementById('home-churn-val').textContent=total.toLocaleString('pt-BR')+' empresas';
     document.getElementById('home-churn-sub').textContent='R$ '+valor.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+' perdidos';
+    // Home card Churn Geral
+    var cg=(typeof CHURN_GERAL!=='undefined'&&CHURN_GERAL)?CHURN_GERAL:{total:[],parcial:[]};
+    var nT=(cg.total||[]).length, nP=(cg.parcial||[]).length;
+    var elV=document.getElementById('home-cg-val'); if(elV) elV.textContent=(nT+nP).toLocaleString('pt-BR')+' empresas';
+    var elS=document.getElementById('home-cg-sub'); if(elS) elS.textContent=nT+' total &middot; '+nP+' parcial';
+    if(elS) elS.innerHTML=nT+' total &middot; '+nP+' parcial';
+}
+
+// === CHURN GERAL TAB ===
+var _cgInited=false;
+function _cgInit(){
+    if(_cgInited)return;_cgInited=true;
+    var cg=(typeof CHURN_GERAL!=='undefined'&&CHURN_GERAL)?CHURN_GERAL:{total:[],parcial:[]};
+    var all=(cg.total||[]).concat(cg.parcial||[]);
+    var meses={},css={};
+    all.forEach(function(r){if(r.anoMesChurn)meses[r.anoMesChurn]=1;if(r.cs)css[r.cs]=1});
+    var selM=document.getElementById('cgFMes');
+    Object.keys(meses).sort().forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=fmtM(m);selM.appendChild(o)});
+    var selC=document.getElementById('cgFCS');
+    Object.keys(css).sort().forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;selC.appendChild(o)});
+}
+function _cgFilter(arr){
+    var m=document.getElementById('cgFMes').value;
+    var c=document.getElementById('cgFCS').value;
+    var q=(document.getElementById('cgFBusca').value||'').trim().toLowerCase();
+    var csGlobal=fCS.value;
+    return arr.filter(function(r){
+        if(m && r.anoMesChurn!==m)return false;
+        if(c && r.cs!==c)return false;
+        if(csGlobal && r.cs!==csGlobal)return false;
+        if(selCo && r.empresa!==selCo)return false;
+        if(q && (r.empresa||'').toLowerCase().indexOf(q)<0)return false;
+        return true;
+    });
+}
+function updateChurnGeral(){
+    _cgInit();
+    var cg=(typeof CHURN_GERAL!=='undefined'&&CHURN_GERAL)?CHURN_GERAL:{total:[],parcial:[]};
+    var t=_cgFilter(cg.total||[]);
+    var p=_cgFilter(cg.parcial||[]);
+    document.getElementById('cg-ktot').textContent=t.length.toLocaleString('pt-BR');
+    document.getElementById('cg-kpar').textContent=p.length.toLocaleString('pt-BR');
+    document.getElementById('cg-kafet').textContent=(t.length+p.length).toLocaleString('pt-BR');
+    var nProd=p.reduce(function(a,r){return a+(r.nProdutosParou||0)},0);
+    document.getElementById('cg-kprod').textContent=nProd.toLocaleString('pt-BR');
+    document.getElementById('cg-tot-count').textContent=t.length+' empresa(s)';
+    document.getElementById('cg-par-count').textContent=p.length+' empresa(s)';
+    var esc=function(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+    var fmtProds=function(list){return (list||[]).map(function(x){return esc(x.produto)}).join(', ')||'&mdash;'};
+    // Total
+    var tbT=document.querySelector('#tCgTotal tbody'),hT=[];
+    t.slice().sort(function(a,b){return (b.anoMesChurn||'').localeCompare(a.anoMesChurn||'')||a.empresa.localeCompare(b.empresa)}).forEach(function(r){
+        hT.push('<tr>'+
+            '<td style="white-space:nowrap;color:var(--g)">'+fmtM(r.anoMesChurn)+'</td>'+
+            '<td><span class="badge sm">'+esc(r.cs||'-')+'</span></td>'+
+            '<td><b>'+esc(r.empresa)+'</b></td>'+
+            '<td style="font-size:11px;color:var(--g)">'+fmtProds(r.produtosParou)+'</td>'+
+            '<td style="white-space:nowrap;color:var(--g)">'+esc(r.ultimaFaturaProdutosParou)+'</td>'+
+        '</tr>');
+    });
+    tbT.innerHTML=hT.join('')||'<tr><td colspan="5" style="text-align:center;color:#999;padding:24px">Nenhuma empresa com os filtros atuais</td></tr>';
+    // Parcial
+    var tbP=document.querySelector('#tCgParcial tbody'),hP=[];
+    p.slice().sort(function(a,b){return (b.anoMesChurn||'').localeCompare(a.anoMesChurn||'')||a.empresa.localeCompare(b.empresa)}).forEach(function(r){
+        hP.push('<tr>'+
+            '<td style="white-space:nowrap;color:var(--g)">'+fmtM(r.anoMesChurn)+'</td>'+
+            '<td><span class="badge sm">'+esc(r.cs||'-')+'</span></td>'+
+            '<td><b>'+esc(r.empresa)+'</b></td>'+
+            '<td style="font-size:11px;color:var(--d);font-weight:600">'+fmtProds(r.produtosParou)+'</td>'+
+            '<td style="font-size:11px;color:var(--s);font-weight:600">'+fmtProds(r.produtosContinua)+'</td>'+
+            '<td style="white-space:nowrap;color:var(--g)">'+esc(r.ultimaFaturaProdutosParou)+'</td>'+
+        '</tr>');
+    });
+    tbP.innerHTML=hP.join('')||'<tr><td colspan="6" style="text-align:center;color:#999;padding:24px">Nenhuma empresa com os filtros atuais</td></tr>';
 }
 
 function updateAll(){
@@ -2098,6 +2226,7 @@ function updateAll(){
     else if(currentTab==='csat'){if(currentCsat==='oraculo')updateCsatOraculo();else updateCsatPlataforma()}
     else if(currentTab==='vp')updateVp();
     else if(currentTab==='churn')updateChurn();
+    else if(currentTab==='churngeral')updateChurnGeral();
     else if(currentTab==='gmv')updateGmv();
     else if(currentTab==='top80')updateTop80();
     else if(currentTab==='onlog')updateOnlog();
