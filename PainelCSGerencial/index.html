@@ -1665,7 +1665,7 @@ function updateOnlog(){
                 '<td>'+pl+'</td>'+
                 '<td>'+marcaCell+'</td>'+
                 '<td style="white-space:nowrap;font-family:monospace">'+pedidoLbl+chip+'</td>'+
-                '<td>'+(function(){var jd=String(p.clienteDoc||'').replace(/\x27/g,"\\\x27"),jn=String(p.cliente||'').replace(/\x27/g,"\\\x27");var clk=(p.clienteDoc||p.cliente)?(' class="click" style="cursor:pointer;color:var(--p)" title="Ver todas as compras desse cliente" onclick="onlogFiltrarPorCliente(\''+jd+'\',\''+jn+'\')"'):'';return '<span'+clk+'>'+esc(p.cliente||'-')+(p.clienteDoc?'<div style="font-size:10px;color:var(--g);font-family:monospace">'+esc(_olFmtDoc(p.clienteDoc))+'</div>':'')+'</span>'+divergTxt})()+'</td>'+
+                (function(){var hasCli=!!(p.clienteDoc||p.cliente);var jd=String(p.clienteDoc||'').replace(/'/g,"&#39;"),jn=String(p.cliente||'').replace(/'/g,"&#39;");var attrs=hasCli?(' class="click" style="cursor:pointer" title="Ver todas as compras desse cliente" onclick="onlogFiltrarPorCliente(&#39;'+jd+'&#39;,&#39;'+jn+'&#39;)"'):'';return '<td'+attrs+'>'+(hasCli?'<span style="color:var(--p);text-decoration:underline">':'<span>')+esc(p.cliente||'-')+'</span>'+(p.clienteDoc?'<div style="font-size:10px;color:var(--g);font-family:monospace">'+esc(_olFmtDoc(p.clienteDoc))+'</div>':'')+divergTxt+'</td>'})()+
                 '<td style="white-space:nowrap">'+esc((p.cidade||'-')+(p.uf?'/'+p.uf:''))+'</td>'+
                 '<td>'+servCell+'</td>'+
                 '<td style="font-size:11px;color:var(--s);font-weight:600" title="status real da Onlog (planilha)">'+esc(p.statusOnlog||'-')+'</td>'+
@@ -1692,7 +1692,7 @@ function updateOnlog(){
             '<td><span class="badge sm click" onclick="filterByCS(\''+csEsc+'\')">'+esc(p.cs||'-')+'</span></td>'+
             '<td class="click" onclick="selectCo(\''+esc(p.marca||'').replace(/'/g,"\\'")+'\')"><b>'+esc(p.marca||'-')+'</b></td>'+
             '<td style="white-space:nowrap;font-family:monospace">#'+esc(p.orderNumber)+chip+'</td>'+
-            '<td>'+(function(){var jd=String(p.clienteDoc||'').replace(/\x27/g,"\\\x27"),jn=String(p.cliente||'').replace(/\x27/g,"\\\x27");var clk=(p.clienteDoc||p.cliente)?(' class="click" style="cursor:pointer;color:var(--p)" title="Ver todas as compras desse cliente" onclick="onlogFiltrarPorCliente(\''+jd+'\',\''+jn+'\')"'):'';return '<span'+clk+'>'+esc(p.cliente||'-')+(p.clienteDoc?'<div style="font-size:10px;color:var(--g);font-family:monospace">'+esc(_olFmtDoc(p.clienteDoc))+'</div>':'')+'</span>'+divergTxt})()+'</td>'+
+            (function(){var hasCli=!!(p.clienteDoc||p.cliente);var jd=String(p.clienteDoc||'').replace(/'/g,"&#39;"),jn=String(p.cliente||'').replace(/'/g,"&#39;");var attrs=hasCli?(' class="click" style="cursor:pointer" title="Ver todas as compras desse cliente" onclick="onlogFiltrarPorCliente(&#39;'+jd+'&#39;,&#39;'+jn+'&#39;)"'):'';return '<td'+attrs+'>'+(hasCli?'<span style="color:var(--p);text-decoration:underline">':'<span>')+esc(p.cliente||'-')+'</span>'+(p.clienteDoc?'<div style="font-size:10px;color:var(--g);font-family:monospace">'+esc(_olFmtDoc(p.clienteDoc))+'</div>':'')+divergTxt+'</td>'})()+
             '<td style="white-space:nowrap">'+destino+'</td>'+
             '<td style="font-size:11px;color:var(--g)">'+esc((p.provider||'').replace(/^vesti\s*-\s*/i,''))+'</td>'+
             '<td style="font-size:11px;color:'+statusColor+';font-weight:600" title="'+(p.statusOnlog?'status real da Onlog (planilha)':'status Mongo')+'">'+esc(statusLbl)+'</td>'+
