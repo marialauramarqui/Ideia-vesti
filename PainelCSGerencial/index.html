@@ -1506,17 +1506,17 @@ function _onlogFilterRows(od){
     if(etq==='com')rows=rows.filter(function(p){return p.comEtiqueta});
     else if(etq==='sem')rows=rows.filter(function(p){return !p.comEtiqueta});
     var fcli=(document.getElementById('olFCliente')||{}).value||'';
-    if(fcli){
-        var qNome=fcli.toLowerCase().trim();
-        var qDoc=fcli.replace(/\D/g,'');
-        rows=rows.filter(function(p){
-            var nome=(p.cliente||'').toLowerCase();
-            var doc=(p.clienteDoc||'').replace(/\D/g,'');
-            if(qDoc && qDoc.length>=3 && doc.indexOf(qDoc)>=0)return true;
-            if(qNome && nome.indexOf(qNome)>=0)return true;
-            return false;
-        });
-    }
+    var _qNome=fcli.toLowerCase().trim();
+    var _qDoc=fcli.replace(/\D/g,'');
+    var _matchCli=function(p){
+        if(!fcli)return true;
+        var nome=(p.cliente||'').toLowerCase();
+        var doc=(p.clienteDoc||'').replace(/\D/g,'');
+        if(_qDoc && _qDoc.length>=3 && doc && doc.indexOf(_qDoc)>=0)return true;
+        if(_qNome && nome && nome.indexOf(_qNome)>=0)return true;
+        return false;
+    };
+    if(fcli)rows=rows.filter(_matchCli);
     var st=document.getElementById('olFStatus').value;
     if(st==='__CANCELED__')rows=rows.filter(function(p){return p.cancelado});
     else if(st)rows=rows.filter(function(p){return !p.cancelado && (p.status||'').toUpperCase()===st});
@@ -1526,6 +1526,7 @@ function _onlogFilterRows(od){
         var syn=idx.soPlanilha.slice();
         if(de)syn=syn.filter(function(p){return (p.data||'')>=de});
         if(ate)syn=syn.filter(function(p){return (p.data||'')<=ate});
+        if(fcli)syn=syn.filter(_matchCli);
         if(!fcsGlobal&&!selCoLow)rows=rows.concat(syn);
         else {
             // Aplica filtro de marca aos sinteticos (que ja tem remetente)
@@ -1543,6 +1544,7 @@ function _onlogFilterRows(od){
         var syn2=idx.soPlanilha.slice();
         if(de)syn2=syn2.filter(function(p){return (p.data||'')>=de});
         if(ate)syn2=syn2.filter(function(p){return (p.data||'')<=ate});
+        if(fcli)syn2=syn2.filter(_matchCli);
         if(!fcsGlobal)rows=rows.concat(selCoLow?syn2.filter(function(p){return (p.marca||'').toLowerCase().indexOf(selCoLow)>=0}):syn2);
     }
     return rows;
