@@ -37,7 +37,8 @@
       "cidade": "MACEIÓ",
       "uf": "AL",
       "status": "TRANSFERENCIA",
-      "postagem": 25.65
+      "postagem": 25.65,
+      "marcasInferidas": []
     },
     {
       "data": "2026-04-16",
@@ -51,7 +52,24 @@
       "uf": "SP",
       "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
       "postagem": 27.49,
-      "clienteDoc": "298.590.448-05"
+      "clienteDoc": "298.590.448-05",
+      "marcasInferidas": [
+        {
+          "dominioId": "917059",
+          "marca": "Bella Donna",
+          "n": 12
+        },
+        {
+          "dominioId": "1737229",
+          "marca": "KAESSI",
+          "n": 1
+        },
+        {
+          "dominioId": "1272421",
+          "marca": "Kelly Rodrigues Store​",
+          "n": 1
+        }
+      ]
     },
     {
       "data": "2026-04-16",
@@ -65,7 +83,14 @@
       "uf": "SP",
       "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
       "postagem": 22.88,
-      "clienteDoc": "407.145.908-51"
+      "clienteDoc": "407.145.908-51",
+      "marcasInferidas": [
+        {
+          "dominioId": "1737229",
+          "marca": "KAESSI",
+          "n": 1
+        }
+      ]
     },
     {
       "data": "2026-04-16",
@@ -79,7 +104,14 @@
       "uf": "RS",
       "status": "ENTREGUE",
       "postagem": 54.16,
-      "clienteDoc": "61.366.478/0001-24"
+      "clienteDoc": "61.366.478/0001-24",
+      "marcasInferidas": [
+        {
+          "dominioId": "1514922",
+          "marca": " Era Uma Vez",
+          "n": 7
+        }
+      ]
     },
     {
       "data": "2026-04-16",
@@ -93,7 +125,14 @@
       "uf": "RJ",
       "status": "ENTREGUE",
       "postagem": 26.04,
-      "clienteDoc": "068.446.467-55"
+      "clienteDoc": "068.446.467-55",
+      "marcasInferidas": [
+        {
+          "dominioId": "1514922",
+          "marca": " Era Uma Vez",
+          "n": 3
+        }
+      ]
     },
     {
       "data": "2026-04-16",
@@ -107,7 +146,14 @@
       "uf": "PR",
       "status": "ENTREGUE",
       "postagem": 71.32,
-      "clienteDoc": "103.629.729-23"
+      "clienteDoc": "103.629.729-23",
+      "marcasInferidas": [
+        {
+          "dominioId": "1514922",
+          "marca": " Era Uma Vez",
+          "n": 4
+        }
+      ]
     },
     {
       "data": "2026-04-17",
@@ -121,7 +167,14 @@
       "uf": "SP",
       "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
       "postagem": 17.77,
-      "clienteDoc": "345.345.218-63"
+      "clienteDoc": "345.345.218-63",
+      "marcasInferidas": [
+        {
+          "dominioId": "1514922",
+          "marca": " Era Uma Vez",
+          "n": 6
+        }
+      ]
     },
     {
       "data": "2026-04-17",
@@ -135,7 +188,14 @@
       "uf": "RO",
       "status": "ENTREGUE",
       "postagem": 97.4,
-      "clienteDoc": "976.865.572-00"
+      "clienteDoc": "976.865.572-00",
+      "marcasInferidas": [
+        {
+          "dominioId": "1514922",
+          "marca": " Era Uma Vez",
+          "n": 6
+        }
+      ]
     },
     {
       "data": "2026-04-20",
@@ -149,7 +209,8 @@
       "uf": "SP",
       "status": "OBJETO ENTREGUE AO REMETENTE",
       "postagem": 25.94,
-      "clienteDoc": "640.871.530-37"
+      "clienteDoc": "640.871.530-37",
+      "marcasInferidas": []
     },
     {
       "data": "2026-04-23",
@@ -163,7 +224,14 @@
       "uf": "GO",
       "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
       "postagem": 61.85,
-      "clienteDoc": "32760956881"
+      "clienteDoc": "32760956881",
+      "marcasInferidas": [
+        {
+          "dominioId": "1514922",
+          "marca": " Era Uma Vez",
+          "n": 2
+        }
+      ]
     },
     {
       "data": "2026-04-23",
@@ -177,7 +245,14 @@
       "uf": "RS",
       "status": "ENTREGUE",
       "postagem": 50.17,
-      "clienteDoc": "02091570036"
+      "clienteDoc": "02091570036",
+      "marcasInferidas": [
+        {
+          "dominioId": "1514922",
+          "marca": " Era Uma Vez",
+          "n": 1
+        }
+      ]
     },
     {
       "data": "2026-04-23",
@@ -191,7 +266,14 @@
       "uf": "MS",
       "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
       "postagem": 61.93,
-      "clienteDoc": "90991702115"
+      "clienteDoc": "90991702115",
+      "marcasInferidas": [
+        {
+          "dominioId": "1514922",
+          "marca": " Era Uma Vez",
+          "n": 4
+        }
+      ]
     },
     {
       "data": "2026-04-16",
@@ -205,7 +287,8 @@
       "uf": "MG",
       "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
       "postagem": 21.05,
-      "clienteDoc": "524.142.400-83"
+      "clienteDoc": "524.142.400-83",
+      "marcasInferidas": []
     },
     {
       "data": "2026-04-16",
@@ -219,7 +302,8 @@
       "uf": "SP",
       "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
       "postagem": 20.74,
-      "clienteDoc": "737.773.980-04"
+      "clienteDoc": "737.773.980-04",
+      "marcasInferidas": []
     },
     {
       "data": "2026-04-20",
@@ -233,7 +317,8 @@
       "uf": "RJ",
       "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
       "postagem": 28.85,
-      "clienteDoc": "170.104.890-68"
+      "clienteDoc": "170.104.890-68",
+      "marcasInferidas": []
     },
     {
       "data": "2026-04-20",
@@ -247,7 +332,8 @@
       "uf": "BA",
       "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
       "postagem": 52.8,
-      "clienteDoc": "753.742.380-60"
+      "clienteDoc": "753.742.380-60",
+      "marcasInferidas": []
     },
     {
       "data": "2026-04-24",
@@ -261,7 +347,8 @@
       "uf": "SC",
       "status": "ENTREGUE",
       "postagem": 129.59,
-      "clienteDoc": "939.362.960-90"
+      "clienteDoc": "939.362.960-90",
+      "marcasInferidas": []
     }
   ],
   "cobrancaPorMarca": [
@@ -4941,7 +5028,8 @@
         "cidade": "MACEIÓ",
         "uf": "AL",
         "status": "TRANSFERENCIA",
-        "postagem": 25.65
+        "postagem": 25.65,
+        "marcasInferidas": []
       },
       {
         "data": "2026-04-16",
@@ -4955,7 +5043,24 @@
         "uf": "SP",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "postagem": 27.49,
-        "clienteDoc": "298.590.448-05"
+        "clienteDoc": "298.590.448-05",
+        "marcasInferidas": [
+          {
+            "dominioId": "917059",
+            "marca": "Bella Donna",
+            "n": 12
+          },
+          {
+            "dominioId": "1737229",
+            "marca": "KAESSI",
+            "n": 1
+          },
+          {
+            "dominioId": "1272421",
+            "marca": "Kelly Rodrigues Store​",
+            "n": 1
+          }
+        ]
       },
       {
         "data": "2026-04-16",
@@ -4969,7 +5074,14 @@
         "uf": "SP",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "postagem": 22.88,
-        "clienteDoc": "407.145.908-51"
+        "clienteDoc": "407.145.908-51",
+        "marcasInferidas": [
+          {
+            "dominioId": "1737229",
+            "marca": "KAESSI",
+            "n": 1
+          }
+        ]
       },
       {
         "data": "2026-04-16",
@@ -4983,7 +5095,14 @@
         "uf": "RS",
         "status": "ENTREGUE",
         "postagem": 54.16,
-        "clienteDoc": "61.366.478/0001-24"
+        "clienteDoc": "61.366.478/0001-24",
+        "marcasInferidas": [
+          {
+            "dominioId": "1514922",
+            "marca": " Era Uma Vez",
+            "n": 7
+          }
+        ]
       },
       {
         "data": "2026-04-16",
@@ -4997,7 +5116,14 @@
         "uf": "RJ",
         "status": "ENTREGUE",
         "postagem": 26.04,
-        "clienteDoc": "068.446.467-55"
+        "clienteDoc": "068.446.467-55",
+        "marcasInferidas": [
+          {
+            "dominioId": "1514922",
+            "marca": " Era Uma Vez",
+            "n": 3
+          }
+        ]
       },
       {
         "data": "2026-04-16",
@@ -5011,7 +5137,14 @@
         "uf": "PR",
         "status": "ENTREGUE",
         "postagem": 71.32,
-        "clienteDoc": "103.629.729-23"
+        "clienteDoc": "103.629.729-23",
+        "marcasInferidas": [
+          {
+            "dominioId": "1514922",
+            "marca": " Era Uma Vez",
+            "n": 4
+          }
+        ]
       },
       {
         "data": "2026-04-17",
@@ -5025,7 +5158,14 @@
         "uf": "SP",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "postagem": 17.77,
-        "clienteDoc": "345.345.218-63"
+        "clienteDoc": "345.345.218-63",
+        "marcasInferidas": [
+          {
+            "dominioId": "1514922",
+            "marca": " Era Uma Vez",
+            "n": 6
+          }
+        ]
       },
       {
         "data": "2026-04-17",
@@ -5039,7 +5179,14 @@
         "uf": "RO",
         "status": "ENTREGUE",
         "postagem": 97.4,
-        "clienteDoc": "976.865.572-00"
+        "clienteDoc": "976.865.572-00",
+        "marcasInferidas": [
+          {
+            "dominioId": "1514922",
+            "marca": " Era Uma Vez",
+            "n": 6
+          }
+        ]
       },
       {
         "data": "2026-04-20",
@@ -5053,7 +5200,8 @@
         "uf": "SP",
         "status": "OBJETO ENTREGUE AO REMETENTE",
         "postagem": 25.94,
-        "clienteDoc": "640.871.530-37"
+        "clienteDoc": "640.871.530-37",
+        "marcasInferidas": []
       },
       {
         "data": "2026-04-23",
@@ -5067,7 +5215,14 @@
         "uf": "GO",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "postagem": 61.85,
-        "clienteDoc": "32760956881"
+        "clienteDoc": "32760956881",
+        "marcasInferidas": [
+          {
+            "dominioId": "1514922",
+            "marca": " Era Uma Vez",
+            "n": 2
+          }
+        ]
       },
       {
         "data": "2026-04-23",
@@ -5081,7 +5236,14 @@
         "uf": "RS",
         "status": "ENTREGUE",
         "postagem": 50.17,
-        "clienteDoc": "02091570036"
+        "clienteDoc": "02091570036",
+        "marcasInferidas": [
+          {
+            "dominioId": "1514922",
+            "marca": " Era Uma Vez",
+            "n": 1
+          }
+        ]
       },
       {
         "data": "2026-04-23",
@@ -5095,7 +5257,14 @@
         "uf": "MS",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "postagem": 61.93,
-        "clienteDoc": "90991702115"
+        "clienteDoc": "90991702115",
+        "marcasInferidas": [
+          {
+            "dominioId": "1514922",
+            "marca": " Era Uma Vez",
+            "n": 4
+          }
+        ]
       },
       {
         "data": "2026-04-16",
@@ -5109,7 +5278,8 @@
         "uf": "MG",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "postagem": 21.05,
-        "clienteDoc": "524.142.400-83"
+        "clienteDoc": "524.142.400-83",
+        "marcasInferidas": []
       },
       {
         "data": "2026-04-16",
@@ -5123,7 +5293,8 @@
         "uf": "SP",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "postagem": 20.74,
-        "clienteDoc": "737.773.980-04"
+        "clienteDoc": "737.773.980-04",
+        "marcasInferidas": []
       },
       {
         "data": "2026-04-20",
@@ -5137,7 +5308,8 @@
         "uf": "RJ",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "postagem": 28.85,
-        "clienteDoc": "170.104.890-68"
+        "clienteDoc": "170.104.890-68",
+        "marcasInferidas": []
       },
       {
         "data": "2026-04-20",
@@ -5151,7 +5323,8 @@
         "uf": "BA",
         "status": "OBJETO ENTREGUE AO DESTINATÁRIO",
         "postagem": 52.8,
-        "clienteDoc": "753.742.380-60"
+        "clienteDoc": "753.742.380-60",
+        "marcasInferidas": []
       },
       {
         "data": "2026-04-24",
@@ -5165,7 +5338,8 @@
         "uf": "SC",
         "status": "ENTREGUE",
         "postagem": 129.59,
-        "clienteDoc": "939.362.960-90"
+        "clienteDoc": "939.362.960-90",
+        "marcasInferidas": []
       }
     ]
   }

@@ -1453,6 +1453,7 @@ function _onlogBuildDiogoIdx(){
                 _operador:x.operador||'',
                 _modalidade:x.modalidade||'',
                 _codigoInterno:x.codigoInterno||'',
+                marcasInferidas:x.marcasInferidas||[],
                 _quinzena:d.quinzena||null,
             });
         });
@@ -1611,7 +1612,19 @@ function updateOnlog(){
         if(p._origem==='planilha-only'){
             var pl='<span style="color:#B2BEC3;font-style:italic">(planilha)</span>';
             var marcaCell;
-            if(p._paVesti)marcaCell='<span style="color:#6C5CE7;font-weight:600">PA VESTI</span>';
+            if(p._paVesti){
+                var mi=p.marcasInferidas||[];
+                if(mi.length){
+                    var top=mi[0];
+                    var topName=esc(top.marca||('dom '+top.dominioId));
+                    var tip='Marca inferida pelo CPF/CNPJ do destinatario:\n'+mi.map(function(m){return (m.marca||('dom '+m.dominioId))+' ('+m.n+' pedidos)'}).join('\n');
+                    var extra=mi.length>1?(' <span style="color:var(--g);font-size:10px">+'+(mi.length-1)+'</span>'):'';
+                    marcaCell='<span class="click" onclick="selectCo(\''+(top.marca||'').replace(/\x27/g,"\\\x27")+'\')" style="color:#6C5CE7;font-weight:600;cursor:pointer" title="'+esc(tip)+'">'+topName+extra+'</span><div style="font-size:9px;color:#6C5CE7;font-weight:700">PA VESTI</div>';
+                } else {
+                    marcaCell='<span style="color:#6C5CE7;font-weight:600" title="Nao foi possivel inferir a marca - cliente sem pedido Vesti com esse CPF/CNPJ">PA VESTI</span>';
+                }
+            }
+            else if(false)marcaCell='<span style="color:#6C5CE7;font-weight:600">PA VESTI</span>';
             else if(p.marca)marcaCell='<b title="Remetente da planilha">'+esc(p.marca)+'</b>';
             else marcaCell=pl;
             var pedidoLbl=p._paVesti?('NF '+esc(p.orderNumber||'-')):('#'+esc(p.orderNumber));
