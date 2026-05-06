@@ -527,7 +527,7 @@ table.dt tr:hover td{background:#FAFAFA}
         <div class="filter-group"><label title="Busca por nome OU CPF/CNPJ do cliente final (parcial)">Cliente:</label><input type="text" class="f-input" id="olFCliente" oninput="updateOnlog()" placeholder="nome ou CPF/CNPJ" style="width:220px" title="Busca por nome OU CPF/CNPJ do cliente final"></div>
         <div class="filter-group"><label>Etiqueta:</label><select class="f-select" id="olFEtiq" onchange="updateOnlog()"><option value="">Todos</option><option value="com">Com etiqueta</option><option value="sem">Sem etiqueta</option></select></div>
         <div class="filter-group"><label>Status:</label><select class="f-select" id="olFStatus" onchange="updateOnlog()"><option value="">Todos</option></select></div>
-        <div class="filter-group"><label title="Cruzamento com a planilha do Diogo">Origem:</label><select class="f-select" id="olFOrigem" onchange="updateOnlog()" title="Cruzamento com a planilha do Diogo"><option value="">Todos</option><option value="planilha">So na planilha (nao tem no Vesti)</option><option value="vesti">So no Vesti (nao tem na planilha)</option><option value="ambos">Nos dois (planilha e Vesti)</option></select></div>
+        <div class="filter-group"><label title="Cruzamento com a planilha do Diogo">Origem:</label><select class="f-select" id="olFOrigem" onchange="updateOnlog()" title="Cruzamento com a planilha do Diogo"><option value="">Todos</option><option value="planilha">So na planilha (nao tem no Vesti)</option><option value="vesti">So no Vesti (nao tem na planilha)</option><option value="ambos">Nos dois (planilha e Vesti)</option><option value="pa-vesti">Apenas PA VESTI</option></select></div>
         <button class="f-btn" onclick="onlogClearFilters()">Limpar</button>
         <button class="f-btn" onclick="onlogExportExcel()" style="background:#00B894;color:#fff;font-weight:700" title="Exporta os pedidos filtrados para Excel">&#128221; Excel</button>
         <button class="f-btn" onclick="onlogExportCsv()" style="background:#0984E3;color:#fff;font-weight:700" title="Exporta CSV (alternativa, sempre funciona)">CSV</button>
@@ -1524,6 +1524,18 @@ function _onlogFilterRows(od){
     } else if(orig==='ambos'){
         // Nos dois (planilha e Vesti): pedidos Vesti com match na planilha
         rows=rows.filter(function(p){return p.postagemFonte==='planilha-diogo'});
+    } else if(orig==='pa-vesti'){
+        // Apenas postagens avulsas PA VESTI
+        rows=[];
+        var synPa=idx.soPlanilha.filter(function(p){return p._paVesti});
+        if(de)synPa=synPa.filter(function(p){return (p.data||'')>=de});
+        if(ate)synPa=synPa.filter(function(p){return (p.data||'')<=ate});
+        if(fcli)synPa=synPa.filter(_matchCli);
+        if(selCoLow)synPa=synPa.filter(function(p){
+            if((p.marca||'').toLowerCase().indexOf(selCoLow)>=0)return true;
+            return (p.marcasInferidas||[]).some(function(m){return (m.marca||'').toLowerCase().indexOf(selCoLow)>=0});
+        });
+        rows=synPa;
     } else {
         // Todos: Vesti + sinteticos so-na-planilha
         var syn2=idx.soPlanilha.slice();
@@ -1637,7 +1649,7 @@ function updateOnlog(){
                 '<td>'+pl+'</td>'+
                 '<td>'+marcaCell+'</td>'+
                 '<td style="white-space:nowrap;font-family:monospace">'+pedidoLbl+chip+'</td>'+
-                '<td>'+esc(p.cliente||'-')+(p.clienteDoc?'<div style="font-size:10px;color:var(--g);font-family:monospace">'+esc(_olFmtDoc(p.clienteDoc))+'</div>':'')+divergTxt+'</td>'+
+                '<td>'+(function(){var jd=String(p.clienteDoc||'').replace(/\x27/g,"\\\x27"),jn=String(p.cliente||'').replace(/\x27/g,"\\\x27");var clk=(p.clienteDoc||p.cliente)?(' class="click" style="cursor:pointer;color:var(--p)" title="Ver todas as compras desse cliente" onclick="onlogFiltrarPorCliente(\''+jd+'\',\''+jn+'\')"'):'';return '<span'+clk+'>'+esc(p.cliente||'-')+(p.clienteDoc?'<div style="font-size:10px;color:var(--g);font-family:monospace">'+esc(_olFmtDoc(p.clienteDoc))+'</div>':'')+'</span>'+divergTxt})()+'</td>'+
                 '<td style="white-space:nowrap">'+esc((p.cidade||'-')+(p.uf?'/'+p.uf:''))+'</td>'+
                 '<td>'+servCell+'</td>'+
                 '<td style="font-size:11px;color:var(--s);font-weight:600" title="status real da Onlog (planilha)">'+esc(p.statusOnlog||'-')+'</td>'+
@@ -1664,7 +1676,7 @@ function updateOnlog(){
             '<td><span class="badge sm click" onclick="filterByCS(\''+csEsc+'\')">'+esc(p.cs||'-')+'</span></td>'+
             '<td class="click" onclick="selectCo(\''+esc(p.marca||'').replace(/'/g,"\\'")+'\')"><b>'+esc(p.marca||'-')+'</b></td>'+
             '<td style="white-space:nowrap;font-family:monospace">#'+esc(p.orderNumber)+chip+'</td>'+
-            '<td>'+esc(p.cliente||'-')+(p.clienteDoc?'<div style="font-size:10px;color:var(--g);font-family:monospace">'+esc(_olFmtDoc(p.clienteDoc))+'</div>':'')+divergTxt+'</td>'+
+            '<td>'+(function(){var jd=String(p.clienteDoc||'').replace(/\x27/g,"\\\x27"),jn=String(p.cliente||'').replace(/\x27/g,"\\\x27");var clk=(p.clienteDoc||p.cliente)?(' class="click" style="cursor:pointer;color:var(--p)" title="Ver todas as compras desse cliente" onclick="onlogFiltrarPorCliente(\''+jd+'\',\''+jn+'\')"'):'';return '<span'+clk+'>'+esc(p.cliente||'-')+(p.clienteDoc?'<div style="font-size:10px;color:var(--g);font-family:monospace">'+esc(_olFmtDoc(p.clienteDoc))+'</div>':'')+'</span>'+divergTxt})()+'</td>'+
             '<td style="white-space:nowrap">'+destino+'</td>'+
             '<td style="font-size:11px;color:var(--g)">'+esc((p.provider||'').replace(/^vesti\s*-\s*/i,''))+'</td>'+
             '<td style="font-size:11px;color:'+statusColor+';font-weight:600" title="'+(p.statusOnlog?'status real da Onlog (planilha)':'status Mongo')+'">'+esc(statusLbl)+'</td>'+
@@ -1680,6 +1692,14 @@ function updateOnlog(){
 function _olFmt(v){
     if(v==null||v==='')return '<span style="color:#B2BEC3">&mdash;</span>';
     return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function onlogFiltrarPorCliente(doc,nome){
+    var v=(doc&&String(doc).replace(/\D/g,'').length>=3)?String(doc):(nome||'');
+    if(!v)return;
+    var fc=document.getElementById('olFCliente');if(fc)fc.value=v;
+    var fo=document.getElementById('olFOrigem');if(fo)fo.value='';
+    updateOnlog();
+    try{document.getElementById('tab-onlog').scrollIntoView({behavior:'smooth',block:'start'})}catch(e){}
 }
 function _olFmtDoc(d){
     var s=String(d||'').replace(/\D/g,'');
